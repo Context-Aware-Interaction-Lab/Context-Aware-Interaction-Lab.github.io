@@ -408,7 +408,7 @@ end
 # A photo dropped into assets/img was once committed by accident. Only the fixed images and the
 # photos declared in people.yml may be published.
 class StrayFilesTest < Minitest::Test
-  FIXED_IMAGES = %w[logo-480.png logo-96.png kenny-320.png apple-touch-icon.png].freeze
+  FIXED_IMAGES = %w[logo-480.png logo-96.png kenny-320.jpg apple-touch-icon.png].freeze
   ALLOWED_IMAGES = (FIXED_IMAGES + photo_people.map { |p| File.basename(p["photo"]) }).freeze
 
   def test_assets_img_holds_only_the_expected_files_in_source
@@ -459,6 +459,12 @@ class PeopleDataTest < Minitest::Test
       assert_match %r{\A/assets/img/[\w-]+\.jpg\z}, person["photo"], "bad photo path for #{person["name"]}"
       assert File.size?(File.join(ROOT, person["photo"])), "missing photo file for #{person["name"]}"
     end
+  end
+
+  def test_the_directors_photo_file_exists
+    path = data("lab")["director_photo"]
+    assert_match %r{\A/assets/img/[\w-]+\.jpg\z}, path
+    assert File.size?(File.join(ROOT, path)), "missing director photo: #{path}"
   end
 
   # Consent covers current members and collaborators only; alumni are never photographed here.
