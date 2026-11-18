@@ -7,14 +7,15 @@ hero: true
 <section class="section" id="research">
   <div class="container">
     <div class="section-header">
-      <h2>Current research foci</h2>
+      <h2>Research areas</h2>
       <a class="section-header__link" href="{{ '/research/' | relative_url }}">All research</a>
     </div>
     <ul class="tiles projects">
       {% assign bases = "0,2,3" | split: "," %}
-      {% for focus in site.data.lab.foci %}
+      {% for area in site.data.research.areas %}
       {% assign base = bases[forloop.index0] %}
-      {% include project-block.html title=focus base=base %}
+      {% capture area_href %}{{ '/research/' | relative_url }}#{{ area.slug }}{% endcapture %}
+      {% include project-block.html title=area.title base=base href=area_href %}
       {% endfor %}
     </ul>
   </div>

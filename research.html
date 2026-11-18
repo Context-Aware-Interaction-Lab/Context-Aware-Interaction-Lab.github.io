@@ -5,30 +5,32 @@ permalink: /research/
 ---
 {% include page-header.html title="Research" %}
 
-{% for theme in site.data.research.themes %}
-<section class="section" id="{{ theme.title | slugify }}">
+<section class="section section--intro">
   <div class="container">
-    <div class="section-header"><h2>{{ theme.title }}</h2></div>
-    <ul class="tiles themes">
-      {% for item in theme.items %}
-      <li class="theme-item">{{ item | markdownify }}</li>
-      {% endfor %}
+    <div class="prose research-intro">{{ site.data.research.intro | markdownify }}</div>
+  </div>
+</section>
+
+{% for area in site.data.research.areas %}
+<section class="section" id="{{ area.slug }}">
+  <div class="container">
+    <div class="section-header"><h2>{{ area.title }}</h2></div>
+    <div class="prose research-summary">{{ area.summary | markdownify }}</div>
+    {%- if area.papers %}
+    <ul class="paper-cards">
+      {%- for id in area.papers %}
+      {% include paper-card.html id=id %}
+      {%- endfor %}
     </ul>
+    {%- endif %}
+    {%- if area.more %}
+    <h3 class="paper-list__label">More in this area</h3>
+    <ul class="paper-list">
+      {%- for id in area.more %}
+      {% include paper-link.html id=id %}
+      {%- endfor %}
+    </ul>
+    {%- endif %}
   </div>
 </section>
 {% endfor %}
-
-<section class="section" id="media">
-  <div class="container">
-    <div class="section-header"><h2>Media</h2></div>
-    <ul class="tiles media">
-      {% for item in site.data.media %}
-      <li class="media-item">
-        <p class="media-item__outlet">{{ item.outlet }}</p>
-        <h3 class="media-item__title">{% if item.url %}<a href="{{ item.url }}">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}</h3>
-        {% if item.note %}<p class="media-item__note">{{ item.note }}</p>{% endif %}
-      </li>
-      {% endfor %}
-    </ul>
-  </div>
-</section>
