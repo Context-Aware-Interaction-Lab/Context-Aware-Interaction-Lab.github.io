@@ -3,8 +3,10 @@ members:
     role: "Lab Director; Assistant Professor; Design and Artificial Intelligence Programme / Information Systems Technology and Design Pillar; Singapore University of Technology and Design"
   - name: "Kellie Sim Yu Hui"
     role: "PhD Student, SUTD"
+    photo: /assets/img/kellie-sim.jpg
   - name: "Weiyan Shi"
     role: "PhD Student, SUTD"
+    photo: /assets/img/weiyan-shi.jpg
   - name: "Bryan Zhengyu Tan"
     role: "PhD Student (co-advised), SUTD"
   - name: "Pannapat Chanpaisaeng (Apple)"
@@ -32,15 +34,19 @@ collaborators:
   - name: "Pin Sym Foong"
     role: "Head of Design, Telehealth Core"
     affiliation: "Saw Swee Hock School of Public Health; National University of Singapore"
+    photo: /assets/img/pin-sym-foong.jpg
   - name: "Roy Lee"
     role: "Associate Professor"
     affiliation: "University of British Columbia, Okanagan"
+    photo: /assets/img/roy-lee.jpg
   - name: "Wang Yong"
     role: "Assistant Professor"
     affiliation: "Nanyang Technological University"
+    photo: /assets/img/wang-yong.jpg
   - name: "Christophe Hurter"
     role: "Professor"
     affiliation: "Fédération ENAC ISAE-SUPAERO ONERA, France"
+    photo: /assets/img/christophe-hurter.jpg
   - name: "Hwajung Hong"
     role: "Associate Professor"
     affiliation: "Korea Advanced Institute of Science & Technology"
@@ -50,18 +56,23 @@ collaborators:
   - name: "Youngki Lee"
     role: "Professor"
     affiliation: "Seoul National University"
+    photo: /assets/img/youngki-lee.jpg
   - name: "Camellia Zakaria"
     role: "Assistant Professor"
     affiliation: "University of Toronto, USA"
+    photo: /assets/img/camellia-zakaria.jpg
   - name: "Simon Perrault"
     role: "Assistant Professor"
     affiliation: "Singapore University of Technology and Design"
+    photo: /assets/img/simon-perrault.jpg
   - name: "Rajesh Balan"
     role: "Professor"
     affiliation: "Singapore Management University"
+    photo: /assets/img/rajesh-balan.jpg
   - name: "Archan Misra"
     role: "Professor / Vice Provost (Research)"
     affiliation: "Singapore Management University"
+    photo: /assets/img/archan-misra.jpg
 
 alumni_graduate:
   - name: "Aaron Zhe Yu Tua"

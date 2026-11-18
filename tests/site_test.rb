@@ -21,6 +21,9 @@ end
 
 def data(name) = YAML.safe_load(File.read(File.join(ROOT, "_data", "#{name}.yml")))
 
+# Only current members and collaborators may carry a photo (consent given 2026-11-18).
+def photo_people = data("people").values_at("members", "collaborators").flatten.select { |p| p["photo"] }
+
 NAV = data("nav")
 INTERNAL_PAGES = NAV.reject { |n| n["external"] }.map { |n| n["url"] }
 PAGES = (["/"] + INTERNAL_PAGES + ["/design-language/"]).freeze
@@ -254,10 +257,32 @@ class PeoplePageTest < Minitest::Test
     assert_equal 1, html_of("/people/").scan(/<h3 class="person-card__name">#{Regexp.escape(LAB["director"])}</).size
   end
 
-  def test_only_the_directors_photo_is_used
+  # Anyone not in people.yml with a `photo:` must not appear as a photo: consent is per person.
+  def test_only_declared_photos_are_used
     srcs = html_of("/people/").scan(/<img[^>]*src="([^"]+)"/).flatten
-    allowed = [LAB["director_photo"], "/assets/img/logo-96.png"]
-    assert_empty srcs - allowed, "photos of others need consent first"
+    allowed = [LAB["director_photo"], "/assets/img/logo-96.png"] + photo_people.map { |p| p["photo"] }
+    assert_empty srcs - allowed, "photo without a declaration in people.yml"
+  end
+
+  def test_each_declared_photo_renders_once_with_the_persons_name_as_alt
+    html = html_of("/people/")
+    photo_people.each do |person|
+      tags = html.scan(/<img[^>]*alt="#{Regexp.escape(person["name"])}"[^>]*>/)
+      assert_equal 1, tags.size, "expected one photo for #{person["name"]}"
+      assert_includes tags.first, %(src="#{person["photo"]}"), "wrong file for #{person["name"]}"
+    end
+  end
+
+  def test_people_without_a_photo_keep_their_initials_or_ring
+    html = html_of("/people/")
+    members = PEOPLE["members"].reject { |m| m["name"] == LAB["director"] }
+    plain_members = members.reject { |m| m["photo"] }
+    plain_collabs = PEOPLE["collaborators"].reject { |c| c["photo"] }
+    assert_equal plain_members.size, html.scan('class="person-card__initials"').size
+    assert_equal plain_collabs.size, html.scan(/<svg class="ring person-card__mini"/).size
+    (plain_members + plain_collabs).each do |person|
+      refute_match(/<img[^>]*alt="#{Regexp.escape(person["name"])}"/, html, "unexpected photo for #{person["name"]}")
+    end
   end
 end
 
@@ -380,9 +405,11 @@ class FaviconTest < Minitest::Test
   end
 end
 
-# A photo dropped into assets/img was once committed by accident. Only these files may be published.
+# A photo dropped into assets/img was once committed by accident. Only the fixed images and the
+# photos declared in people.yml may be published.
 class StrayFilesTest < Minitest::Test
-  ALLOWED_IMAGES = %w[logo-480.png logo-96.png kenny-320.png apple-touch-icon.png].freeze
+  FIXED_IMAGES = %w[logo-480.png logo-96.png kenny-320.png apple-touch-icon.png].freeze
+  ALLOWED_IMAGES = (FIXED_IMAGES + photo_people.map { |p| File.basename(p["photo"]) }).freeze
 
   def test_assets_img_holds_only_the_expected_files_in_source
     found = Dir.children(File.join(ROOT, "assets", "img")).sort
@@ -425,6 +452,20 @@ class PeopleDataTest < Minitest::Test
 
   def test_the_director_is_a_member
     assert_includes names("members"), data("lab")["director"]
+  end
+
+  def test_every_declared_photo_file_exists_and_is_a_jpeg_under_assets_img
+    photo_people.each do |person|
+      assert_match %r{\A/assets/img/[\w-]+\.jpg\z}, person["photo"], "bad photo path for #{person["name"]}"
+      assert File.size?(File.join(ROOT, person["photo"])), "missing photo file for #{person["name"]}"
+    end
+  end
+
+  # Consent covers current members and collaborators only; alumni are never photographed here.
+  def test_alumni_carry_no_photo
+    (PEOPLE["alumni_graduate"] + PEOPLE["alumni_undergraduate"]).each do |person|
+      refute person.key?("photo"), "alumni must not carry a photo: #{person["name"]}"
+    end
   end
 
   def test_every_entry_has_a_name_and_a_role_or_note
