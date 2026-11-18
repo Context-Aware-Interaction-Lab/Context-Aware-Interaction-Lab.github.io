@@ -1,4 +1,10 @@
+{%- comment -%}
+  title  the research area's title
+  href   where the tile leads (its section on /research/)
+  base   optional ring-graph base
+  The whole tile opens the area: the title link is stretched over it.
+{%- endcomment -%}
 <li class="project-block">
   <svg class="ring project-block__glyph" data-ring="{{ include.title }}"{% if include.base != blank %} data-base="{{ include.base }}"{% endif %} viewBox="0 0 100 100" aria-hidden="true" focusable="false"></svg>
-  <h3 class="project-block__title">{{ include.title }}</h3>
+  <h3 class="project-block__title"><a class="project-block__link" href="{{ include.href }}">{{ include.title }}</a></h3>
 </li>

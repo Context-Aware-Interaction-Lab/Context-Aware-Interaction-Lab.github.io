@@ -3,6 +3,7 @@
   venue: "PACM HCI (CSCW'26)"
   date: "2026-09-23"
   year: 2026
+  id: cscw26-peer-supporter
   figure: {slug: cscw26-peer-supporter, alt: "Flow diagram of two studies: twelve volunteer peer supporters chat with an LLM-simulated client while viewing its emotional state and AI suggestions, and evaluate the system; six mental health experts then review the chat logs."}
   links:
     - {label: paper, url: "https://doi.org/10.1145/3816956"}
@@ -11,6 +12,7 @@
   venue: "PACM HCI (CSCW'26)"
   date: "2026-09-23"
   year: 2026
+  id: cscw26-sword-shield
   figure: {slug: cscw26-sword-shield, alt: "Diagram of the communication game: a pre-game stance measure, then four timed rounds of discussion, deliberation, debate, decision and post-decision, with Disinformer suspicion and vote steps."}
   links:
     - {label: paper, url: "https://doi.org/10.1145/3817008"}
@@ -19,6 +21,7 @@
   venue: "DIS'26 PWiP"
   date: "2026-06-12"
   year: 2026
+  id: dis26-acts-configuration
   figure: {slug: dis26-acts-configuration, alt: "Slide contrasting an AI agent available before losing capacity, only after losing capacity, and after death, each shown with a chatbot icon and a speech bubble."}
   links:
     - {label: paper, url: "https://dl.acm.org/doi/full/10.1145/3802974.3809435"}
@@ -27,6 +30,7 @@
   venue: "DIS'26 PWiP"
   date: "2026-06-12"
   year: 2026
+  id: dis26-sketch-speech
   figure: {slug: dis26-sketch-speech, alt: "Images generated from the same toaster sketch, with and without the designer's speech. Without speech: an ordinary toaster. With speech: a monster-like toaster, and a spread toaster with separate jam and topping compartments."}
   links:
     - {label: paper, url: "https://dl.acm.org/doi/full/10.1145/3802974.3809463"}
@@ -35,6 +39,7 @@
   venue: "DIS'26 PWiP"
   date: "2026-06-12"
   year: 2026
+  id: dis26-emotional-labour
   links:
     - {label: paper, url: "https://dl.acm.org/doi/full/10.1145/3802974.3809470"}
 - title: "Redistributing Voice and Responsibility: AI in Relationship-Centred Care"
@@ -42,6 +47,7 @@
   venue: "CHI'26 Workshop"
   date: "2026-06"
   year: 2026
+  id: chi26-ws-relationship-care
   links:
     - {label: paper, url: "https://doi.org/10.48550/arXiv.2606.00028"}
 - title: "Words to Describe What I’m Feeling: Exploring the Potential of AI Agents for High Subjectivity Decisions in Advance Care Planning"
@@ -49,6 +55,7 @@
   venue: "CHI'26 · Honourable Mention"
   date: "2026-04-13"
   year: 2026
+  id: chi26-acp-agent-roles
   figure: {slug: chi26-acp-agent-roles, alt: "Quadrant diagram placing envisioned roles for an advance-care-planning AI agent by agent autonomy (horizontal) and human control over the decision (vertical), from educational tool to legal proxy, with numbered markers for participant themes."}
   links:
     - {label: paper, url: "https://doi.org/10.1145/3772318.3791335"}
@@ -57,6 +64,7 @@
   venue: "CHI'26 · Honourable Mention"
   date: "2026-04-13"
   year: 2026
+  id: chi26-parent-child-align
   figure: {slug: chi26-parent-child-align, alt: "Illustration of a parent reading a picture book with a toddler, watched by a speech-language pathologist and a friendly robot, with labels for gaze, action, vocalisation and aligning."}
   links:
     - {label: paper, url: "https://doi.org/10.1145/3772318.3791267"}
@@ -65,6 +73,7 @@
   venue: "CHI'26 LBW"
   date: "2026-04-13"
   year: 2026
+  id: chi26-lbw-domestic-workers
   links:
     - {label: paper, url: "https://dl.acm.org/doi/full/10.1145/3772363.3798761"}
 - title: "A Taxonomy of Human–MLLM Interaction in Early-Stage Sketch-Based Design Ideation"
@@ -72,6 +81,7 @@
   venue: "CHI'26 LBW"
   date: "2026-04-13"
   year: 2026
+  id: chi26-sketch-taxonomy
   figure: {slug: chi26-sketch-taxonomy, alt: "Screenshot of the SketchLLM prototype: a drawing canvas with a pen toolbar and a sketch gallery, showing a hand-drawn toaster, beside a chat panel offering text-only or image-generation replies."}
   links:
     - {label: paper, url: "https://dl.acm.org/doi/full/10.1145/3772363.3798524"}
@@ -80,6 +90,7 @@
   venue: "WACV'26"
   date: "2026-03-06"
   year: 2026
+  id: wacv26-dronaquatics
   figure: {slug: wacv26-dronaquatics, alt: "System diagram of Dronaquatics: swimmer pose estimation feeds stroke classification and speed estimation, producing lap time, stroke type, stroke count and instantaneous speed as feedback to the coach."}
   links:
     - {label: paper, url: "https://openaccess.thecvf.com/content/WACV2026/html/Tran_Dronaquatics_Real-time_Swimming_Analytics_Using_Drone_Captured_Imagery_WACV_2026_paper.html"}
@@ -88,6 +99,7 @@
   venue: "EACL'26"
   date: "2026-03"
   year: 2026
+  id: eacl26-blend-vis
   figure: {slug: eacl26-blend-vis, alt: "Pipeline diagram of the BLEnD-Vis benchmark: cultural multiple-choice questions are consolidated, filtered for visual tangibility, rephrased and paired with generated images, then human-validated and used to test vision-language models on text-only and image formats."}
   links:
     - {label: paper, url: "https://doi.org/10.18653/v1/2026.eacl-long.215"}
@@ -96,6 +108,7 @@
   venue: "CHI'26 Workshop"
   date: "2026-03"
   year: 2026
+  id: chi26-ws-more-than-1v1
   links:
     - {label: paper, url: "https://doi.org/10.48550/arXiv.2603.07134"}
 - title: "TalkSketch: Multimodal Generative AI for Real-Time Sketch Ideation with Speech"
@@ -103,6 +116,7 @@
   venue: "Creative AI for Live Interactive Performances (Springer)"
   date: "2026-02-27"
   year: 2026
+  id: springer26-talksketch
   figure: {slug: springer26-talksketch, alt: "Workflow diagram: a designer sketches on a tablet while talking, the sketch and transcript go to AI analysis and a multimodal chatbot with text and image generation, and results are imported back to refine the sketch."}
   links:
     - {label: paper, url: "https://doi.org/10.1007/978-3-032-16893-1_6"}
@@ -135,6 +149,7 @@
   venue: "CSCW'25 Companion"
   date: "2025-10-17"
   year: 2025
+  id: cscw25-comm-games
   links:
     - {label: paper, url: "https://doi.org/10.1145/3715070.3749236"}
 - title: "Easy Modeling of Man-Made Shapes in Virtual Reality"
@@ -142,6 +157,7 @@
   venue: "Pacific Graphics'25"
   date: "2025-10"
   year: 2025
+  id: pg25-vr-modeling
   figure: {slug: pg25-vr-modeling, alt: "Four-step sequence in which a blue 3D model of a pot gains a handle and then a spout, ending with a photograph of the matching white 3D-printed teapot."}
   video: {youtube: 10LLvJwzqzw, slug: pg25-vr-modeling, title: "Demonstration video of the VR shape-modeling system"}
   links:
@@ -158,6 +174,7 @@
   venue: "CHI'25 LBW"
   date: "2025-04-25"
   year: 2025
+  id: chi25-lbw-joint-attention
   links:
     - {label: paper, url: "https://doi.org/10.1145/3706599.3720215"}
 - title: "Envisioning an AI-Enhanced Mental Health Ecosystem"
@@ -165,6 +182,7 @@
   venue: "CHI'25 Workshop: Envisioning the Future of Interactive Health"
   date: "2025-03"
   year: 2025
+  id: chi25-ws-mh-ecosystem
   links:
     - {label: paper, url: "https://doi.org/10.48550/arXiv.2503.14883"}
 - title: "InfoTrace: A System for Information Campaign Source Tracing and Analysis on Social Media"
@@ -172,6 +190,7 @@
   venue: "JCDL'24"
   date: "2024-12-16"
   year: 2024
+  id: jcdl24-infotrace
   links:
     - {label: paper, url: "https://doi.org/10.1145/3677389.3702583"}
 - title: "ToxiCloakCN: Evaluating Robustness of Offensive Language Detection in Chinese with Cloaking Perturbations"
@@ -179,6 +198,7 @@
   venue: "EMNLP'24"
   date: "2024-11"
   year: 2024
+  id: emnlp24-toxicloakcn
   links:
     - {label: paper, url: "https://aclanthology.org/2024.emnlp-main.345.pdf"}
 - title: "Exploring Gaze Pattern Differences Between Autistic and Neurotypical Children: Clustering, Visualisation, and Prediction"
@@ -193,6 +213,7 @@
   venue: "DIS'24 PWiP"
   date: "2024-07"
   year: 2024
+  id: dis24-emotions-mh
   links:
     - {label: paper, url: "https://doi.org/10.1145/3656156.3663694"}
 - title: "Analyzing Swimming Performance Using Drone Captured Aerial Videos"
@@ -200,6 +221,7 @@
   venue: "DRONET'24"
   date: "2024-06-03"
   year: 2024
+  id: dronet24-swimming
   links:
     - {label: paper, url: "https://dl.acm.org/doi/10.1145/3661810.3663464"}
 - title: "SGHateCheck: Functional Tests for Detecting Hate Speech in Low-Resource Languages of Singapore"
@@ -207,6 +229,7 @@
   venue: "WOAH'24"
   date: "2024-06"
   year: 2024
+  id: woah24-sghatecheck
   links:
     - {label: paper, url: "https://doi.org/10.18653/v1/2024.woah-1.24"}
 - title: "Brinjal: A Web-Plugin for Collaborative Hate Speech Detection"
@@ -214,6 +237,7 @@
   venue: "WWW'24 Demo"
   date: "2024-05-13"
   year: 2024
+  id: www24-brinjal
   links:
     - {label: paper, url: "https://dl.acm.org/doi/abs/10.1145/3589335.3651250"}
 - title: "A Taxonomy for Human-LLM Interaction Modes: An Initial Exploration"
@@ -242,6 +266,7 @@
   venue: "IJCAI'23"
   date: "2023-08"
   year: 2023
+  id: ijcai23-gpt3-explanations
   links:
     - {label: paper, url: "https://doi.org/10.24963/ijcai.2023/694"}
     - {label: code, url: "https://github.com/Social-AI-Studio/GPT3-HateEval"}

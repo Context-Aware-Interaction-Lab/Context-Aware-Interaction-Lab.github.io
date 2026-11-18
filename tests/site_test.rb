@@ -70,6 +70,9 @@ def text_of(page) = html_of(page).gsub(/<[^>]+>/, " ").gsub(/\s+/, " ")
 
 def count_of(page, css_class) = html_of(page).scan(/<li class="#{css_class}[ "]/).size
 
+# Rendered text with entities decoded and typographic quotes straightened, for comparing against data.
+def plain(str) = CGI.unescapeHTML(str).tr("\u2018\u2019\u201C\u201D", "''\"\"").gsub(/\s+/, " ")
+
 # A real address: letter-led domain and a 2+ letter TLD (the Google Fonts URL has "wght@12..96").
 EMAIL = /[\w.+-]+@[A-Za-z][\w-]*(\.[A-Za-z][\w-]*)*\.[A-Za-z]{2,}/
 
@@ -145,9 +148,11 @@ class EveryPageTest < Minitest::Test
         if href.start_with?("#")
           assert_has html, %(id="#{href[1..]}"), "#{page}: dead anchor #{href}"
         else
-          path, = href.split("#")
+          path, fragment = href.split("#")
           target = File.join(BUILD, path.end_with?("/") ? File.join(path, "index.html") : path)
           assert File.exist?(target), "#{page}: dead link #{href}"
+          next unless fragment && target.end_with?(".html")
+          assert_has File.read(target), %(id="#{fragment}"), "#{page}: #{href} points at a missing anchor"
         end
       end
     end
@@ -181,8 +186,19 @@ class HomePageTest < Minitest::Test
     PAGES.each { |page| assert_has text_of(page), LAB["recruitment"], "#{page} lacks the recruitment call" }
   end
 
-  def test_lists_every_research_focus
-    LAB["foci"].each { |focus| assert_has text_of("/"), focus, "home lacks focus: #{focus}" }
+  # The tiles are the research areas, defined once in research.yml, each opening its section on /research/.
+  def test_lists_every_research_area_and_links_to_it
+    html = html_of("/")
+    areas = data("research")["areas"]
+    assert_equal areas.size, html.scan('<li class="project-block"').size, "tile count"
+    areas.each do |a|
+      assert_has text_of("/"), a["title"], "home lacks area: #{a["title"]}"
+      assert_has html, %(href="/research/##{a["slug"]}"), "tile for #{a["title"]} does not open its area"
+    end
+  end
+
+  def test_mission_names_the_umbrella
+    assert_has plain(text_of("/")), "Human-Centred AI", "home mission lacks the umbrella"
   end
 
   def test_previews_the_six_latest_dated_news_items
@@ -393,10 +409,40 @@ class PeoplePageTest < Minitest::Test
 end
 
 class ResearchPageTest < Minitest::Test
-  def test_lists_themes_and_media
-    text = text_of("/research/")
-    data("research")["themes"].each { |t| assert_has text, t["title"], "missing theme #{t["title"]}" }
-    data("media").each { |m| assert_has text, m["title"], "missing media #{m["title"]}" }
+  RESEARCH = data("research")
+
+  def test_lists_intro_and_every_area_with_its_anchor
+    text = plain(text_of("/research/"))
+    html = html_of("/research/")
+    assert_has text, plain(RESEARCH["intro"])[0, 40], "missing intro"
+    RESEARCH["areas"].each do |a|
+      assert_has text, a["title"], "missing area #{a["title"]}"
+      assert_has text, plain(a["summary"])[0, 40], "missing summary for #{a["title"]}"
+      assert_has html, %(id="#{a["slug"]}"), "no section anchor for #{a["title"]}"
+    end
+  end
+
+  def test_the_umbrella_is_human_centred_ai
+    assert_has plain(text_of("/research/")), "Human-Centred AI", "research page lacks the umbrella"
+  end
+
+  # The framing text is Kenny's brand. Past talk titles in news.yml are history and are not rewritten.
+  def test_no_society_centred_wording_in_the_framing_data
+    %w[lab research join].each do |name|
+      refute_has File.read(File.join(ROOT, "_data", "#{name}.yml")), "Society-Centred", "old umbrella in #{name}.yml"
+    end
+  end
+
+  # Press lives on /news/, not under Research.
+  def test_media_lives_on_the_news_page_not_research
+    research = text_of("/research/")
+    news = text_of("/news/")
+    refute_has html_of("/research/"), 'id="media"', "media section still on /research/"
+    assert_has html_of("/news/"), 'id="media"', "no media section on /news/"
+    data("media").each do |m|
+      refute_has research, m["title"], "media '#{m["title"]}' still on /research/"
+      assert_has news, m["title"], "missing media '#{m["title"]}' on /news/"
+    end
   end
 
   # Funding is hidden on purpose: _data/funding.yml is kept, but nothing renders it.
@@ -410,6 +456,73 @@ class ResearchPageTest < Minitest::Test
         refute_has text_of(page), g["amount"], "grant amount #{g["amount"]} shown on #{page}"
       end
     end
+  end
+end
+
+# Each research area shows its full papers as thumbnail cards and its other papers as links,
+# all opening the paper's row on /publications/.
+class ResearchPapersTest < Minitest::Test
+  PUBS = data("publications")
+  AREAS = data("research")["areas"]
+  CARDS = AREAS.flat_map { |a| a["papers"] || [] }
+  MORE = AREAS.flat_map { |a| a["more"] || [] }
+
+  def pub(id) = PUBS.select { |p| p["id"] == id }
+
+  def test_every_area_has_cards
+    AREAS.each { |a| refute_empty a["papers"].to_a, "area #{a["title"]} has no card papers" }
+  end
+
+  def test_every_listed_paper_matches_exactly_one_publication
+    (CARDS + MORE).each { |id| assert_equal 1, pub(id).size, "paper id #{id} matches #{pub(id).size} publications" }
+  end
+
+  def test_a_paper_appears_once_across_all_areas
+    all = CARDS + MORE
+    assert_equal all.uniq, all, "a paper is listed twice: #{all.select { |i| all.count(i) > 1 }.uniq}"
+  end
+
+  def test_area_slugs_are_unique_and_url_safe
+    slugs = AREAS.map { |a| a["slug"] }
+    assert_equal slugs.uniq, slugs
+    slugs.each { |s| assert_match(/\A[a-z0-9-]+\z/, s) }
+  end
+
+  def test_publication_ids_are_unique
+    ids = PUBS.map { |p| p["id"] }.compact
+    assert_equal ids.uniq, ids, "duplicate publication id"
+  end
+
+  def test_each_publication_id_anchors_its_row
+    html = html_of("/publications/")
+    PUBS.map { |p| p["id"] }.compact.each do |id|
+      assert_has html, %(<li class="publication-row" id="pub-#{id}">), "no row anchor for #{id}"
+    end
+  end
+
+  def test_research_page_has_a_card_per_card_paper
+    html = html_of("/research/")
+    assert_equal CARDS.size, html.scan('<li class="paper-card">').size, "card count"
+    CARDS.each do |id|
+      paper = pub(id).first
+      assert_has html, %(href="/publications/#pub-#{id}"), "no card link for #{id}"
+      assert_has html, paper["title"], "no card title for #{id}"
+      assert paper["figure"], "card paper #{id} has no figure; a text-only card would unbalance the grid"
+      assert_has html, "/assets/img/pub-#{paper["figure"]["slug"]}-thumb.jpg", "no thumbnail for #{id}"
+    end
+  end
+
+  def test_research_page_has_a_link_per_more_paper
+    html = html_of("/research/")
+    assert_equal MORE.size, html.scan('<li class="paper-link">').size, "link count"
+    MORE.each do |id|
+      assert_has html, %(href="/publications/#pub-#{id}"), "no link for #{id}"
+      assert_has html, pub(id).first["title"], "no title for #{id}"
+    end
+  end
+
+  def test_featured_papers_have_a_public_link
+    (CARDS + MORE).each { |id| refute_empty pub(id).first["links"], "#{id} has no public link" }
   end
 end
 
@@ -440,6 +553,14 @@ class JoinPageTest < Minitest::Test
     end
   end
 
+  def test_lists_every_research_area_and_links_to_it
+    html = html_of("/join-us/")
+    data("research")["areas"].each do |a|
+      assert_has text_of("/join-us/"), a["title"], "join lacks area #{a["title"]}"
+      assert_has html, %(href="/research/##{a["slug"]}"), "join topic #{a["title"]} does not open its area"
+    end
+  end
+
   def test_scholarship_links_are_kept
     html = html_of("/join-us/")
     assert_has html, "https://www.sutd.edu.sg/Admissions/Graduate/Scholarships", "scholarship link lost"
@@ -450,7 +571,7 @@ end
 class OldUrlRedirectsTest < Minitest::Test
   REDIRECTS = {
     "/home" => "/",
-    "/media" => "/research/#media",
+    "/media" => "/news/#media",
     "/funding" => "/research/"
   }.freeze
 
@@ -568,7 +689,7 @@ class PublicationFigureTest < Minitest::Test
   PUBS = data("publications")
   IMG = File.join(ROOT, "assets", "img")
 
-  def rows = html_of("/publications/").scan(%r{<li class="publication-row">.*?</li>}m)
+  def rows = html_of("/publications/").scan(%r{<li class="publication-row"[^>]*>.*?</li>}m)
 
   def test_figures_are_declared
     refute_empty figure_pubs, "no publication declares a figure, so the figure tests below check nothing"

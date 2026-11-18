@@ -1,19 +1,15 @@
-# Lab identity. Text is verbatim from the current cailab.info (Home page).
+# Lab identity. The mission was rewritten on 2026-11-18 around the Human-Centred AI framing in
+# research.yml (the old Google Site's wording is retired). Name, affiliation and recruitment text are unchanged.
 name: Context-Aware Interaction Lab
 short_name: CAILab
 affiliation: Singapore University of Technology and Design
 mission: >-
-  The Context-Aware Interaction Lab (CAILab) is an interdisciplinary
-  Human-Computer Interaction (HCI) research lab at the Singapore University of
-  Technology and Design (SUTD) which focuses on sensing and understanding
-  contexts in wellness, healthcare, and human performance to empower users
-  using AI.
+  The Context-Aware Interaction Lab (CAILab) is a Human-Computer Interaction
+  research lab at the Singapore University of Technology and Design (SUTD)
+  working on Human-Centred AI: AI systems that people can understand, question,
+  and act with, in sensitive, high-stakes settings.
 recruitment: We're always on the lookout for motivated and talented PhD candidates!
 join_lead: At CAILab, we aim to develop and train the next generation of Human-Centred AI researchers and designers.
-foci:
-  - Context Sensing towards Mental Health Support
-  - Physical Social Interaction Sensing for Child Developmental Support
-  - Human-AI Interaction with Large-Language Models
 
 # The director is the entry in people.yml `members` with this exact name.
 director: Kenny Tsu Wei Choo

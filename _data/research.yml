@@ -1,9 +1,61 @@
-themes:
-  - title: "Mental Healthcare and Wellbeing"
-    items:
-      - "We are develop new ways of supporting stakeholders in mental healthcare with AI. This work looks at combining methods from human-computer interaction and natural language processing to improve the services in dimensions such as conversational support, emotion detection, and passive sensing of behavioural metrics."
-  - title: "Human-AI Interaction"
-    items:
-      - "We are developing a novel system to support children who have communication delays. This system adopts a multi-modal approach to sense non-verbal and speech-language interactions to provide data-driven insights to support better parent-child interaction."
-      - "We are working with the [Singapore Aquatics](https://www.sgaquatics.org.sg/) to develop a drone-based system to derive swimming analytics. This work combines methods from human-computer interaction, human-robot interaction, and computer vision to overcome system challenges to develop a scalable and robust means to track swimming performance at elite levels."
-      - "We are studying the dynamics of using Large-Language Models to generate and counter against misinformation."
+# The lab's research framing, defined once. It feeds the Research page, the home tiles and the Join Us topics.
+#
+# Each area: `slug` (its anchor on /research/, linked from the home tiles and Join Us; keep it stable),
+# `title`, `summary` (Markdown), `papers` (full papers shown as thumbnail cards; each needs a figure in
+# publications.yml) and `more` (other papers, shown as links: PWiP, LBW, workshop). All ids are publication `id`s.
+# A paper sits in one area only.
+#
+# Placement rule: Care is about designing AI for care; Responsible AI is about auditing where models fail.
+# Unpublished work, such as the Small Language Model / mental-health line, joins an area only once it is public.
+intro: >-
+  Our research is Human-Centred AI: we design and study AI systems that people can understand, question, and
+  act with, in sensitive, high-stakes settings where the cost of getting it wrong is borne by people, not
+  systems. We build with computer vision, audio, and natural language processing, and we evaluate what these
+  systems do for people with the same rigour we bring to designing them.
+areas:
+  - slug: care
+    title: "AI in Care and Sensitive Settings"
+    summary: >-
+      AI is entering the most personal parts of people's lives, from a child's early development to decisions
+      at the end of life. We build and study AI that supports people in these moments: agents that help people
+      put difficult decisions into words in advance care planning, multimodal models aligned with
+      speech-language pathologists on parent–child interaction, and tools for peer supporters and caregivers in
+      mental health. Throughout, we ask who carries the responsibility and emotional labour when AI joins a
+      care relationship.
+    papers: [chi26-acp-agent-roles, chi26-parent-child-align, cscw26-peer-supporter]
+    more:
+      - dis26-acts-configuration
+      - dis26-emotional-labour
+      - chi26-lbw-domestic-workers
+      - chi26-ws-relationship-care
+      - chi26-ws-more-than-1v1
+      - chi25-lbw-joint-attention
+      - chi25-ws-mh-ecosystem
+      - dis24-emotions-mh
+  - slug: multimodal
+    title: "Multimodal Human–AI Interaction"
+    summary: >-
+      People communicate with more than text. We design AI that works across sketch, speech, video, and 3D:
+      generative tools that let designers sketch and talk at the same time, interfaces for modelling physical
+      objects in virtual reality, and drone-based computer vision that gives swimming coaches real-time
+      analytics. The aim is systems that follow what people mean and give feedback they can act on.
+    papers: [pg25-vr-modeling, wacv26-dronaquatics, springer26-talksketch]
+    more:
+      - dis26-sketch-speech
+      - chi26-sketch-taxonomy
+      - dronet24-swimming
+  - slug: responsible-ai
+    title: "Responsible AI: Risks and Robustness of Language Models"
+    summary: >-
+      Language models are already used to spread and to counter disinformation, and to moderate what people see
+      online. We study where these models fail and whom those failures harm: how people use LLMs as both sword
+      and shield in disinformation, how offensive-language detectors break under the cloaking and code-mixing
+      of online speech, and how well models understand cultures beyond the English-speaking world.
+    papers: [cscw26-sword-shield, eacl26-blend-vis]
+    more:
+      - emnlp24-toxicloakcn
+      - cscw25-comm-games
+      - woah24-sghatecheck
+      - ijcai23-gpt3-explanations
+      - jcdl24-infotrace
+      - www24-brinjal

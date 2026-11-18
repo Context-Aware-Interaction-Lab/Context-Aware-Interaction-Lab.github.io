@@ -19,7 +19,15 @@ permalink: /join-us/
 <section class="section" id="team">
   <div class="container">
     <div class="section-header"><h2>Join the team</h2></div>
-    <div class="prose">{{ site.data.join.intro | markdownify }}</div>
+    <div class="prose">
+      {{ site.data.join.intro | markdownify }}
+      <ul class="join-areas">
+        {%- for area in site.data.research.areas %}
+        <li><a href="{{ '/research/' | relative_url }}#{{ area.slug }}">{{ area.title }}</a></li>
+        {%- endfor %}
+      </ul>
+      {{ site.data.join.closing | markdownify }}
+    </div>
     <p class="join-contact"><a class="btn btn--primary" href="{{ site.data.lab.contact.href }}">{{ site.data.lab.contact.label }}</a></p>
   </div>
 </section>
