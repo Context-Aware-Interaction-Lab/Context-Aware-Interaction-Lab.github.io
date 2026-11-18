@@ -2,11 +2,12 @@
 # Make the images a publication's figure or video needs, into assets/img (flat: StrayFilesTest does not recurse).
 #
 #   bin/figure page   PDF PAGE OUTDIR                    render one PDF page at 300 dpi to look at and pick a crop
-#   bin/figure make   SLUG PAGE.png X Y W H [TX TY TW TH]   pub-SLUG.jpg (large) and pub-SLUG-thumb.jpg (480x300, 16:10)
+#   bin/figure make   SLUG PAGE.png X Y W H [TX TY TW TH | pad]   pub-SLUG.jpg (large), pub-SLUG-thumb.jpg (480x300, 16:10)
 #   bin/figure poster SLUG IMAGE X Y W H                 pub-SLUG-poster.jpg (1280x720, 16:9) for a video
 #
 # Crops are in pixels of the 300 dpi page image, from its top-left corner. The thumbnail crop may differ from
-# the large one (a wide figure needs a tighter thumbnail); without TX..TH the large crop must itself be 16:10.
+# the large one (a wide figure needs a tighter thumbnail); 'pad' instead shows the whole figure centred on white
+# in a 16:10 thumbnail; with neither, the large crop must itself be 16:10.
 # Needs pdftoppm (poppler), sips (macOS) and python3. Adds nothing to the project.
 #
 # sips writes an EXIF segment into every JPEG it saves, so each output is stripped of APP1 (EXIF/XMP),
@@ -29,8 +30,12 @@ num_ok() { for n in "$@"; do case "$n" in ''|*[!0-9]*) die "crop values must be 
 # ratio_ok W H NUM DEN: width/height within 3% of NUM/DEN
 ratio_ok() { awk -v w="$1" -v h="$2" -v n="$3" -v d="$4" 'BEGIN{r=(w/h)/(n/d); exit !(r>0.97 && r<1.03)}'; }
 
-# crop SRC X Y W H OUT: sips takes height before width and the offset as Y then X
-crop() { quiet sips -c "$5" "$4" --cropOffset "$3" "$2" "$1" --out "$6"; }
+# crop SRC X Y W H OUT: sips takes height before width and the offset as Y then X.
+# sips reads a 0 0 offset as "no offset" and silently crops the centre, so refuse it rather than emit the wrong region.
+crop() {
+  if [ "$2" -eq 0 ] && [ "$3" -eq 0 ]; then die "a crop starting at X=0 Y=0 would be centred by sips; start at 1 1 instead"; fi
+  quiet sips -c "$5" "$4" --cropOffset "$3" "$2" "$1" --out "$6"
+}
 
 strip_and_check() {
   python3 -I - "$1" <<'PY'
@@ -72,18 +77,35 @@ case "$cmd" in
     ls "$3"/page*.png
     ;;
   make)
-    [ $# -eq 6 ] || [ $# -eq 10 ] || die "usage: bin/figure make SLUG PAGE.png X Y W H [TX TY TW TH]"
+    [ $# -eq 6 ] || [ $# -eq 7 ] || [ $# -eq 10 ] || die "usage: bin/figure make SLUG PAGE.png X Y W H [TX TY TW TH | pad]"
     need sips; need python3
     slug=$1; src=$2; shift 2
     slug_ok "$slug"; [ -f "$src" ] || die "no such file: $src"
+    pad=0
+    if [ $# -eq 5 ]; then
+      [ "$5" = pad ] || die "the seventh value must be 'pad' (or give all of TX TY TW TH)"
+      pad=1; set -- "$1" "$2" "$3" "$4"
+    fi
     num_ok "$@"
     X=$1; Y=$2; W=$3; H=$4
     if [ $# -eq 8 ]; then TX=$5; TY=$6; TW=$7; TH=$8; else TX=$X; TY=$Y; TW=$W; TH=$H; fi
-    ratio_ok "$TW" "$TH" 16 10 || die "thumbnail crop ${TW}x${TH} is not 16:10; pass TX TY TW TH for a 16:10 region"
+    [ "$pad" = 1 ] || ratio_ok "$TW" "$TH" 16 10 || die "thumbnail crop ${TW}x${TH} is not 16:10; pass TX TY TW TH for a 16:10 region, or 'pad'"
     tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
     crop "$src" "$X" "$Y" "$W" "$H" "$tmp/large.png"
-    quiet sips -Z 1600 -s format jpeg -s formatOptions 82 "$tmp/large.png" --out "$IMG/pub-$slug.jpg"
+    # Shrink to at most 1600 wide, never enlarge: stretching a small crop only adds blur.
+    if [ "$W" -gt 1600 ]; then
+      quiet sips -Z 1600 -s format jpeg -s formatOptions 82 "$tmp/large.png" --out "$IMG/pub-$slug.jpg"
+    else
+      quiet sips -s format jpeg -s formatOptions 82 "$tmp/large.png" --out "$IMG/pub-$slug.jpg"
+    fi
     crop "$src" "$TX" "$TY" "$TW" "$TH" "$tmp/thumb.png"
+    if [ "$pad" = 1 ]; then
+      # Show the whole figure: centre it on white, extended to 16:10 on whichever side is short.
+      PW=$(awk -v w="$TW" -v h="$TH" 'BEGIN{ if (w/h > 1.6) printf "%d", w; else printf "%d", int(h*1.6+0.999) }')
+      PH=$(awk -v w="$TW" -v h="$TH" 'BEGIN{ if (w/h > 1.6) printf "%d", int(w/1.6+0.999); else printf "%d", h }')
+      quiet sips -p "$PH" "$PW" --padColor FFFFFF "$tmp/thumb.png" --out "$tmp/padded.png"
+      mv "$tmp/padded.png" "$tmp/thumb.png"
+    fi
     quiet sips -z 300 480 -s format jpeg -s formatOptions 80 "$tmp/thumb.png" --out "$IMG/pub-$slug-thumb.jpg"
     strip_and_check "$IMG/pub-$slug.jpg"; strip_and_check "$IMG/pub-$slug-thumb.jpg"
     report "$IMG/pub-$slug.jpg"; report "$IMG/pub-$slug-thumb.jpg"
@@ -102,7 +124,7 @@ case "$cmd" in
     report "$IMG/pub-$slug-poster.jpg"
     ;;
   *)
-    sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//' >&2
+    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//' >&2
     exit 2
     ;;
 esac
