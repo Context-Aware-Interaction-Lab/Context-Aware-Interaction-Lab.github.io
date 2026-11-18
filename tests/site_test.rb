@@ -245,12 +245,15 @@ class OldUrlRedirectsTest < Minitest::Test
     "/funding" => "/research/#funding"
   }.freeze
 
+  # With `url:` set, the plugin writes absolute targets on the production host.
+  ORIGIN = "https://#{File.read(File.join(ROOT, "CNAME")).strip}".freeze
+
   def stub_html(old) = File.read(File.join(BUILD, old, "index.html"))
 
   def test_each_old_url_has_a_redirect_page_pointing_at_its_new_home
     REDIRECTS.each do |old, target|
       assert File.exist?(File.join(BUILD, old, "index.html")), "no redirect page for #{old}"
-      assert_has stub_html(old), %(url=#{target}), "#{old} does not redirect to #{target}"
+      assert_has stub_html(old), %(url=#{ORIGIN}#{target}), "#{old} does not redirect to #{ORIGIN}#{target}"
     end
   end
 
@@ -265,5 +268,56 @@ class OldUrlRedirectsTest < Minitest::Test
   def test_redirect_pages_are_not_linked_from_the_nav
     nav_urls = NAV.map { |n| n["url"] }
     assert_empty REDIRECTS.keys & nav_urls
+  end
+end
+
+# The production host is named in CNAME (what GitHub Pages serves) and mirrored in _config.yml `url:`.
+class ProductionIdentityTest < Minitest::Test
+  CNAME_HOST = File.read(File.join(ROOT, "CNAME")).strip
+  ORIGIN = "https://#{CNAME_HOST}".freeze
+
+  def meta(page, pattern) = html_of(page)[pattern, 1]
+
+  def test_cname_names_the_production_host_and_is_published
+    assert_equal "www.cailab.info", CNAME_HOST
+    assert_equal CNAME_HOST, File.read(File.join(BUILD, "CNAME")).strip, "CNAME missing from the built site"
+  end
+
+  def test_config_url_matches_the_cname_host
+    assert_equal ORIGIN, YAML.safe_load(File.read(File.join(ROOT, "_config.yml")))["url"]
+  end
+
+  def test_every_page_has_a_canonical_link_to_its_own_production_url
+    PAGES.each do |page|
+      assert_equal "#{ORIGIN}#{page}", meta(page, /<link rel="canonical" href="([^"]+)"/), "canonical on #{page}"
+    end
+  end
+
+  def test_every_page_has_sharing_tags_that_point_at_real_things
+    PAGES.each do |page|
+      assert_equal "#{ORIGIN}#{page}", meta(page, /property="og:url" content="([^"]+)"/), "og:url on #{page}"
+      assert meta(page, /property="og:title" content="([^"]+)"/), "og:title on #{page}"
+      assert meta(page, /property="og:description" content="([^"]+)"/), "og:description on #{page}"
+      image = meta(page, /property="og:image" content="([^"]+)"/)
+      assert image&.start_with?("#{ORIGIN}/"), "og:image on #{page} is not absolute: #{image}"
+      assert File.exist?(File.join(BUILD, image.delete_prefix(ORIGIN))), "og:image file missing on #{page}"
+    end
+  end
+end
+
+# A missing favicon logs a 404 on every first visit.
+class FaviconTest < Minitest::Test
+  def test_root_favicon_exists_and_is_not_empty
+    assert File.size?(File.join(BUILD, "favicon.ico")), "favicon.ico missing or empty"
+  end
+
+  def test_every_page_links_icons_that_exist
+    PAGES.each do |page|
+      %w[icon apple-touch-icon].each do |rel|
+        href = html_of(page)[/<link rel="#{rel}" href="([^"]+)"/, 1]
+        assert href, "#{page} has no #{rel} link"
+        assert File.size?(File.join(BUILD, href)), "#{rel} file missing for #{page}: #{href}"
+      end
+    end
   end
 end

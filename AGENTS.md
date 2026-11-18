@@ -18,14 +18,15 @@ Don't create or overwrite without confirmation unless explicitly asked to set up
 - Constraints / what to watch:
   - `exclude:` in `_config.yml` replaces Jekyll's defaults, so `Gemfile`, `Gemfile.lock` and the like must stay listed, and `theme: null` stops the gem publishing its own `assets/css/style.css`; `PublishedFilesTest` enforces both.
   - The old Google Site's `/home`, `/media` and `/funding` are redirect stubs (`home.html`, `media.html`, `funding.html`, via `jekyll-redirect-from`): meta-refresh pages, not server 301s. `OldUrlRedirectsTest` guards them.
+  - `CNAME` (the production host) and `url:` in `_config.yml` must agree; `ProductionIdentityTest` guards both plus the canonical and Open Graph tags. `favicon.ico` and `assets/img/apple-touch-icon.png` are cut from the logo's sphere on white (a missing favicon logs a 404 on every first visit).
   - Pages builds with its own gem versions and runs no custom Ruby plugins. The local build says "will this obviously break", not byte-for-byte truth. Anything generated (field hero, name-seeded ring graphs) must be client-side JS with a no-JS fallback.
   - The only address in the HTML is the contact `mailto:` (Kenny's choice, in `_data/lab.yml`); it is never visible text and no other address may appear. Tested.
   - Only the director's photo is used (tested); add another person's photo only with their consent.
   - Data text was copied from the old site as written. News `text` and research/join bodies are Markdown. One news item has no date: it stays off the home preview but is listed on `/news/`.
   - The site is public: nothing under review or unpublished goes on it.
 - External services / secrets needed: none locally.
-- Deploy target: GitHub Pages from `main` of `Context-Aware-Interaction-Lab/Context-Aware-Interaction-Lab.github.io`. Manual deploy; never push to `main` without Kenny's go-ahead after he has inspected the local render. The cailab.info DNS cutover (a `CNAME` file and `url:` in `_config.yml`) is a separate manual step, not started.
-- Current status + next steps: Six data-driven pages are on `main`; deploy is manual. Done-gate exemption taken: `rings.js` and `field.js` have no automated tests. Next: keep `_data/` current, then the cailab.info DNS cutover when Kenny decides.
+- Deploy target: GitHub Pages from `main` of `Context-Aware-Interaction-Lab/Context-Aware-Interaction-Lab.github.io`, served at https://www.cailab.info (the `CNAME` file; DNS is managed outside this repo). Manual deploy; never push to `main` without Kenny's go-ahead after he has inspected the local render.
+- Current status + next steps: Live. Done-gate exemption taken: `rings.js` and `field.js` have no automated tests. Next: keep `_data/` current.
 
 ## Standards & routing
 
