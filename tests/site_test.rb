@@ -236,3 +236,34 @@ class JoinPageTest < Minitest::Test
     assert_has html, "https://www.sutd.edu.sg/Admissions/Graduate/Scholarships", "scholarship link lost"
   end
 end
+
+# The old Google Site had /home, /media and /funding. People have those saved.
+class OldUrlRedirectsTest < Minitest::Test
+  REDIRECTS = {
+    "/home" => "/",
+    "/media" => "/research/#media",
+    "/funding" => "/research/#funding"
+  }.freeze
+
+  def stub_html(old) = File.read(File.join(BUILD, old, "index.html"))
+
+  def test_each_old_url_has_a_redirect_page_pointing_at_its_new_home
+    REDIRECTS.each do |old, target|
+      assert File.exist?(File.join(BUILD, old, "index.html")), "no redirect page for #{old}"
+      assert_has stub_html(old), %(url=#{target}), "#{old} does not redirect to #{target}"
+    end
+  end
+
+  def test_redirect_targets_exist_including_the_section_anchor
+    REDIRECTS.each_value do |target|
+      page, anchor = target.split("#")
+      assert_includes PAGES, page, "#{target} is not a real page"
+      assert_has html_of(page), %(id="#{anchor}"), "#{page} has no ##{anchor}" if anchor
+    end
+  end
+
+  def test_redirect_pages_are_not_linked_from_the_nav
+    nav_urls = NAV.map { |n| n["url"] }
+    assert_empty REDIRECTS.keys & nav_urls
+  end
+end
