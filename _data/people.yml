@@ -9,8 +9,10 @@ members:
     photo: /assets/img/weiyan-shi.jpg
   - name: "Bryan Zhengyu Tan"
     role: "PhD Student (co-advised), SUTD"
+    photo: /assets/img/bryan-tan.jpg
   - name: "Pannapat Chanpaisaeng (Apple)"
     role: "PhD Student, SUTD"
+    photo: /assets/img/pannapat-chanpaisaeng.jpg
   - name: "Nguyen Quoc Nam"
     role: "PhD Student, SUTD"
   - name: "Swarangi Subodh Mehta"
@@ -50,9 +52,11 @@ collaborators:
   - name: "Hwajung Hong"
     role: "Associate Professor"
     affiliation: "Korea Advanced Institute of Science & Technology"
+    photo: /assets/img/hwajung-hong.jpg
   - name: "Uichin Lee"
     role: "Professor"
     affiliation: "Korea Advanced Institute of Science & Technology"
+    photo: /assets/img/uichin-lee.jpg
   - name: "Youngki Lee"
     role: "Professor"
     affiliation: "Seoul National University"
