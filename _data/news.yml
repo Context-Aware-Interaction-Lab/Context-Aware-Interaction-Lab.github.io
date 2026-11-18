@@ -5,6 +5,18 @@
     - "Sword and Shield: Uses and Strategies of LLMs in Navigating Disinformation", led by Gionnieve Lim, with Kellie Sim and Weiyan Shi. \[[preprint](https://arxiv.org/abs/2506.07211)\]
 - date: "Sep 2026"
   text: |-
+    Welcome to our two new PhD students, Nguyen Quoc Nam and Swarangi Subodh Mehta, who joined the lab this month! 🎉
+- date: "Sep 2026"
+  text: |-
+    A busy year of invited talks and panels for our director, Kenny Choo:
+    - "AI for Parent–Child Interaction", Science of Learning Seminar Series, National Institute of Education (Sep)
+    - "The Era of Human–AI Co-Intelligence for Behavioural Design", Behavioural and Implementation Sciences in Health Asia Conference, BISHAC 2026 (Sep)
+    - "Human-Centred Conversation between AI Product Teams and Domain Experts", GovTech Conscious Builder series (Aug)
+    - "When AI Becomes Relational: Trust, Intimacy and Responsibility", moderator, LorongAI panel (Aug)
+    - "Designing for Care, Consent, and Wellbeing: Human-Centered AI in Family and Mental Health Contexts", AI Governance & Privacy Symposium, Yonsei University (May)
+    - "Designing for 'We': Expanding Collective Capability through Society-Centred AI", at NUS Industrial Design (Mar), KAIST Computer Science (Mar) and CityU School of Creative Media (Feb)
+- date: "Sep 2026"
+  text: |-
     Congratulations to PhD student Kellie Sim, who received the Top Seed Award at the Design Business Chamber Singapore (DBCS) Seed Award 2026 — one of only 10 recipients! 🎉 A wonderful recognition of her work.
 - date: "Jun 2026"
   text: |-
@@ -12,6 +24,14 @@
     - ["Acts of Configuration: Rethinking Provenance, Temporality and Legitimacy in Post-Mortem Agents](https://dl.acm.org/doi/full/10.1145/3802974.3809435)" — led by Kellie Sim, with Master's students Darryl Lim and John-Henry Lim.
     - ["'I'm Not Able to Be There for You': Emotional Labour, Responsibility, and AI in Peer Support"](https://dl.acm.org/doi/full/10.1145/3802974.3809470) — led by Kellie Sim.
     - ["When Drawing Is Not Enough: Exploring Spontaneous Speech with Sketch for Intent Alignment in Multimodal LLMs"](https://dl.acm.org/doi/full/10.1145/3802974.3809463) — led by Weiyan Shi.
+- date: "Apr 2026"
+  text: |-
+    Two workshop papers from the lab at CHI 2026 in Barcelona:
+    - ["More Than 1v1: Human-AI Alignment in Early Developmental Communities with Multimodal LLMs"](https://doi.org/10.48550/arXiv.2603.07134), led by Weiyan Shi.
+    - ["Redistributing Voice and Responsibility: AI in Relationship-Centred Care"](https://doi.org/10.48550/arXiv.2606.00028), led by Kellie Sim.
+- date: "Apr 2026"
+  text: |-
+    Congratulations to our Master's students in Technology Entrepreneurship who graduated this month: Aaron Zhe Yu Tua, Yong Lin Tan, Kelvin Xian Yao Thian, Valencia Arlin Halim and Nicholas Shin Shoon Teng! 🎓 We are proud of the work you did with us, and wish you all the best.
 - date: "Feb 2026"
   text: |-
     ["TalkSketch: Multimodal Generative AI for Real-Time Sketch Ideation with Speech"](https://link.springer.com/chapter/10.1007/978-3-032-16893-1_6), led by Weiyan Shi, is out in the Springer volume Creative AI for Live  Interactive Performances! Congratulations to all authors.
@@ -25,12 +45,20 @@
     - Two Late-Breaking Works accepted to CHI 2026!
       - ["Foreign Domestic Workers' Perspectives on an LLM-Based Emotional Support Tool for Caregiving Burden"](https://dl.acm.org/doi/full/10.1145/3772363.3798761), led by Master's student Nicholas Teng — great to see thesis work reach CHI.
       - ["A Taxonomy of Human–MLLM Interaction in Early-Stage Sketch-Based Design Ideation"](https://dl.acm.org/doi/full/10.1145/3772363.3798524), led by Weiyan Shi.
+- date: "Jan 2026"
+  text: |-
+    Welcome to PhD student Pannapat (Apple) Chanpaisaeng, who joined the lab this month!
 - date: null
   text: |-
     We also had "BLEnD-Vis: Benchmarking Multimodal Cultural Understanding in Vision Language Models" accepted to EACL 2026 — great work advancing how we evaluate cultural understanding in vision-language models.
 - date: "Dec 2025"
   text: |-
     Our paper "Dronaquatics: Real-time Swimming Analytics Using Drone Captured Imagery" was accepted in WACV 2026! Congratulations to all authors!
+- date: "Nov 2025"
+  text: |-
+    Two papers on AI-assisted debugging, written with collaborators, were presented this month:
+    - ["Simulated Interactive Debugging"](https://doi.org/10.1109/ASE63991.2025.00338) at ASE 2025 in Seoul.
+    - ["Designing for Novice Debuggers: A Pilot Study on an AI-Assisted Debugging Tool"](https://doi.org/10.1145/3769994.3769997) at Koli Calling 2025.
 - date: "Nov 2025"
   text: |-
     - Our paper "[TalkSketch: Multimodal Generative AI for Real-time Sketch Ideation with Speech](https://arxiv.org/abs/2511.05817)" was accepted in AAAI CLIP 2025! Congratulations to all authors!
@@ -44,6 +72,9 @@
 - date: "Apr 2025"
   text: |-
     Our paper "[Towards Multimodal Large-Language Models for Parent-Child Interaction: A Focus on Joint Attention](https://dl.acm.org/doi/full/10.1145/3706599.3720215)" was accepted in CHI'25 LBW. Congratulations to all authors and collaborators!
+- date: "Mar 2025"
+  text: |-
+    Our drone and AI swimming analytics work was covered in [The Straits Times](https://www.straitstimes.com/sport/singapore-aquatics-adopts-drone-technology-and-artificial-intelligence-in-training), [MediaCorp 8world](https://www.youtube.com/watch?v=5VbL3Ij6Aj4) and [FutureCIO](https://futurecio.tech/drone-and-ai-driven-analytics-to-act-as-coach-for-sgs-national-swim-team/).
 - date: "Jun 2024"
   text: |-
     Our paper "ToxiCloakCN: Evaluating Robustness of Offensive Language Detection in Chinese with Cloaking Perturbations" was accepted in EMNLP'24. Congratulations to all authors and collaborators!
