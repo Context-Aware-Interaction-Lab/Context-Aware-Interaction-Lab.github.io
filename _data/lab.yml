@@ -22,6 +22,5 @@ director_photo: /assets/img/kenny-320.jpg
 # The contact button. Kenny chose this address (2026-11-18). It appears only inside
 # the mailto: link, never as visible text (tested).
 contact:
-  label: Contact Prof Kenny Choo
-  nav_label: Contact Us
+  label: Contact Us
   href: "mailto:kennytwchoo@gmail.com"
