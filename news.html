@@ -9,7 +9,7 @@ permalink: /news/
   <div class="container">
     <ul class="tiles news news--list">
       {% for item in site.data.news %}
-      {% include news-item.html item=item index=forloop.index0 %}
+      {% include news-item.html item=item index=forloop.index0 pos=forloop.index0 %}
       {% endfor %}
     </ul>
   </div>
