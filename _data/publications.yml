@@ -3,6 +3,7 @@
   venue: "PACM HCI (CSCW'26)"
   date: "2026-09-23"
   year: 2026
+  figure: {slug: cscw26-peer-supporter, alt: "Flow diagram of two studies: twelve volunteer peer supporters chat with an LLM-simulated client while viewing its emotional state and AI suggestions, and evaluate the system; six mental health experts then review the chat logs."}
   links:
     - {label: paper, url: "https://doi.org/10.1145/3816956"}
 - title: "Sword and Shield: Uses and Strategies of LLMs in Navigating Disinformation"
@@ -10,6 +11,7 @@
   venue: "PACM HCI (CSCW'26)"
   date: "2026-09-23"
   year: 2026
+  figure: {slug: cscw26-sword-shield, alt: "Diagram of the communication game: a pre-game stance measure, then four timed rounds of discussion, deliberation, debate, decision and post-decision, with Disinformer suspicion and vote steps."}
   links:
     - {label: paper, url: "https://doi.org/10.1145/3817008"}
 - title: "Acts of Configuration: Rethinking Provenance, Temporality and Legitimacy in Post-Mortem Agents"
@@ -17,6 +19,7 @@
   venue: "DIS'26 PWiP"
   date: "2026-06-12"
   year: 2026
+  figure: {slug: dis26-acts-configuration, alt: "Slide contrasting an AI agent available before losing capacity, only after losing capacity, and after death, each shown with a chatbot icon and a speech bubble."}
   links:
     - {label: paper, url: "https://dl.acm.org/doi/full/10.1145/3802974.3809435"}
 - title: "When Drawing Is Not Enough: Exploring Spontaneous Speech with Sketch for Intent Alignment in Multimodal LLMs"
@@ -46,6 +49,7 @@
   venue: "CHI'26 · Honourable Mention"
   date: "2026-04-13"
   year: 2026
+  figure: {slug: chi26-acp-agent-roles, alt: "Quadrant diagram placing envisioned roles for an advance-care-planning AI agent by agent autonomy (horizontal) and human control over the decision (vertical), from educational tool to legal proxy, with numbered markers for participant themes."}
   links:
     - {label: paper, url: "https://doi.org/10.1145/3772318.3791335"}
 - title: "Towards Aligning Multimodal LLMs with Human Experts: A Focus on Parent–Child Interaction"
@@ -53,6 +57,7 @@
   venue: "CHI'26 · Honourable Mention"
   date: "2026-04-13"
   year: 2026
+  figure: {slug: chi26-parent-child-align, alt: "Illustration of a parent reading a picture book with a toddler, watched by a speech-language pathologist and a friendly robot, with labels for gaze, action, vocalisation and aligning."}
   links:
     - {label: paper, url: "https://doi.org/10.1145/3772318.3791267"}
 - title: "Foreign Domestic Workers' Perspectives on an LLM-Based Emotional Support Tool for Caregiving Burden"
@@ -67,6 +72,7 @@
   venue: "CHI'26 LBW"
   date: "2026-04-13"
   year: 2026
+  figure: {slug: chi26-sketch-taxonomy, alt: "Screenshot of the SketchLLM prototype: a drawing canvas with a pen toolbar and a sketch gallery, showing a hand-drawn toaster, beside a chat panel offering text-only or image-generation replies."}
   links:
     - {label: paper, url: "https://dl.acm.org/doi/full/10.1145/3772363.3798524"}
 - title: "Dronaquatics: Real-time Swimming Analytics Using Drone Captured Imagery"
@@ -74,6 +80,7 @@
   venue: "WACV'26"
   date: "2026-03-06"
   year: 2026
+  figure: {slug: wacv26-dronaquatics, alt: "System diagram of Dronaquatics: swimmer pose estimation feeds stroke classification and speed estimation, producing lap time, stroke type, stroke count and instantaneous speed as feedback to the coach."}
   links:
     - {label: paper, url: "https://openaccess.thecvf.com/content/WACV2026/html/Tran_Dronaquatics_Real-time_Swimming_Analytics_Using_Drone_Captured_Imagery_WACV_2026_paper.html"}
 - title: "BLEnD-Vis: Benchmarking Multimodal Cultural Understanding in Vision Language Models"
@@ -81,6 +88,7 @@
   venue: "EACL'26"
   date: "2026-03"
   year: 2026
+  figure: {slug: eacl26-blend-vis, alt: "Pipeline diagram of the BLEnD-Vis benchmark: cultural multiple-choice questions are consolidated, filtered for visual tangibility, rephrased and paired with generated images, then human-validated and used to test vision-language models on text-only and image formats."}
   links:
     - {label: paper, url: "https://doi.org/10.18653/v1/2026.eacl-long.215"}
 - title: "More Than 1v1: Human-AI Alignment in Early Developmental Communities with Multimodal LLMs"
@@ -95,6 +103,7 @@
   venue: "Creative AI for Live Interactive Performances (Springer)"
   date: "2026-02-27"
   year: 2026
+  figure: {slug: springer26-talksketch, alt: "Workflow diagram: a designer sketches on a tablet while talking, the sketch and transcript go to AI analysis and a multimodal chatbot with text and image generation, and results are imported back to refine the sketch."}
   links:
     - {label: paper, url: "https://doi.org/10.1007/978-3-032-16893-1_6"}
 - title: "Simulated Interactive Debugging"
@@ -102,6 +111,7 @@
   venue: "ASE'25"
   date: "2025-11-16"
   year: 2025
+  figure: {slug: ase25-simulated-debugging, alt: "Mock-up of an envisioned dialogue in which a student whose factorial code fails a test asks an AI assistant for help, and the assistant guides them with questions, a breakpoint suggestion and hints about the loop variables."}
   links:
     - {label: paper, url: "https://doi.org/10.1109/ASE63991.2025.00338"}
 - title: "Designing for Novice Debuggers: A Pilot Study on an AI-Assisted Debugging Tool"
@@ -109,6 +119,7 @@
   venue: "Koli Calling'25"
   date: "2025-11-10"
   year: 2025
+  figure: {slug: koli25-codehinter, alt: "Screenshot of the CodeHinter VS Code extension: a Python test file with failed test cases highlighted, a short explanation of the failures, and buttons for hints, a quiz, print statements and a Python tutor."}
   links:
     - {label: paper, url: "https://doi.org/10.1145/3769994.3769997"}
 - title: "Humor in Pixels: Benchmarking Large Multimodal Models Understanding of Online Comics"
@@ -116,6 +127,7 @@
   venue: "EMNLP'25 Findings"
   date: "2025-11"
   year: 2025
+  figure: {slug: emnlp25-pixelhumor, alt: "Three donut charts of the PixelHumor comics: how often sound effects are present, whether text or visuals carry the humour, and the distribution of humour styles, with surprise the most common."}
   links:
     - {label: paper, url: "https://doi.org/10.18653/v1/2025.findings-emnlp.755"}
 - title: "Communication Games to Study Emerging Disinformation Scenarios With LLMs"
@@ -130,6 +142,8 @@
   venue: "Pacific Graphics'25"
   date: "2025-10"
   year: 2025
+  figure: {slug: pg25-vr-modeling, alt: "Four-step sequence in which a blue 3D model of a pot gains a handle and then a spout, ending with a photograph of the matching white 3D-printed teapot."}
+  video: {youtube: 10LLvJwzqzw, slug: pg25-vr-modeling, title: "Demonstration video of the VR shape-modeling system"}
   links:
     - {label: paper, url: "https://doi.org/10.2312/pg.20251299"}
 - title: "\"I Said Things I Needed to Hear Myself\": Peer Support as an Emotional, Organisational, and Sociotechnical Practice in Singapore"
