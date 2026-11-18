@@ -236,10 +236,14 @@ class NewsPageTest < Minitest::Test
     assert_equal data("news").size, count_of("/news/", "news-item")
   end
 
+  # Whichever item has bullets in its data must render them as a list (the newest item need not).
   def test_nested_bullets_render_as_lists
-    first = html_of("/news/")[%r{<div class="news-item__text">(.*?)</div>}m, 1]
-    assert_has first, "<ul>", "first news item has no list"
-    assert_has first, "<li>", "first news item has no list items"
+    news = data("news")
+    index = news.index { |n| n["text"].match?(/^- /) }
+    assert index, "no news item has bullets; revisit this test"
+    body = html_of("/news/").scan(%r{<div class="news-item__text">(.*?)</div>}m)[index].first
+    assert_has body, "<ul>", "news item #{index} has no list"
+    assert_has body, "<li>", "news item #{index} has no list items"
   end
 end
 
