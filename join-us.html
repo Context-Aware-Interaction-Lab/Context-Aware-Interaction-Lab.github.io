@@ -10,7 +10,7 @@ permalink: /join-us/
     <div class="section-header"><h2>Why join us?</h2></div>
     <ul class="values">
       {% for value in site.data.join.values %}
-      <li class="value"><span class="dot c{{ forloop.index }}" aria-hidden="true"></span>{{ value }}</li>
+      <li class="value c{{ forloop.index }}"><span class="value__icon">{% include icon.html name=value.icon %}</span>{{ value.title }}</li>
       {% endfor %}
     </ul>
   </div>
