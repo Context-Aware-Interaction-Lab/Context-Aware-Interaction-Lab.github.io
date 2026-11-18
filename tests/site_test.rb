@@ -336,3 +336,31 @@ class StrayFilesTest < Minitest::Test
     assert_empty images - ALLOWED_IMAGES, "unexpected image(s) in the published site"
   end
 end
+
+# Moving someone between lists is easy to half-do. These guard the data, not the pages.
+class PeopleDataTest < Minitest::Test
+  PEOPLE = data("people")
+
+  def names(key) = PEOPLE[key].map { |p| p["name"] }
+
+  def test_nobody_is_listed_twice_anywhere
+    all = PEOPLE.keys.flat_map { |key| names(key) }
+    dupes = all.group_by(&:itself).select { |_, v| v.size > 1 }.keys
+    assert_empty dupes, "listed more than once: #{dupes.join(', ')}"
+  end
+
+  def test_current_members_are_not_also_alumni
+    current = names("members") + names("collaborators")
+    alumni = names("alumni_graduate") + names("alumni_undergraduate")
+    assert_empty current & alumni, "both current and alumni: #{(current & alumni).join(', ')}"
+  end
+
+  def test_the_director_is_a_member
+    assert_includes names("members"), data("lab")["director"]
+  end
+
+  def test_every_entry_has_a_name_and_a_role_or_note
+    PEOPLE["members"].each { |p| assert p["role"].to_s.strip != "", "#{p["name"]} has no role" }
+    PEOPLE["collaborators"].each { |p| assert p["role"].to_s.strip != "", "#{p["name"]} has no role" }
+  end
+end
