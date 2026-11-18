@@ -1,9 +1,15 @@
+# icon names are drawn in _includes/icon.html
 values:
-  - "Productive Environment"
-  - "Interdisciplinary Collaborations"
-  - "High Research Impact"
-  - "Research for Social Good"
-  - "Collaborative Mentorship"
+  - title: "Productive Environment"
+    icon: workspace
+  - title: "Interdisciplinary Collaborations"
+    icon: overlap
+  - title: "High Research Impact"
+    icon: impact
+  - title: "Research for Social Good"
+    icon: heart
+  - title: "Collaborative Mentorship"
+    icon: mentor
 intro: |-
   At CAILab, we aim to develop and train the next generation of Human-Centred AI researchers and designers. We are always on the look out for highly motivated and collaborative individuals who wish to work at the intersection of mobile and pervasive computing, context-aware computing, applied machine learning, and Human-Computer Interaction. Our research topics include:
 

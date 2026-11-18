@@ -189,6 +189,12 @@ svg line,svg path{stroke:var(--c);fill:none}
 /* join */
 .values{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--space-3)}
 .value{display:flex;flex-direction:column;gap:var(--space-3);background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-m);padding:var(--space-4);font:600 1.0625rem/1.25 var(--font-display)}
+.value__icon{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:var(--surface-2);background:color-mix(in srgb,var(--c) 16%,var(--bg));color:var(--text)}
+.value__icon .icon{width:28px;height:28px}
+/* the global svg circle/line/path rules colour the ring graphs; icons are ink outlines with accent parts */
+.icon circle,.icon path,.icon rect,.icon polyline{fill:none;stroke:currentColor}
+.icon .icon__a{stroke:var(--c)}
+.icon .icon__fill{fill:var(--c)}
 .join-notes{display:grid;gap:var(--space-2);max-width:60ch}
 @media (max-width:1000px){.values{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:640px){.values{grid-template-columns:1fr}.cta-banner--block{padding:var(--space-5) var(--space-4)}}

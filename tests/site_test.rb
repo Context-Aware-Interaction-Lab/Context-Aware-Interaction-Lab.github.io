@@ -377,10 +377,30 @@ class ResearchPageTest < Minitest::Test
 end
 
 class JoinPageTest < Minitest::Test
+  VALUES = data("join")["values"]
+
   def test_lists_values_and_sections
     text = text_of("/join-us/")
-    data("join")["values"].each { |v| assert_has text, v, "missing value #{v}" }
+    VALUES.each { |v| assert_has text, v["title"], "missing value #{v["title"]}" }
     data("join")["sections"].each { |s| assert_has text, s["title"], "missing section #{s["title"]}" }
+  end
+
+  # Each theme gets its own icon, in the same order as the data.
+  def test_every_value_has_its_own_icon
+    icons = VALUES.map { |v| v["icon"] }
+    assert icons.all?, "a value has no icon name"
+    assert_equal icons.uniq, icons, "two values share an icon"
+    drawn = html_of("/join-us/").scan(/<svg class="icon" data-icon="([^"]+)"/).flatten
+    assert_equal icons, drawn
+  end
+
+  def test_icons_are_decorative_and_actually_drawn
+    svgs = html_of("/join-us/").scan(%r{<svg class="icon".*?</svg>}m)
+    assert_equal VALUES.size, svgs.size
+    svgs.each do |svg|
+      assert_has svg, 'aria-hidden="true"', "icon is exposed to screen readers"
+      assert_match(/<(path|circle|rect|polyline|line)\b/, svg, "icon draws nothing: #{svg[0, 60]}")
+    end
   end
 
   def test_scholarship_links_are_kept
