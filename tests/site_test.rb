@@ -129,6 +129,18 @@ class HomePageTest < Minitest::Test
     assert_has text_of("/"), LAB["mission"], "home lacks the mission"
   end
 
+  # The menu bar button is short; the buttons next to Kenny's own details keep his name.
+  def test_menu_bar_contact_button_reads_contact_us_on_every_page
+    PAGES.each do |page|
+      label = html_of(page)[%r{<a class="btn nav__contact"[^>]*>([^<]*)</a>}, 1]
+      assert_equal "Contact Us", label, "nav contact label on #{page}"
+    end
+  end
+
+  def test_other_contact_buttons_keep_the_full_label
+    assert_has html_of("/people/"), %(>#{LAB["contact"]["label"]}</a>), "director card lost its label"
+  end
+
   def test_shows_the_recruitment_call_on_every_page
     PAGES.each { |page| assert_has text_of(page), LAB["recruitment"], "#{page} lacks the recruitment call" }
   end
