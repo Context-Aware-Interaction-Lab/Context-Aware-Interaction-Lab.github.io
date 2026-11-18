@@ -1,0 +1,8 @@
+{%- comment -%}
+  id  a publication's `id`; a one-line link to that paper's row on /publications/.
+  For the papers that are not featured as cards (PWiP, LBW, workshop).
+{%- endcomment -%}
+{%- assign paper = site.data.publications | where: "id", include.id | first -%}
+{%- if paper -%}
+<li class="paper-link"><a href="{{ '/publications/' | relative_url }}#pub-{{ paper.id }}"><span class="paper-link__venue">{{ paper.venue }}</span><span class="paper-link__title">{{ paper.title }}</span></a></li>
+{%- endif -%}

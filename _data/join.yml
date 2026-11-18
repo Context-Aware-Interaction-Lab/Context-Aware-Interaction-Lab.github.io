@@ -10,14 +10,10 @@ values:
     icon: heart
   - title: "Collaborative Mentorship"
     icon: mentor
+# `intro` and `closing` wrap the topic list, which join-us.html builds from the areas in research.yml.
 intro: |-
-  At CAILab, we aim to develop and train the next generation of Human-Centred AI researchers and designers. We are always on the look out for highly motivated and collaborative individuals who wish to work at the intersection of mobile and pervasive computing, context-aware computing, applied machine learning, and Human-Computer Interaction. Our research topics include:
-
-  - Understanding and supporting mental health using AI
-  - Social interaction sensing for child developmental support
-  - Sensing, predicting, and developing interactions to support children with special needs
-  - Human-AI Interaction with Large-Language Models
-
+  At CAILab, we aim to develop and train the next generation of Human-Centred AI researchers and designers. We are always on the look out for highly motivated and collaborative individuals who wish to work at the intersection of mobile and pervasive computing, context-aware computing, applied machine learning, and Human-Computer Interaction. Our research areas include:
+closing: |-
   If you are interested in a position and wish to find out more, please email Prof Kenny Choo.
 sections:
   - title: "PhD Students"
