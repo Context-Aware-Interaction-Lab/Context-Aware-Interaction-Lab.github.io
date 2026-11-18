@@ -43,7 +43,11 @@ permalink: /people/
       <ul class="tiles collabs">
         {% for person in site.data.people.collaborators %}
         <li class="person-card person-card--compact">
+          {%- if person.photo %}
+          <img class="person-card__mini person-card__mini--photo" src="{{ person.photo | relative_url }}" width="64" height="64" alt="{{ person.name }}" loading="lazy">
+          {%- else %}
           <svg class="ring person-card__mini" data-ring="{{ person.name }}" viewBox="0 0 100 100" aria-hidden="true" focusable="false"></svg>
+          {%- endif %}
           <div>
             <h3 class="person-card__name">{{ person.name }}</h3>
             <p class="person-card__role"><span class="role-line">{{ person.role }}</span>{% if person.affiliation %}<span class="role-line">{{ person.affiliation }}</span>{% endif %}</p>
