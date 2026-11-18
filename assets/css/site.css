@@ -272,3 +272,21 @@ svg line,svg path{stroke:var(--c);fill:none}
 
 /* home preview: long announcements are clipped with a fade; /news/ shows them whole */
 .tiles.news:not(.news--list) .news-item__text{max-height:15rem;overflow:hidden;-webkit-mask-image:linear-gradient(#000 80%,transparent);mask-image:linear-gradient(#000 80%,transparent)}
+/* publication figures: thumbnail under the venue, click-to-enlarge dialog (see /design-language/) */
+.publication-row__side{display:flex;flex-direction:column;gap:var(--space-3)}
+.publication-row__figure{display:block;width:168px;border:1px solid var(--line);border-radius:var(--radius-s);overflow:hidden;background:var(--surface)}
+.publication-row__figure img{width:100%;height:auto;aspect-ratio:480/300;object-fit:cover}
+.publication-row__figure:hover{border-color:var(--text)}
+.figure-dialog{width:min(1100px,calc(100vw - 2*var(--gutter)));max-height:calc(100vh - 2*var(--gutter));padding:var(--space-4) var(--space-5) var(--space-5);border:1px solid var(--line);border-radius:var(--radius-l);background:var(--bg);color:var(--text)}
+.figure-dialog::backdrop{background:rgba(17,20,27,.6)}
+.figure-dialog__bar{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-4)}
+.figure-dialog__title{font:600 1rem/1.35 var(--font-display)}
+.figure-dialog__close{flex:none;width:var(--tap);height:var(--tap);margin:-6px -10px 0 0;border:1.5px solid var(--line-strong);border-radius:var(--radius-pill);background:var(--bg);font:400 1.5rem/1 var(--font-body);cursor:pointer}
+.figure-dialog__close:hover{border-color:var(--text);background:var(--surface-2)}
+.figure-dialog__stage{background:var(--surface);border-radius:var(--radius-m);overflow:hidden}
+.figure-dialog__img{width:100%;height:auto;max-height:70vh;object-fit:contain;margin-inline:auto}
+.figure-dialog__caption{margin-top:var(--space-3);font-size:var(--fs-small);color:var(--text-muted)}
+.figure-dialog__play{position:relative;display:block;width:100%;padding:0;border:0;background:none;cursor:pointer}
+.figure-dialog__triangle{position:absolute;inset:0;margin:auto;width:72px;height:72px;border-radius:50%;background:var(--text);opacity:.9}
+.figure-dialog__triangle::after{content:"";position:absolute;left:29px;top:21px;border-left:24px solid var(--on-accent);border-block:15px solid transparent}
+.figure-dialog__frame{display:block;width:100%;aspect-ratio:16/9;border:0}
