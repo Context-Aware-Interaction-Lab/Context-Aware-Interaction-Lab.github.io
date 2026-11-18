@@ -1,0 +1,24 @@
+title: Context-Aware Interaction Lab
+description: CAILab is an interdisciplinary Human-Computer Interaction (HCI) research lab at the Singapore University of Technology and Design (SUTD).
+
+# Left empty until the deploy target is chosen; templates use relative_url.
+url: ""
+baseurl: ""
+
+markdown: kramdown
+
+# We bring our own layouts and stylesheet; without this the github-pages gem
+# adds its default theme and publishes assets/css/style.css.
+theme: null
+
+# Replaces Jekyll's defaults, so Gemfile/Gemfile.lock must be listed here.
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - AGENTS.md
+  - CLAUDE.md
+  - README.md
+  - bin
+  - design-demos
+  - tests
+  - vendor

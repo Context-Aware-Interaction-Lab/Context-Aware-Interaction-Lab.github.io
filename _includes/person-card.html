@@ -1,0 +1,9 @@
+{%- assign words = include.person.name | split: " " -%}
+<li class="person-card">
+  <div class="person-card__avatar">
+    <svg class="ring" data-ring="{{ include.person.name }}" viewBox="0 0 100 100" aria-hidden="true" focusable="false"></svg>
+    <span class="person-card__initials" aria-hidden="true">{{ words[0] | slice: 0 | upcase }}{{ words[1] | slice: 0 | upcase }}</span>
+  </div>
+  <h3 class="person-card__name">{{ include.person.name }}</h3>
+  <p class="person-card__role">{% include role-lines.html role=include.person.role %}</p>
+</li>

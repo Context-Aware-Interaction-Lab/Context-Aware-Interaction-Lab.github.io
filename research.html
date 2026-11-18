@@ -1,0 +1,52 @@
+---
+layout: default
+title: Research
+permalink: /research/
+---
+{% include page-header.html title="Research" %}
+
+{% for theme in site.data.research.themes %}
+<section class="section" id="{{ theme.title | slugify }}">
+  <div class="container">
+    <div class="section-header"><h2>{{ theme.title }}</h2></div>
+    <ul class="tiles themes">
+      {% for item in theme.items %}
+      <li class="theme-item">{{ item | markdownify }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endfor %}
+
+<section class="section" id="funding">
+  <div class="container">
+    <div class="section-header"><h2>Funding</h2></div>
+    <ul class="funding">
+      {% for grant in site.data.funding %}
+      <li class="funding-row">
+        <p class="funding-row__when"><span>{{ grant.years }}</span><span>{{ grant.role }}</span></p>
+        <div class="funding-row__main">
+          <h3 class="funding-row__title">{{ grant.title }}</h3>
+          <p class="funding-row__scheme">{{ grant.scheme }}</p>
+        </div>
+        <p class="funding-row__amount">{{ grant.amount }}</p>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="media">
+  <div class="container">
+    <div class="section-header"><h2>Media</h2></div>
+    <ul class="tiles media">
+      {% for item in site.data.media %}
+      <li class="media-item">
+        <p class="media-item__outlet">{{ item.outlet }}</p>
+        <h3 class="media-item__title">{% if item.url %}<a href="{{ item.url }}">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}</h3>
+        {% if item.note %}<p class="media-item__note">{{ item.note }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>

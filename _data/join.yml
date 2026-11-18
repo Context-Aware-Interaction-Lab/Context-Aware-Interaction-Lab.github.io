@@ -1,0 +1,33 @@
+values:
+  - "Productive Environment"
+  - "Interdisciplinary Collaborations"
+  - "High Research Impact"
+  - "Research for Social Good"
+  - "Collaborative Mentorship"
+intro: |-
+  At CAILab, we aim to develop and train the next generation of Human-AI Interaction researchers and designers. We are always on the look out for highly motivated and collaborative individuals who wish to work at the intersection of mobile and pervasive computing, context-aware computing, applied machine learning, and Human-Computer Interaction. Our research topics include:
+
+  - Understanding and supporting mental health using AI
+  - Social interaction sensing for child developmental support
+  - Sensing, predicting, and developing interactions to support children with special needs
+  - Human-AI Interaction with Large-Language Models
+
+  If you are interested in a position and wish to find out more, please email Prof Kenny Choo.
+sections:
+  - title: "PhD Students"
+    body: |-
+      You should have a a Bachelor's or Master's degree in Computer Science or a closely-related discipline. You should be competent in at least one programming language and have strong abilities to quickly prototype full-stack interactive interfaces empowered with AI, and should be competent in Computer Vision and/or Natural Language Processing. You should also demonstrate basic understanding of the conduct of user studies. We also offer [highly competitive scholarships](https://istd.sutd.edu.sg/education/phd/phd-overview/) to outstanding students enrolled in our PhD programmes such as:
+
+      - [SUTD PhD President's Graduate Fellowship (PGF) and SUTD PhD Fellowship](https://www.sutd.edu.sg/Admissions/Graduate/Scholarships)
+      - [A*STAR Singapore International Graduate Award (SINGA)](https://www.a-star.edu.sg/Scholarships/for-graduate-studies/singapore-international-graduate-award-singa)
+      - [A*STAR Graduate Scholarship (AGS)](https://www.a-star.edu.sg/Scholarships/for-graduate-studies/a-star-graduate-scholarship-singapore)
+      - [A*STAR Computing and Information Science (ACIS) Scholarship](https://www.a-star.edu.sg/Scholarships/For-Graduate-Studies/A-STAR-CIS-Scholarship)
+      - [EDB Industrial Postgraduate Programme (EDB-IPP)](https://www.sutd.edu.sg/Admissions/Graduate/Industrial-Programmes/EDB-IPP)
+      - [SUTD-DSO Graduate Fellowship Programme](https://temasek-labs.sutd.edu.sg/student-opportunities/sutd-dso-graduate-fellowship-programme/)
+  - title: "Research Interns"
+    body: |-
+      Candidate should currently be enrolled in a Bachelor/Master/PhD degree programme in related disciplines. He or she should have a keen interest to learn more about Human-Computer Interaction and AI research.
+  - title: "Research Assistants"
+    body: |-
+      No current positions are available, but do watch this space!
+contact_note: "A mailto link to Prof Kenny Choo exists on the page; address deliberately not stored."

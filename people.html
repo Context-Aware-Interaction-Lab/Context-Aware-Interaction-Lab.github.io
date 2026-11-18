@@ -1,0 +1,76 @@
+---
+layout: default
+title: People
+permalink: /people/
+---
+{% include page-header.html title="People" %}
+
+{% assign director = site.data.people.members | where: "name", site.data.lab.director | first %}
+{% assign members = site.data.people.members | where_exp: "m", "m.name != site.data.lab.director" %}
+
+<section class="section" id="members">
+  <div class="container">
+    <div class="people-group">
+      <h2>Director</h2>
+      <div class="person-card person-card--director">
+        <div class="person-card__avatar">
+          <svg class="ring" data-ring="{{ director.name }}" viewBox="0 0 100 100" aria-hidden="true" focusable="false"></svg>
+          <img class="person-card__photo" src="{{ site.data.lab.director_photo | relative_url }}" width="320" height="320" alt="{{ director.name }}">
+        </div>
+        <div class="person-card__text">
+          <h3 class="person-card__name">{{ director.name }}</h3>
+          <p class="person-card__role">{% include role-lines.html role=director.role %}</p>
+          <a class="btn" href="{{ site.data.lab.contact.href }}">{{ site.data.lab.contact.label }}</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="people-group">
+      <h2>Lab members</h2>
+      <ul class="tiles members">
+        {% for person in members %}
+        {% include person-card.html person=person %}
+        {% endfor %}
+        <li class="cta-banner cta-banner--tile">
+          <p class="cta-banner__text">{{ site.data.lab.recruitment }}</p>
+          <a class="btn btn--primary" href="{{ '/join-us/' | relative_url }}">Join Us</a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="people-group">
+      <h2>Collaborators</h2>
+      <ul class="tiles collabs">
+        {% for person in site.data.people.collaborators %}
+        <li class="person-card person-card--compact">
+          <svg class="ring person-card__mini" data-ring="{{ person.name }}" viewBox="0 0 100 100" aria-hidden="true" focusable="false"></svg>
+          <div>
+            <h3 class="person-card__name">{{ person.name }}</h3>
+            <p class="person-card__role"><span class="role-line">{{ person.role }}</span>{% if person.affiliation %}<span class="role-line">{{ person.affiliation }}</span>{% endif %}</p>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="people-group">
+      <h2>Alumni</h2>
+      <details class="alumni">
+        <summary>Graduate Students</summary>
+        <ul class="alumni__list">
+          {% for person in site.data.people.alumni_graduate %}
+          <li>{{ person.name }}{% if person.note %} <span class="alumni__note">{{ person.note }}</span>{% endif %}</li>
+          {% endfor %}
+        </ul>
+      </details>
+      <details class="alumni">
+        <summary>Undergraduate Students</summary>
+        <ul class="alumni__list">
+          {% for person in site.data.people.alumni_undergraduate %}
+          <li>{{ person.name }}{% if person.note %} <span class="alumni__note">{{ person.note }}</span>{% endif %}</li>
+          {% endfor %}
+        </ul>
+      </details>
+    </div>
+  </div>
+</section>

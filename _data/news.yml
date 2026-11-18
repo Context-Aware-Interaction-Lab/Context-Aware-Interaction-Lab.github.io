@@ -1,0 +1,64 @@
+- date: "Oct 2026"
+  text: |-
+    Two papers will appear in PACM HCI and be presented at CSCW 2026 this October:
+    - "'Is This Really a Human Peer Supporter?': Misalignments Between Peer Supporters and Experts in LLM-Supported Interactions", led by Kellie Sim. \[[preprint](https://arxiv.org/abs/2506.09354)\]
+    - "Sword and Shield: Uses and Strategies of LLMs in Navigating Disinformation", led by Gionnieve Lim, with Kellie Sim and Weiyan Shi. \[[preprint](https://arxiv.org/abs/2506.07211)\]
+- date: "Sep 2026"
+  text: |-
+    Congratulations to PhD student Kellie Sim, who received the Top Seed Award at the Design Business Chamber Singapore (DBCS) Seed Award 2026 — one of only 10 recipients! 🎉 A wonderful recognition of her work.
+- date: "Jun 2026"
+  text: |-
+    A nice showing at DIS 2026 — three papers accepted to the Provocations & Works-in-Progress track!
+    - ["Acts of Configuration: Rethinking Provenance, Temporality and Legitimacy in Post-Mortem Agents](https://dl.acm.org/doi/full/10.1145/3802974.3809435)" — led by Kellie Sim, with Master's students Darryl Lim and John-Henry Lim.
+    - ["'I'm Not Able to Be There for You': Emotional Labour, Responsibility, and AI in Peer Support"](https://dl.acm.org/doi/full/10.1145/3802974.3809470) — led by Kellie Sim.
+    - ["When Drawing Is Not Enough: Exploring Spontaneous Speech with Sketch for Intent Alignment in Multimodal LLMs"](https://dl.acm.org/doi/full/10.1145/3802974.3809463) — led by Weiyan Shi.
+- date: "Feb 2026"
+  text: |-
+    ["TalkSketch: Multimodal Generative AI for Real-Time Sketch Ideation with Speech"](https://link.springer.com/chapter/10.1007/978-3-032-16893-1_6), led by Weiyan Shi, is out in the Springer volume Creative AI for Live  Interactive Performances! Congratulations to all authors.
+- date: "Jan 2026"
+  text: |-
+    A fantastic start to the year for the lab at CHI!
+    - Huge congratulations to PhD students Weiyan Shi and Kellie Sim — both had papers accepted to CHI 2026, and both received a Best Paper Honourable Mention Award (top 5% of submissions)! 🎉🏆
+      - "Words to Describe What I'm Feeling: Exploring the Potential of AI Agents for High Subjectivity Decisions in Advance Care Planning", led by Kellie Sim — Honourable Mention Award. \[Check out [our paper](https://dl.acm.org/doi/full/10.1145/3772318.3791335)!\]
+      - "Towards Aligning Multimodal LLMs with Human Experts: A Focus on Parent-Child Interaction", led by Weiyan Shi — Honourable Mention Award. \[Check out [our paper](https://dl.acm.org/doi/10.1145/3772318.3791267)!\]
+    - Two honourable mentions in the same CHI cycle — huge congratulations to all authors and collaborators!
+    - Two Late-Breaking Works accepted to CHI 2026!
+      - ["Foreign Domestic Workers' Perspectives on an LLM-Based Emotional Support Tool for Caregiving Burden"](https://dl.acm.org/doi/full/10.1145/3772363.3798761), led by Master's student Nicholas Teng — great to see thesis work reach CHI.
+      - ["A Taxonomy of Human–MLLM Interaction in Early-Stage Sketch-Based Design Ideation"](https://dl.acm.org/doi/full/10.1145/3772363.3798524), led by Weiyan Shi.
+- date: null
+  text: |-
+    We also had "BLEnD-Vis: Benchmarking Multimodal Cultural Understanding in Vision Language Models" accepted to EACL 2026 — great work advancing how we evaluate cultural understanding in vision-language models.
+- date: "Dec 2025"
+  text: |-
+    Our paper "Dronaquatics: Real-time Swimming Analytics Using Drone Captured Imagery" was accepted in WACV 2026! Congratulations to all authors!
+- date: "Nov 2025"
+  text: |-
+    - Our paper "[TalkSketch: Multimodal Generative AI for Real-time Sketch Ideation with Speech](https://arxiv.org/abs/2511.05817)" was accepted in AAAI CLIP 2025! Congratulations to all authors!
+    - Our paper "[Humor in Pixels: Benchmarking Large Multimodal Models Understanding of Online Comics](https://aclanthology.org/anthology-files/pdf/findings/2025.findings-emnlp.755.pdf)" was accepted in EMNLP 2025. Congratulations to all authors!
+- date: "Oct 2025"
+  text: |-
+    Our paper "[Easy Modeling of Man-Made Shapes in Virtual Reality](https://diglib.eg.org/bitstream/handle/10.2312/pg20251299/pg20251299.pdf)" was accepted in Pacific Graphics 2025! Congratulations to all authors! [Watch the demo](https://www.youtube.com/watch?v=10LLvJwzqzw).
+- date: "Jun 2025"
+  text: |-
+    Our poster "[Communication Games to Study Emerging Disinformation Scenarios With LLMs](https://dl.acm.org/doi/10.1145/3715070.3749236)" was accepted in CSCW'25. Congratulations to all authors!
+- date: "Apr 2025"
+  text: |-
+    Our paper "[Towards Multimodal Large-Language Models for Parent-Child Interaction: A Focus on Joint Attention](https://dl.acm.org/doi/full/10.1145/3706599.3720215)" was accepted in CHI'25 LBW. Congratulations to all authors and collaborators!
+- date: "Jun 2024"
+  text: |-
+    Our paper "ToxiCloakCN: Evaluating Robustness of Offensive Language Detection in Chinese with Cloaking Perturbations" was accepted in EMNLP'24. Congratulations to all authors and collaborators!
+- date: "Jun 2024"
+  text: |-
+    Our paper on "Analyzing Swimming Performance Using Drone Captured Aerial Videos" was accepted in  MobiSys'24 DroNet. Congratulations to all the authors and collaborators!
+- date: "May 2024"
+  text: |-
+    Our paper on "Towards Understanding Emotions for Engaged Mental Health Conversations" was accepted in DIS'24 PWiP. Congratulations to Kellie and Kohleen!
+- date: "Apr 2024"
+  text: |-
+    Our paper "SGHateCheck: Functional Tests for Detecting Hate Speech in Low-Resource Languages of Singapore was accepted in WOAH'24. Congratulations to all the authors!
+- date: "Mar 2024"
+  text: |-
+    Our paper on "A Taxonomy for Human-LLM Interaction Modes: An Initial Exploration" was accepted in CHI'24 LBW. Congratulations to all the authors!
+- date: "Feb 2024"
+  text: |-
+    Our demo paper "Brinjal: A Web-Plugin for Collaborative Hate Speech Detection" was accepted in The Web Conference 2024. Congratulations to all the authors!

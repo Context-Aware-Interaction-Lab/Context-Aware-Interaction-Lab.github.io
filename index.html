@@ -1,0 +1,48 @@
+---
+layout: default
+hero: true
+---
+{% include hero.html %}
+
+<section class="section" id="research">
+  <div class="container">
+    <div class="section-header">
+      <h2>Current research foci</h2>
+      <a class="section-header__link" href="{{ '/research/' | relative_url }}">All research</a>
+    </div>
+    <ul class="tiles projects">
+      {% assign bases = "0,2,3" | split: "," %}
+      {% for focus in site.data.lab.foci %}
+      {% assign base = bases[forloop.index0] %}
+      {% include project-block.html title=focus base=base %}
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="news">
+  <div class="container">
+    <div class="section-header">
+      <h2>News</h2>
+      <a class="section-header__link" href="{{ '/news/' | relative_url }}">All news</a>
+    </div>
+    <ul class="tiles news">
+      {% assign dated = site.data.news | where_exp: "n", "n.date" %}
+      {% for item in dated limit: 6 %}
+      {% assign wide = false %}
+      {% if forloop.index0 == 0 or forloop.index0 == 5 %}{% assign wide = true %}{% endif %}
+      {% include news-item.html item=item index=forloop.index0 wide=wide %}
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="join">
+  <div class="container">
+    <div class="cta-banner cta-banner--block">
+      <h2 class="cta-banner__title">Join the team</h2>
+      <p class="cta-banner__lead">{{ site.data.lab.join_lead }}</p>
+      <div><a class="btn btn--primary" href="{{ '/join-us/' | relative_url }}">Join Us</a></div>
+    </div>
+  </div>
+</section>

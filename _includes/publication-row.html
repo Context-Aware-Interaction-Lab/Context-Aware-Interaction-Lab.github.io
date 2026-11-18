@@ -1,0 +1,9 @@
+{%- assign tone = include.index | modulo: 6 | plus: 1 -%}
+<li class="publication-row">
+  <p class="publication-row__venue"><span class="dot c{{ tone }}" aria-hidden="true"></span>{{ include.item.venue }}</p>
+  <div class="publication-row__main">
+    <h3 class="publication-row__title">{{ include.item.title }}</h3>
+    <p class="publication-row__authors">{{ include.item.authors | escape | replace: "Kenny Tsu Wei CHOO", "<strong>Kenny Tsu Wei CHOO</strong>" }}</p>
+  </div>
+  <p class="publication-row__links">{% for link in include.item.links %}<a href="{{ link.url }}" aria-label="{{ link.label }}: {{ include.item.title | escape }}">{{ link.label | capitalize }}</a>{% endfor %}</p>
+</li>

@@ -1,0 +1,14 @@
+# Top navigation, in order. `external: true` links are used as written.
+- title: Research
+  url: /research/
+- title: News
+  url: /news/
+- title: People
+  url: /people/
+- title: Publications
+  url: /publications/
+- title: Join Us
+  url: /join-us/
+- title: Code
+  url: https://github.com/Context-Aware-Interaction-Lab/
+  external: true

@@ -1,0 +1,16 @@
+---
+layout: default
+title: News
+permalink: /news/
+---
+{% include page-header.html title="News" %}
+
+<section class="section">
+  <div class="container">
+    <ul class="tiles news news--list">
+      {% for item in site.data.news %}
+      {% include news-item.html item=item index=forloop.index0 %}
+      {% endfor %}
+    </ul>
+  </div>
+</section>

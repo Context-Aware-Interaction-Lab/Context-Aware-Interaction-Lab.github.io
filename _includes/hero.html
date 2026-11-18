@@ -1,0 +1,16 @@
+<header class="hero" id="top">
+  {% include field-static.html %}
+  <canvas class="field" aria-hidden="true"></canvas>
+  <div class="container hero__inner">
+    <div class="hero__copy">
+      <h1 class="hero__title">{{ site.data.lab.name }}</h1>
+      <p class="hero__mission">{{ site.data.lab.mission }}</p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="{{ '/join-us/' | relative_url }}">Join Us</a>
+        <a class="btn" href="{{ site.data.lab.contact.href }}">{{ site.data.lab.contact.label }}</a>
+      </div>
+    </div>
+    <div class="hero__logo"><img src="{{ '/assets/img/logo-480.png' | relative_url }}" width="480" height="473" alt="CAILab logo: a spectrum network sphere around a human silhouette, Human-Computer Interaction"></div>
+  </div>
+  <p class="field-readout">Field colour follows Singapore time <b class="field-readout__time">--:--</b></p>
+</header>

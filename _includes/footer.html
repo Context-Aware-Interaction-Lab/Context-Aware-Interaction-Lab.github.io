@@ -1,0 +1,12 @@
+<footer class="footer">
+  <div class="container footer__inner">
+    <div>
+      <p>© {{ site.data.lab.short_name }}</p>
+      <p class="footer__note">{{ site.data.lab.name }}, {{ site.data.lab.affiliation }}</p>
+    </div>
+    <nav class="footer__links" aria-label="Footer">
+      {% for item in site.data.nav %}<a href="{% if item.external %}{{ item.url }}{% else %}{{ item.url | relative_url }}{% endif %}">{{ item.title }}</a>{% endfor %}
+      <a href="{{ '/design-language/' | relative_url }}">Design language</a>
+    </nav>
+  </div>
+</footer>

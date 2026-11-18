@@ -1,0 +1,91 @@
+- title: "Envisioning an AI-Enhanced Mental Health Ecosystem"
+  authors: "Kellie Yu Hui SIM, Kenny Tsu Wei CHOO"
+  venue: "CHI'25 Workshop: Envisioning the Future of Interactive Health"
+  year: 2025
+  links:
+    - {label: paper, url: "https://doi.org/10.48550/arXiv.2503.14883"}
+- title: "Towards Multimodal Large-Language Models for Parent-Child Interaction: A Focus on Joint Attention"
+  authors: "Weiyan SHI, Hai Viet LE, Kenny Tsu Wei CHOO"
+  venue: "CHI'25 LBW"
+  year: 2025
+  links:
+    - {label: paper, url: "https://doi.org/10.1145/3706599.3720215"}
+- title: "InfoTrace: A System for Information Campaign Source Tracing and Analysis on Social Media"
+  authors: "Linus Xin Wei CHENG, Daniel Wai Kit CHIN, Shaun TOH, Wenchuan MU, James Kay Liang ONG, Kenny Tsu Wei CHOO, Roy Ka-Wei LEE, Kwan Hui LIM"
+  venue: "JCDL'24"
+  year: 2024
+  links:
+    - {label: paper, url: "https://doi.org/10.1145/3677389.3702583"}
+- title: "ToxiCloakCN: Evaluating Robustness of Offensive Language Detection in Chinese with Cloaking Perturbations"
+  authors: "Yunze XIAO, Yujia HU, Kenny Tsu Wei CHOO, Roy Ka-Wei LEE"
+  venue: "EMNLP'24"
+  year: 2024
+  links:
+    - {label: paper, url: "https://aclanthology.org/2024.emnlp-main.345.pdf"}
+- title: "Exploring Gaze Pattern Differences Between Autistic and Neurotypical Children: Clustering, Visualisation, and Prediction"
+  authors: "Weiyan SHI, Haihong ZHANG, Wei WANG Kenny Tsu Wei CHOO"
+  venue: null
+  year: null
+  links:
+    - {label: paper, url: "https://doi.org/10.48550/arXiv.2409.11744"}
+- title: "Towards Understanding Emotions for Engaged Mental Health Conversations."
+  authors: "Kellie Yu Hui SIM, Kohleen Tijing FORTUNO, Kenny Tsu Wei CHOO"
+  venue: "DIS'24 PWiP"
+  year: 2024
+  links:
+    - {label: paper, url: "https://doi.org/10.1145/3656156.3663694"}
+- title: "Analyzing Swimming Performance Using Drone Captured Aerial Videos."
+  authors: "Thu TRAN, Kenny Tsu Wei CHOO, Shaohui FOONG, Hitesh BHARDWAJ, Shane Kyi Hla WIN, Wei Jun ANG, Kenneth GOH and Rajesh Krishna BALAN"
+  venue: "DRONET'24"
+  year: 2024
+  links:
+    - {label: paper, url: "https://dl.acm.org/doi/10.1145/3661810.3663464"}
+- title: "SGHateCheck: Functional Tests for Detecting Hate Speech in Low-Resource Languages of Singapore."
+  authors: "Ri Chi NG, Nirmalendu PRAKASH, Ming Shan HEE, Kenny Tsu Wei CHOO, Roy Ka-Wei Lee"
+  venue: "WOAH'24"
+  year: 2024
+  links:
+    - {label: paper, url: "http://arxiv.org/abs/2405.01842"}
+- title: "A Taxonomy for Human-LLM Interaction Modes: An Initial Exploration."
+  authors: "Jie GAO, Simret Araya GEBREEGZIABHER, Kenny Tsu Wei CHOO, Toby Jia-Jun LI, Junming CAO, Simon Tangi PERRAULT, Thomas W. MALONE"
+  venue: "CHI'24 LBW"
+  year: 2024
+  links:
+    - {label: paper, url: "https://dl.acm.org/doi/10.1145/3613905.3650786"}
+- title: "Brinjal: A Web-Plugin for Collaborative Hate Speech Detection."
+  authors: "Ming Shan Hee, Karandeep SINGH, Charlotte Si Min NG, Kenny Tsu Wei CHOO, Roy Ka-Wei LEE"
+  venue: "WWW'24 Demo"
+  year: 2024
+  links:
+    - {label: paper, url: "https://dl.acm.org/doi/abs/10.1145/3589335.3651250"}
+- title: "CoAIcoder: Examining the Effectiveness of AI-assisted Collaborative Qualitative Analysis"
+  authors: "Jie GAO, Kenny Tsu Wei CHOO, Junming CAO, Roy Ka-Wei LEE, Simon Tangi PERRAULT"
+  venue: "TOCHI'23"
+  year: 2023
+  links:
+    - {label: paper, url: "https://dl.acm.org/doi/10.1145/3617362"}
+- title: "Evaluating GPT-3 Generated Explanations for Hateful Content Moderation"
+  authors: "Han WANG, Ming Shan HEE, Md Rabiul AWAL, Kenny Tsu Wei CHOO, Roy Ka-Wei LEE"
+  venue: "IJCAI'23"
+  year: 2023
+  links:
+    - {label: paper, url: "https://doi.org/10.48550/arXiv.2305.17680"}
+    - {label: code, url: "https://github.com/Social-AI-Studio/GPT3-HateEval"}
+- title: "MUSCAT: Multilingual Rumor Verification in Social Media Conversations"
+  authors: "Rabiul AWAL, Minh Dang NGUYEN, Roy Ka-Wei LEE, Kenny Tsu Wei CHOO"
+  venue: "IEEE BigData'22"
+  year: 2022
+  links:
+    - {label: paper, url: "https://ieeexplore.ieee.org/document/10021113/"}
+- title: "AutoChart: A Dataset for Chart-to-Text Generation Task"
+  authors: "Jiawen ZHU, Jinye RAN, Roy Ka-Wei LEE, Zhi LI, Kenny Tsu Wei CHOO"
+  venue: "RANLP'21"
+  year: 2021
+  links:
+    - {label: paper, url: "https://aclanthology.org/2021.ranlp-1.183/"}
+- title: "User Perceptions and Adoption of Plug Load Management Systems in the Workplace"
+  authors: "Zeynep Duygu TEKLER, Raymond LOW, Kenny Tsu Wei CHOO, Lucienne BLESSING"
+  venue: "CHI EA'21"
+  year: 2021
+  links:
+    - {label: paper, url: "https://doi.org/10.1145/3411763.3451726"}

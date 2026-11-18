@@ -1,0 +1,16 @@
+---
+layout: default
+title: Publications
+permalink: /publications/
+---
+{% include page-header.html title="Publications" %}
+
+<section class="section">
+  <div class="container">
+    <ul class="publications">
+      {% for item in site.data.publications %}
+      {% include publication-row.html item=item index=forloop.index0 %}
+      {% endfor %}
+    </ul>
+  </div>
+</section>

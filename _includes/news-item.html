@@ -1,0 +1,5 @@
+{%- assign tone = include.index | modulo: 6 | plus: 1 -%}
+<li class="news-item{% if include.wide %} news-item--wide{% endif %}">
+  <p class="news-item__date"><span class="dot c{{ tone }}" aria-hidden="true"></span>{% if include.item.date %}<span>{{ include.item.date }}</span>{% endif %}</p>
+  <div class="news-item__text">{{ include.item.text | markdownify }}</div>
+</li>

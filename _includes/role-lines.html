@@ -1,0 +1,2 @@
+{%- assign lines = include.role | split: "; " -%}
+{%- for line in lines -%}<span class="role-line">{{ line }}</span>{%- endfor -%}
