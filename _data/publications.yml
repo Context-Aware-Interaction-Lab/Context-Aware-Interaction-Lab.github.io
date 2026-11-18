@@ -24,6 +24,7 @@
   venue: "DIS'26 PWiP"
   date: "2026-06-12"
   year: 2026
+  figure: {slug: dis26-sketch-speech, alt: "Images generated from the same toaster sketch, with and without the designer's speech. Without speech: an ordinary toaster. With speech: a monster-like toaster, and a spread toaster with separate jam and topping compartments."}
   links:
     - {label: paper, url: "https://dl.acm.org/doi/full/10.1145/3802974.3809463"}
 - title: "\"I'm Not Able to Be There for You\": Emotional Labour, Responsibility, and AI in Peer Support"

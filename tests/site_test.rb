@@ -1,4 +1,5 @@
 require "minitest/autorun"
+require "cgi"
 require "fileutils"
 require "open3"
 require "tmpdir"
@@ -23,6 +24,38 @@ def data(name) = YAML.safe_load(File.read(File.join(ROOT, "_data", "#{name}.yml"
 
 # Only current members and collaborators may carry a photo (consent given 2026-11-18).
 def photo_people = data("people").values_at("members", "collaborators").flatten.select { |p| p["photo"] }
+
+# A publication may declare a figure and/or a video. The files sit flat in assets/img (the stray-file
+# test does not recurse): pub-<slug>.jpg (large), pub-<slug>-thumb.jpg, and for a video pub-<slug>-poster.jpg.
+def figure_pubs = data("publications").select { |p| p["figure"] }
+def video_pubs = data("publications").select { |p| p["video"] }
+
+def publication_images
+  figure_pubs.flat_map { |p| ["pub-#{p["figure"]["slug"]}.jpg", "pub-#{p["figure"]["slug"]}-thumb.jpg"] } +
+    video_pubs.map { |p| "pub-#{p["video"]["slug"]}-poster.jpg" }
+end
+
+# JPEG structure without a dependency: [[marker, payload], ...] for the segments before the image data.
+def jpeg_segments(path)
+  bytes = File.binread(path)
+  raise "not a JPEG: #{path}" unless bytes.start_with?("\xFF\xD8".b)
+  pos = 2
+  segments = []
+  while pos < bytes.bytesize && bytes.getbyte(pos) == 0xFF
+    marker = bytes.getbyte(pos + 1)
+    break if [0xDA, 0xD9].include?(marker) # start of scan / end of image
+    length = bytes.byteslice(pos + 2, 2).unpack1("n")
+    segments << [marker, bytes.byteslice(pos + 4, length - 2)]
+    pos += 2 + length
+  end
+  segments
+end
+
+def jpeg_size(path)
+  _, frame = jpeg_segments(path).find { |marker, _| [0xC0, 0xC1, 0xC2].include?(marker) }
+  height, width = frame.byteslice(1, 4).unpack("nn")
+  [width, height]
+end
 
 NAV = data("nav")
 INTERNAL_PAGES = NAV.reject { |n| n["external"] }.map { |n| n["url"] }
@@ -502,7 +535,7 @@ end
 # photos declared in people.yml may be published.
 class StrayFilesTest < Minitest::Test
   FIXED_IMAGES = %w[logo-480.png logo-96.png kenny-320.jpg apple-touch-icon.png].freeze
-  ALLOWED_IMAGES = (FIXED_IMAGES + photo_people.map { |p| File.basename(p["photo"]) }).freeze
+  ALLOWED_IMAGES = (FIXED_IMAGES + photo_people.map { |p| File.basename(p["photo"]) } + publication_images).freeze
 
   def test_assets_img_holds_only_the_expected_files_in_source
     found = Dir.children(File.join(ROOT, "assets", "img")).sort
@@ -512,6 +545,110 @@ class StrayFilesTest < Minitest::Test
   def test_no_other_image_is_published
     images = Dir.glob(File.join(BUILD, "**", "*.{png,jpg,jpeg,gif,webp,svg}")).map { |f| File.basename(f) }
     assert_empty images - ALLOWED_IMAGES, "unexpected image(s) in the published site"
+  end
+end
+
+# Camera or editor metadata (EXIF/XMP, IPTC, comments) can carry a location or a name. `sips` writes an
+# EXIF segment into every JPEG it saves, so bin/figure strips it; this proves nothing slipped through.
+class ImageMetadataTest < Minitest::Test
+  APP1_EXIF_XMP = 0xE1
+  APP13_IPTC = 0xED
+  COMMENT = 0xFE
+
+  def test_no_jpeg_carries_metadata
+    Dir.glob(File.join(ROOT, "assets", "img", "*.jpg")).each do |path|
+      found = jpeg_segments(path).map(&:first) & [APP1_EXIF_XMP, APP13_IPTC, COMMENT]
+      assert_empty found, "metadata segment(s) #{found.map { |m| format("0x%X", m) }.join(", ")} in #{File.basename(path)}"
+    end
+  end
+end
+
+# The thumbnail is a plain link to the large image, so it still works without JavaScript.
+class PublicationFigureTest < Minitest::Test
+  PUBS = data("publications")
+  IMG = File.join(ROOT, "assets", "img")
+
+  def rows = html_of("/publications/").scan(%r{<li class="publication-row">.*?</li>}m)
+
+  def test_figures_are_declared
+    refute_empty figure_pubs, "no publication declares a figure, so the figure tests below check nothing"
+  end
+
+  def test_each_figure_has_a_slug_alt_text_and_both_files
+    figure_pubs.each do |pub|
+      fig = pub["figure"]
+      assert_match(/\A[a-z0-9-]+\z/, fig["slug"].to_s, "bad figure slug: #{pub["title"]}")
+      assert fig["alt"].to_s.strip.size > 20, "figure needs alt text describing what it shows: #{pub["title"]}"
+      refute_equal pub["title"], fig["alt"], "alt text must describe the figure, not repeat the title"
+      large = File.join(IMG, "pub-#{fig["slug"]}.jpg")
+      thumb = File.join(IMG, "pub-#{fig["slug"]}-thumb.jpg")
+      assert File.size?(large), "missing #{File.basename(large)}"
+      assert File.size?(thumb), "missing #{File.basename(thumb)}"
+      assert_operator jpeg_size(thumb)[0], :<=, 600, "thumbnail too wide: #{File.basename(thumb)}"
+      assert_operator jpeg_size(large)[0], :<=, 2000, "large image too wide: #{File.basename(large)}"
+      assert_operator jpeg_size(large)[0], :>, jpeg_size(thumb)[0], "large image is not larger than its thumbnail"
+    end
+  end
+
+  def test_figure_slugs_are_unique
+    slugs = figure_pubs.map { |p| p["figure"]["slug"] }
+    assert_equal slugs.uniq, slugs
+  end
+
+  def test_each_thumbnail_links_to_its_large_image
+    figure_pubs.each do |pub|
+      slug = pub["figure"]["slug"]
+      alt = CGI.escapeHTML(pub["figure"]["alt"])
+      row = rows.find { |r| r.include?(pub["title"]) }
+      assert row, "no row for #{pub["title"]}"
+      assert_match %r{<a class="publication-row__figure" href="[^"]*/assets/img/pub-#{slug}\.jpg"}, row
+      assert_match %r{<img src="[^"]*/assets/img/pub-#{slug}-thumb\.jpg" alt="#{Regexp.escape(alt)}"}, row
+      assert_match(/<img [^>]*width="\d+" height="\d+" loading="lazy"/, row, "thumbnail needs width, height and lazy loading")
+    end
+  end
+
+  def test_rows_without_a_figure_render_no_image
+    assert_equal figure_pubs.size, rows.count { |r| r.include?("<img") }
+    assert_equal figure_pubs.size, rows.count { |r| r.include?("publication-row__figure") }
+  end
+end
+
+# Nothing from YouTube loads until a visitor presses play, so no page carries an iframe in its HTML
+# and the script only ever builds a privacy-enhanced (youtube-nocookie.com) embed.
+class PublicationVideoTest < Minitest::Test
+  IMG = File.join(ROOT, "assets", "img")
+
+  def test_each_video_has_an_id_title_and_a_16_by_9_poster
+    video_pubs.each do |pub|
+      video = pub["video"]
+      assert_match(/\A[\w-]{11}\z/, video["youtube"].to_s, "not a YouTube id: #{pub["title"]}")
+      assert_match(/\A[a-z0-9-]+\z/, video["slug"].to_s, "bad video slug: #{pub["title"]}")
+      assert video["title"].to_s.strip.size > 5, "video needs a title: #{pub["title"]}"
+      poster = File.join(IMG, "pub-#{video["slug"]}-poster.jpg")
+      assert File.size?(poster), "missing #{File.basename(poster)}"
+      width, height = jpeg_size(poster)
+      assert_in_delta 16.0 / 9, width.to_f / height, 0.05, "poster must be 16:9 or the dialog jumps when the player loads"
+    end
+  end
+
+  def test_each_video_button_links_to_youtube_without_javascript
+    video_pubs.each do |pub|
+      id = pub["video"]["youtube"]
+      html = html_of("/publications/")
+      assert_has html, %(href="https://www.youtube.com/watch?v=#{id}" data-video="#{id}"), "no Video button for #{pub["title"]}"
+    end
+  end
+
+  def test_no_page_has_an_iframe_in_its_html
+    Dir.glob(File.join(BUILD, "**", "*.html")).each do |file|
+      refute_match(/<iframe/i, File.read(file), "#{file.delete_prefix(BUILD)} embeds an iframe on load")
+    end
+  end
+
+  def test_script_embeds_only_the_privacy_enhanced_domain
+    js = File.read(File.join(ROOT, "assets", "js", "figure.js"))
+    assert_has js, "youtube-nocookie.com/embed/", "figure.js must embed from youtube-nocookie.com"
+    refute_match %r{(?<!-nocookie)youtube\.com/embed}, js, "figure.js embeds from the tracking domain"
   end
 end
 
