@@ -1,5 +1,16 @@
+{%- comment -%}
+  item  the news entry
+  index position among the cards shown (picks the dot colour)
+  pos   position in the full list; the anchor counts from the oldest, so new news never moves an old link
+  wide  span two columns
+  link  true on the home preview: the whole card leads to its full card on /news/
+{%- endcomment -%}
 {%- assign tone = include.index | modulo: 6 | plus: 1 -%}
-<li class="news-item{% if include.wide %} news-item--wide{% endif %}">
+{%- assign ordinal = site.data.news.size | minus: include.pos -%}
+<li class="news-item{% if include.wide %} news-item--wide{% endif %}{% if include.link %} news-item--link{% endif %}" id="news-{{ ordinal }}">
   <p class="news-item__date"><span class="dot c{{ tone }}" aria-hidden="true"></span>{% if include.item.date %}<span>{{ include.item.date }}</span>{% endif %}</p>
   <div class="news-item__text">{{ include.item.text | markdownify }}</div>
+  {%- if include.link %}
+  <a class="news-item__more" href="{{ '/news/' | relative_url }}#news-{{ ordinal }}">Read more<span class="visually-hidden"> about the {{ include.item.date }} announcement</span></a>
+  {%- endif %}
 </li>

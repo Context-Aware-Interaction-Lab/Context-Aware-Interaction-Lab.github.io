@@ -27,11 +27,14 @@ hero: true
       <a class="section-header__link" href="{{ '/news/' | relative_url }}">All news</a>
     </div>
     <ul class="tiles news">
-      {% assign dated = site.data.news | where_exp: "n", "n.date" %}
-      {% for item in dated limit: 6 %}
+      {% assign shown = 0 %}
+      {% for item in site.data.news %}
+      {% if item.date and shown < 6 %}
       {% assign wide = false %}
-      {% if forloop.index0 == 0 or forloop.index0 == 5 %}{% assign wide = true %}{% endif %}
-      {% include news-item.html item=item index=forloop.index0 wide=wide %}
+      {% if shown == 0 or shown == 5 %}{% assign wide = true %}{% endif %}
+      {% include news-item.html item=item index=shown pos=forloop.index0 wide=wide link=true %}
+      {% assign shown = shown | plus: 1 %}
+      {% endif %}
       {% endfor %}
     </ul>
   </div>
