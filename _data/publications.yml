@@ -30,16 +30,16 @@
     - {label: paper, url: "https://doi.org/10.1007/978-3-032-16893-1_6"}
 - title: "\"Is This Really a Human Peer Supporter?\": Misalignments Between Peer Supporters and Experts in LLM-Supported Interactions"
   authors: "Kellie Yu Hui SIM, Roy Ka-Wei LEE, Kenny Tsu Wei CHOO"
-  venue: "PACM HCI (CSCW'26), to appear"
+  venue: "PACM HCI (CSCW'26)"
   year: 2026
   links:
-    - {label: preprint, url: "https://arxiv.org/abs/2506.09354"}
+    - {label: paper, url: "https://doi.org/10.1145/3816956"}
 - title: "Sword and Shield: Uses and Strategies of LLMs in Navigating Disinformation"
   authors: "Gionnieve LIM, Bryan Chen Zhengyu TAN, Kellie Yu Hui SIM, Weiyan SHI, Ming Hui CHEW, Ming Shan HEE, Roy Ka-Wei LEE, Simon T. PERRAULT, Kenny Tsu Wei CHOO"
-  venue: "PACM HCI (CSCW'26), to appear"
+  venue: "PACM HCI (CSCW'26)"
   year: 2026
   links:
-    - {label: preprint, url: "https://arxiv.org/abs/2506.07211"}
+    - {label: paper, url: "https://doi.org/10.1145/3817008"}
 - title: "Acts of Configuration: Rethinking Provenance, Temporality and Legitimacy in Post-Mortem Agents"
   authors: "Kellie Yu Hui SIM, Pin Sym FOONG, Darryl LIM, John-Henry LIM, Kenny Tsu Wei CHOO"
   venue: "DIS'26 PWiP"
