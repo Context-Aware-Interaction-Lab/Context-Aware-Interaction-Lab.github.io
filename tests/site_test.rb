@@ -129,6 +129,21 @@ class HomePageTest < Minitest::Test
     assert_has text_of("/"), LAB["mission"], "home lacks the mission"
   end
 
+  # One short label on every contact button: menu bar, hero, director card, Join Us.
+  def test_every_contact_button_reads_contact_us
+    PAGES.each do |page|
+      labels = html_of(page).scan(%r{<a class="btn[^"]*" href="mailto:[^"]*">([^<]*)</a>}).flatten
+      refute_empty labels, "no contact button on #{page}"
+      assert_equal ["Contact Us"], labels.uniq, "contact label on #{page}"
+    end
+  end
+
+  def test_contact_buttons_exist_where_expected
+    %w[/ /people/ /join-us/].each do |page|
+      assert_operator html_of(page).scan(%r{<a class="btn[^"]*" href="mailto:}).size, :>=, 2, "expected nav plus page button on #{page}"
+    end
+  end
+
   def test_shows_the_recruitment_call_on_every_page
     PAGES.each { |page| assert_has text_of(page), LAB["recruitment"], "#{page} lacks the recruitment call" }
   end
@@ -159,6 +174,60 @@ class HomePageTest < Minitest::Test
 
   def test_other_pages_do_not_load_the_field_script
     (PAGES - ["/"]).each { |page| refute_has html_of(page), "field.js", "#{page} loads field.js" }
+  end
+end
+
+# Each home card leads to its full card on /news/. The anchor is counted from the oldest item,
+# so news added at the top never moves an older link.
+class NewsLinksTest < Minitest::Test
+  NEWS = data("news")
+
+  def anchor_for(index) = "news-#{NEWS.size - index}"
+
+  def home_cards = html_of("/").split('<li class="news-item')[1..]
+
+  def home_indexes = NEWS.each_index.select { |i| NEWS[i]["date"] }.first(6)
+
+  def test_news_page_cards_carry_anchors_counted_from_the_oldest
+    ids = html_of("/news/").scan(/<li class="news-item[^"]*" id="(news-\d+)"/).flatten
+    assert_equal NEWS.each_index.map { |i| anchor_for(i) }, ids
+  end
+
+  def test_each_home_card_links_to_its_own_card_on_the_news_page
+    hrefs = home_cards.map { |c| c[%r{<a class="news-item__more" href="([^"]+)"}, 1] }
+    assert_equal home_indexes.map { |i| "/news/##{anchor_for(i)}" }, hrefs
+  end
+
+  def test_every_home_link_lands_on_an_existing_anchor
+    ids = html_of("/news/").scan(/ id="(news-\d+)"/).flatten
+    home_cards.each do |card|
+      fragment = card[%r{<a class="news-item__more" href="/news/#([^"]+)"}, 1]
+      assert_includes ids, fragment, "home link points at a missing anchor"
+    end
+  end
+
+  def test_the_link_names_the_card_it_opens
+    home_indexes.zip(home_cards).each do |i, card|
+      label = card[%r{<a class="news-item__more".*?</a>}m]
+      assert_match(/visually-hidden[^>]*>[^<]*#{Regexp.escape(NEWS[i]["date"])}/, label, "unnamed link for #{NEWS[i]["date"]}")
+    end
+  end
+
+  def test_news_page_cards_do_not_link_to_themselves
+    refute_has html_of("/news/"), "news-item__more", "self-link on /news/"
+  end
+
+  def test_links_inside_a_card_stay_clickable
+    first = home_cards.first
+    url = NEWS[home_indexes.first]["text"][%r{\]\((https?://[^)]+)\)}, 1]
+    assert url, "first news item has no link; revisit this test"
+    assert_has first, %(href="#{url}"), "link inside the card was lost"
+  end
+
+  def test_no_link_is_nested_inside_another
+    PAGES.each do |page|
+      refute_match(%r{<a\b[^>]*>(?:(?!</a>).)*<a\b}m, html_of(page), "nested link on #{page}")
+    end
   end
 end
 
