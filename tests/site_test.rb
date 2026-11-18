@@ -321,3 +321,18 @@ class FaviconTest < Minitest::Test
     end
   end
 end
+
+# A photo dropped into assets/img was once committed by accident. Only these files may be published.
+class StrayFilesTest < Minitest::Test
+  ALLOWED_IMAGES = %w[logo-480.png logo-96.png kenny-320.png apple-touch-icon.png].freeze
+
+  def test_assets_img_holds_only_the_expected_files_in_source
+    found = Dir.children(File.join(ROOT, "assets", "img")).sort
+    assert_equal ALLOWED_IMAGES.sort, found, "unexpected file(s) in assets/img"
+  end
+
+  def test_no_other_image_is_published
+    images = Dir.glob(File.join(BUILD, "**", "*.{png,jpg,jpeg,gif,webp,svg}")).map { |f| File.basename(f) }
+    assert_empty images - ALLOWED_IMAGES, "unexpected image(s) in the published site"
+  end
+end
