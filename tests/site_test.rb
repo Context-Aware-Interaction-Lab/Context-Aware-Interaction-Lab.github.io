@@ -215,12 +215,23 @@ class PeoplePageTest < Minitest::Test
 end
 
 class ResearchPageTest < Minitest::Test
-  def test_lists_themes_funding_and_media
+  def test_lists_themes_and_media
     text = text_of("/research/")
     data("research")["themes"].each { |t| assert_has text, t["title"], "missing theme #{t["title"]}" }
-    data("funding").each { |g| assert_has text, g["title"], "missing grant #{g["title"]}" }
     data("media").each { |m| assert_has text, m["title"], "missing media #{m["title"]}" }
-    assert_equal data("funding").size, count_of("/research/", "funding-row")
+  end
+
+  # Funding is hidden on purpose: _data/funding.yml is kept, but nothing renders it.
+  def test_funding_is_not_shown_anywhere
+    PAGES.each do |page|
+      html = html_of(page)
+      refute_has html, 'id="funding"', "funding section on #{page}"
+      refute_has html, "funding-row", "funding rows on #{page}"
+      data("funding").each do |g|
+        refute_has text_of(page), g["title"], "grant '#{g["title"]}' shown on #{page}"
+        refute_has text_of(page), g["amount"], "grant amount #{g["amount"]} shown on #{page}"
+      end
+    end
   end
 end
 
@@ -242,7 +253,7 @@ class OldUrlRedirectsTest < Minitest::Test
   REDIRECTS = {
     "/home" => "/",
     "/media" => "/research/#media",
-    "/funding" => "/research/#funding"
+    "/funding" => "/research/"
   }.freeze
 
   # With `url:` set, the plugin writes absolute targets on the production host.
@@ -253,7 +264,7 @@ class OldUrlRedirectsTest < Minitest::Test
   def test_each_old_url_has_a_redirect_page_pointing_at_its_new_home
     REDIRECTS.each do |old, target|
       assert File.exist?(File.join(BUILD, old, "index.html")), "no redirect page for #{old}"
-      assert_has stub_html(old), %(url=#{ORIGIN}#{target}), "#{old} does not redirect to #{ORIGIN}#{target}"
+      assert_has stub_html(old), %(url=#{ORIGIN}#{target}"), "#{old} does not redirect to #{ORIGIN}#{target}"
     end
   end
 
