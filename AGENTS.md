@@ -17,6 +17,7 @@ Don't create or overwrite without confirmation unless explicitly asked to set up
 - Entrypoints / important files: `_config.yml`, `_data/`, `_layouts/default.html`, `_includes/`, the pages (`index.html`, `research.html`, `news.html`, `people.html`, `publications.html`, `join-us.html`, `design-language.html`), `assets/`, `bin/check`, `tests/site_test.rb`.
 - Constraints / what to watch:
   - `exclude:` in `_config.yml` replaces Jekyll's defaults, so `Gemfile`, `Gemfile.lock` and the like must stay listed, and `theme: null` stops the gem publishing its own `assets/css/style.css`; `PublishedFilesTest` enforces both.
+  - The old Google Site's `/home`, `/media` and `/funding` are redirect stubs (`home.html`, `media.html`, `funding.html`, via `jekyll-redirect-from`): meta-refresh pages, not server 301s. `OldUrlRedirectsTest` guards them.
   - Pages builds with its own gem versions and runs no custom Ruby plugins. The local build says "will this obviously break", not byte-for-byte truth. Anything generated (field hero, name-seeded ring graphs) must be client-side JS with a no-JS fallback.
   - The only address in the HTML is the contact `mailto:` (Kenny's choice, in `_data/lab.yml`); it is never visible text and no other address may appear. Tested.
   - Only the director's photo is used (tested); add another person's photo only with their consent.

@@ -22,3 +22,8 @@ exclude:
   - design-demos
   - tests
   - vendor
+
+# Old Google Site URLs redirect via stub pages (home.html, media.html, funding.html).
+# jekyll-redirect-from is on GitHub Pages' allowed list.
+plugins:
+  - jekyll-redirect-from
