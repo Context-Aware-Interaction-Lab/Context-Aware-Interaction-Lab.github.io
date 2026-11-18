@@ -191,6 +191,21 @@ class PublicationsPageTest < Minitest::Test
       pub["links"].each { |link| assert_has html, %(href="#{link["url"]}"), "missing link #{link["url"]}" }
     end
   end
+
+  # One heading per year, newest first, with every paper under the heading of its own year.
+  def test_publications_are_grouped_under_year_headings
+    walk = html_of("/publications/").scan(%r{<h2>(\d{4})</h2>|<h3 class="publication-row__title">(.*?)</h3>}m)
+    headings = walk.map(&:first).compact.map(&:to_i)
+    assert_equal data("publications").map { |p| p["year"] }.uniq, headings, "year headings missing or out of order"
+
+    year = nil
+    placed = walk.each_with_object({}) do |(heading, title), acc|
+      heading ? year = heading.to_i : acc[title] = year
+    end
+    data("publications").each do |pub|
+      assert_equal pub["year"], placed[pub["title"]], "under the wrong year heading: #{pub["title"]}"
+    end
+  end
 end
 
 # The site is public. Work under review has no public artifact, so requiring one
@@ -199,10 +214,15 @@ class PublicContentTest < Minitest::Test
   PUBS = data("publications")
   UNDER_SUBMISSION = /under (review|submission)|in submission|submitted to/i
 
-  def test_every_publication_has_a_venue_year_and_public_link
+  # `date` is the earliest public availability: YYYY, YYYY-MM or YYYY-MM-DD.
+  DATE = /\A\d{4}(-\d\d(-\d\d)?)?\z/
+
+  def test_every_publication_has_a_venue_date_and_public_link
     PUBS.each do |pub|
       assert pub["venue"], "no venue: #{pub["title"]}"
-      assert_kind_of Integer, pub["year"], "no year: #{pub["title"]}"
+      assert_kind_of String, pub["date"], "no date: #{pub["title"]}"
+      assert_match DATE, pub["date"], "bad date format: #{pub["title"]}"
+      assert_equal pub["date"][0, 4].to_i, pub["year"], "year disagrees with date: #{pub["title"]}"
       urls = (pub["links"] || []).map { |l| l["url"] }
       assert urls.any? { |u| u.to_s.start_with?("http") }, "no public link: #{pub["title"]}"
     end
@@ -213,9 +233,10 @@ class PublicContentTest < Minitest::Test
     texts.compact.each { |t| refute_match UNDER_SUBMISSION, t, "reads as unpublished: #{t[0, 60]}" }
   end
 
+  # A month-only date sorts after dated entries of that month, a year-only one last in its year.
   def test_publications_are_newest_first
-    years = PUBS.map { |p| p["year"] }
-    assert_equal years.sort.reverse, years
+    keys = PUBS.map { |p| "#{p["date"]}-00-00"[0, 10] }
+    assert_equal keys.sort.reverse, keys
   end
 end
 
