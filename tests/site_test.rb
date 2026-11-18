@@ -355,6 +355,16 @@ class PeopleDataTest < Minitest::Test
     assert_empty current & alumni, "both current and alumni: #{(current & alumni).join(', ')}"
   end
 
+  # The alumni list is newest-first and every graduate has a year.
+  def test_graduate_alumni_have_years_and_run_newest_first
+    years = PEOPLE["alumni_graduate"].map do |p|
+      year = p["note"][/Graduated (\d{4})/, 1]
+      assert year, "#{p["name"]} has no graduation year"
+      year.to_i
+    end
+    assert_equal years.sort.reverse, years, "graduate alumni are not newest-first: #{years.inspect}"
+  end
+
   def test_the_director_is_a_member
     assert_includes names("members"), data("lab")["director"]
   end
