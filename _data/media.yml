@@ -1,10 +1,14 @@
+- outlet: "Lianhe Zaobao"
+  title: "SUTD students develop a new application to lower the barriers to drawing and 3D printing"
+  url: "https://www.zaobao.com.sg/news/singapore/story20260212-8353510"
+  note: "Article in Chinese, about TalkSketch."
 - outlet: "The Straits Times"
   title: "Singapore Aquatics adopts drone technology and artificial intelligence in training"
   url: "https://www.straitstimes.com/sport/singapore-aquatics-adopts-drone-technology-and-artificial-intelligence-in-training"
   note: null
 - outlet: "MediaCorp 8world"
   title: "国家游泳队利用无人机与人工智能驱动分析系统"
-  url: null
+  url: "https://www.youtube.com/watch?v=5VbL3Ij6Aj4"
   note: "The national swimming team uses a drone and AI-powered analysis system."
 - outlet: "Futurecio"
   title: "Drone and AI-driven analytics to act as coach for SG's national swim team"

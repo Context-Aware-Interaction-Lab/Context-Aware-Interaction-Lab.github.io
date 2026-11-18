@@ -193,6 +193,32 @@ class PublicationsPageTest < Minitest::Test
   end
 end
 
+# The site is public. Work under review has no public artifact, so requiring one
+# keeps it off the site without naming (and so leaking) any title here.
+class PublicContentTest < Minitest::Test
+  PUBS = data("publications")
+  UNDER_SUBMISSION = /under (review|submission)|in submission|submitted to/i
+
+  def test_every_publication_has_a_venue_year_and_public_link
+    PUBS.each do |pub|
+      assert pub["venue"], "no venue: #{pub["title"]}"
+      assert_kind_of Integer, pub["year"], "no year: #{pub["title"]}"
+      urls = (pub["links"] || []).map { |l| l["url"] }
+      assert urls.any? { |u| u.to_s.start_with?("http") }, "no public link: #{pub["title"]}"
+    end
+  end
+
+  def test_nothing_reads_as_under_submission
+    texts = PUBS.flat_map { |p| [p["title"], p["venue"]] } + data("news").map { |n| n["text"] }
+    texts.compact.each { |t| refute_match UNDER_SUBMISSION, t, "reads as unpublished: #{t[0, 60]}" }
+  end
+
+  def test_publications_are_newest_first
+    years = PUBS.map { |p| p["year"] }
+    assert_equal years.sort.reverse, years
+  end
+end
+
 class PeoplePageTest < Minitest::Test
   PEOPLE = data("people")
   LAB = data("lab")
