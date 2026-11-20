@@ -7,45 +7,16 @@ description: Photos from the lab's conferences, demos, outreach and everyday lif
 ---
 {% include page-header.html title="Gallery" %}
 
-{% assign albums = site.data.gallery.albums %}
-{% assign years = albums | group_by_exp: "a", "a.date | slice: 0, 4" | sort: "name" | reverse %}
 <section class="section">
   <div class="container">
-    {%- if albums.size == 0 %}
+    {%- if site.data.gallery.albums.size == 0 %}
     <p class="gallery-empty">No albums yet.</p>
     {%- else %}
-    {%- assign used_categories = 0 %}
-    {%- for c in site.data.gallery.categories %}
-    {%- assign used = albums | where: "category", c.id | size %}
-    {%- if used > 0 %}{% assign used_categories = used_categories | plus: 1 %}{% endif %}
-    {%- endfor %}
-    {%- comment %}Chips only pay for themselves when there is something to choose between.{% endcomment %}
-    {%- if used_categories > 1 %}
-    <div class="gallery-filters" hidden>
-      <div class="gallery-filters__row" role="group" aria-label="Category">
-        {%- for c in site.data.gallery.categories %}
-        {%- assign used = albums | where: "category", c.id | size %}
-        {%- if used > 0 %}
-        <button type="button" class="chip" aria-pressed="false" data-filter="category" data-value="{{ c.id }}">{{ c.label | escape }} <span class="chip__count">{{ used }}</span></button>
-        {%- endif %}
-        {%- endfor %}
-        <button type="button" class="gallery-filters__clear" hidden>Clear</button>
-      </div>
-      <p class="gallery-filters__status" role="status"></p>
-    </div>
-    {%- endif %}
-    {%- for year in years %}
-    <section class="gallery-year" aria-labelledby="gallery-{{ year.name }}">
-      <h2 class="gallery-year__title" id="gallery-{{ year.name }}">{{ year.name }}</h2>
-      {%- for album in year.items %}
-      {% include gallery-album.html album=album %}
-      {%- endfor %}
-    </section>
-    {%- endfor %}
+    {% include gallery-index.html albums=site.data.gallery.albums categories=site.data.gallery.categories %}
     {%- endif %}
   </div>
 </section>
 
 {% include figure-dialog.html %}
-<script src="{{ '/assets/js/figure.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/gallery-filter.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/figure.js' | relative_url }}" defer></script>

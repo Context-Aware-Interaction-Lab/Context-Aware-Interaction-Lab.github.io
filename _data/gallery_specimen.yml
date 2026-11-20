@@ -1,27 +1,45 @@
-# The specimen album on /design-language/: the Gallery components drawn from publication figures that are already on
-# the site (reuse rights confirmed 2026-11-18), so the layout, the lightbox and the folding are tested before the
-# lab has a single photo. Not real data: nothing here is ever listed on /gallery/. 14 photos, so the album folds
-# (more than 12 shows 8, then a "Show N more" fold).
-slug: specimen
-# Where the photos sit. A real album has no dir: its photos are in assets/img/gallery/<slug>/.
-dir: /assets/img/publications
-title: Specimen album
-date: "2026-11"
-category: demos
-location: Singapore
-summary: "Publication figures standing in for photos, to show the grid, the folded rest and the lightbox. Open one and use the arrow keys."
-photos:
-  - {file: chi26-acp-agent-roles, width: 1600, height: 963, alt: "Quadrant diagram placing envisioned roles for an advance-care-planning AI agent by autonomy and human control."}
-  - {file: cscw26-peer-supporter, width: 1600, height: 640, alt: "Flow diagram of two studies of peer supporters chatting with an LLM-simulated client.", caption: "A wide figure, to show a photo that is much wider than it is tall."}
-  - {file: eacl26-blend-vis, width: 1600, height: 985, alt: "Pipeline diagram of the BLEnD-Vis benchmark from cultural questions to human-validated image pairs."}
-  - {file: ase25-simulated-debugging, width: 1224, height: 765, alt: "Mock-up of a dialogue in which an AI assistant guides a student through a failing test."}
-  - {file: dis26-acts-configuration, width: 960, height: 535, alt: "Slide contrasting an AI agent available before, after and beyond a person losing capacity."}
-  - {file: chi26-parent-child-align, width: 1240, height: 660, alt: "Illustration of a parent reading a picture book with a toddler, watched by a speech-language pathologist and a robot."}
-  - {file: wacv26-dronaquatics, width: 1225, height: 640, alt: "System diagram of Dronaquatics from swimmer pose estimation to coach feedback."}
-  - {file: chi26-sketch-taxonomy, width: 1600, height: 696, alt: "Screenshot of the SketchLLM prototype: a drawing canvas beside a chat panel."}
-  - {file: koli25-codehinter, width: 1600, height: 610, alt: "Screenshot of the CodeHinter VS Code extension with failed test cases highlighted and hint buttons.", credit: "CAILab"}
-  - {file: springer26-talksketch, width: 1435, height: 480, alt: "Workflow diagram: a designer sketches while talking and a multimodal chatbot returns text and images."}
-  - {file: emnlp25-pixelhumor, width: 1600, height: 476, alt: "Three donut charts of the PixelHumor comics by sound effects, humour carrier and humour style."}
-  - {file: cscw26-sword-shield, width: 1600, height: 492, alt: "Diagram of the communication game: four timed rounds with Disinformer suspicion and vote steps."}
-  - {file: dis26-sketch-speech, width: 1600, height: 387, alt: "Images generated from the same toaster sketch, with and without the designer's speech."}
-  - {file: pg25-vr-modeling, width: 1600, height: 298, alt: "Four-step sequence in which a blue 3D model of a pot gains a handle and a spout."}
+# The specimen albums on /design-language/: the Gallery components drawn from publication figures already on the
+# site (reuse rights confirmed 2026-11-18), so the cards, the filter chips, the year headings and the lightbox are
+# tested before the lab has many albums of its own. Not real data: nothing here is ever listed on /gallery/.
+# Three albums on purpose: a 14-photo one (captions, a credit), a 3-photo one in another category, and a single photo
+# in an earlier year (which skips the contact sheet). Their photos are in dir, not in gallery/<slug>/.
+albums:
+  - slug: specimen-demos
+    title: Specimen album
+    date: "2026-11"
+    category: demos
+    location: Singapore
+    summary: "Publication figures standing in for photos, to show the card, the contact sheet and the viewer. Open a photo and use the arrow keys."
+    dir: /assets/img/publications
+    photos:
+      - {file: chi26-acp-agent-roles, width: 1600, height: 963, alt: "Quadrant diagram placing envisioned roles for an advance-care-planning AI agent by autonomy and human control."}
+      - {file: cscw26-peer-supporter, width: 1600, height: 640, alt: "Flow diagram of two studies of peer supporters chatting with an LLM-simulated client.", caption: "A wide figure, to show a photo that is much wider than it is tall."}
+      - {file: eacl26-blend-vis, width: 1600, height: 985, alt: "Pipeline diagram of the BLEnD-Vis benchmark from cultural questions to human-validated image pairs."}
+      - {file: ase25-simulated-debugging, width: 1224, height: 765, alt: "Mock-up of a dialogue in which an AI assistant guides a student through a failing test."}
+      - {file: dis26-acts-configuration, width: 960, height: 535, alt: "Slide contrasting an AI agent available before, after and beyond a person losing capacity."}
+      - {file: chi26-parent-child-align, width: 1240, height: 660, alt: "Illustration of a parent reading a picture book with a toddler, watched by a speech-language pathologist and a robot."}
+      - {file: wacv26-dronaquatics, width: 1225, height: 640, alt: "System diagram of Dronaquatics from swimmer pose estimation to coach feedback."}
+      - {file: chi26-sketch-taxonomy, width: 1600, height: 696, alt: "Screenshot of the SketchLLM prototype: a drawing canvas beside a chat panel."}
+      - {file: koli25-codehinter, width: 1600, height: 610, alt: "Screenshot of the CodeHinter VS Code extension with failed test cases highlighted and hint buttons.", credit: "CAILab"}
+      - {file: springer26-talksketch, width: 1435, height: 480, alt: "Workflow diagram: a designer sketches while talking and a multimodal chatbot returns text and images."}
+      - {file: emnlp25-pixelhumor, width: 1600, height: 476, alt: "Three donut charts of the PixelHumor comics by sound effects, humour carrier and humour style."}
+      - {file: cscw26-sword-shield, width: 1600, height: 492, alt: "Diagram of the communication game: four timed rounds with Disinformer suspicion and vote steps."}
+      - {file: dis26-sketch-speech, width: 1600, height: 387, alt: "Images generated from the same toaster sketch, with and without the designer's speech."}
+      - {file: pg25-vr-modeling, width: 1600, height: 298, alt: "Four-step sequence in which a blue 3D model of a pot gains a handle and a spout."}
+  - slug: specimen-conferences
+    title: "Specimen: a second album"
+    date: "2026-06"
+    category: conferences
+    summary: "Three photos in another category and month, so the chips and the grid have something to sort."
+    dir: /assets/img/publications
+    photos:
+      - {file: wacv26-dronaquatics, width: 1225, height: 640, alt: "System diagram of Dronaquatics from swimmer pose estimation to coach feedback."}
+      - {file: chi26-acp-agent-roles, width: 1600, height: 963, alt: "Quadrant diagram placing envisioned roles for an advance-care-planning AI agent by autonomy and human control."}
+      - {file: dis26-sketch-speech, width: 1600, height: 387, alt: "Images generated from the same toaster sketch, with and without the designer's speech."}
+  - slug: specimen-single
+    title: "Specimen: one photo"
+    date: "2025-09"
+    category: lab-life
+    dir: /assets/img/publications
+    photos:
+      - {file: eacl26-blend-vis, width: 1600, height: 985, alt: "Pipeline diagram of the BLEnD-Vis benchmark from cultural questions to human-validated image pairs."}

@@ -1,39 +1,34 @@
 {%- comment -%}
-  One album: heading, date, place, count, summary, then a justified grid of photos. More than 12 photos show the first
-  8 and fold the rest into a native <details>, so without JS every photo is still one click away. album = one entry of
-  gallery.yml's albums (or the specimen's data).
+  One album, as a card: the first photo is the cover, then title, date, place and photo count. The card is the
+  <summary> of a native <details>, so without JS it opens in place (the whole row, see site.css) to show the summary,
+  the Read more link and a justified grid of every photo, each a plain link to its large image. With JS, figure.js
+  intercepts the click and opens the lightbox on the album's contact sheet instead. Photos inside a closed <details>
+  are not fetched, so the page loads covers only. album = one entry of gallery.yml's albums (or a specimen's).
 {%- endcomment -%}
 {%- assign album = include.album -%}
+{%- if album.dir %}{% assign base = album.dir %}{% else %}{% assign base = album.slug | prepend: '/assets/img/gallery/' %}{% endif -%}
 {%- assign total = album.photos | size -%}
-{%- assign shown = total -%}
-{%- if total > 12 %}{% assign shown = 8 %}{% endif -%}
+{%- assign cover = album.photos | first -%}
 {%- assign d = album.date | append: "" -%}
 {%- assign dlen = d | size -%}
 {%- if dlen == 4 %}{% assign when = d %}{% elsif dlen == 7 %}{% assign d1 = d | append: "-01" %}{% assign when = d1 | date: "%B %Y" %}{% else %}{% assign when = d | date: "%-d %B %Y" %}{% endif -%}
-<section class="album" id="album-{{ album.slug }}" data-category="{{ album.category }}" aria-labelledby="album-{{ album.slug }}-title">
-  <header class="album__head">
-    <h3 class="album__title" id="album-{{ album.slug }}-title">{{ album.title }}</h3>
-    <p class="album__meta"><time datetime="{{ d }}">{{ when }}</time>{% if album.location %} · {{ album.location }}{% endif %} · {{ total }} photo{% if total != 1 %}s{% endif %}</p>
+<details class="album" id="album-{{ album.slug }}" data-category="{{ album.category }}">
+  <summary class="album__card" aria-haspopup="dialog">
+    <img class="album__cover" src="{{ base | append: '/' | append: cover.file | append: '-thumb.jpg' | relative_url }}" width="{{ cover.width }}" height="{{ cover.height }}" alt="" loading="lazy">
+    <h3 class="album__title">{{ album.title }}</h3>
+    <span class="album__meta"><time datetime="{{ d }}">{{ when }}</time>{% if album.location %} · {{ album.location }}{% endif %} · {{ total }} photo{% if total != 1 %}s{% endif %}</span>
+  </summary>
+  <div class="album__body">
     {%- if album.summary %}
     <div class="album__summary">{{ album.summary | markdownify }}</div>
     {%- endif %}
     {%- if album.link %}
     <a class="album__link" href="{{ album.link | relative_url }}">Read more</a>
     {%- endif %}
-  </header>
-  <ul class="album__grid">
-    {%- for photo in album.photos limit: shown %}
-    {% include gallery-photo.html album=album photo=photo %}
-    {%- endfor %}
-  </ul>
-  {%- if shown < total %}
-  <details class="album__rest">
-    <summary>Show {{ total | minus: shown }} more photos</summary>
     <ul class="album__grid">
-      {%- for photo in album.photos offset: shown %}
-      {% include gallery-photo.html album=album photo=photo %}
+      {%- for photo in album.photos %}
+      {% include gallery-photo.html album=album photo=photo base=base %}
       {%- endfor %}
     </ul>
-  </details>
-  {%- endif %}
-</section>
+  </div>
+</details>

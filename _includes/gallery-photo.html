@@ -1,8 +1,11 @@
-{%- comment -%}One photo tile of an album (gallery-album.html). album, photo (files are <album.dir or /assets/img/gallery/<slug>>/<file>.jpg and -thumb.jpg). --ar is width/height; the stylesheet turns it into the tile's share of its row.{%- endcomment -%}
-{%- if include.album.dir %}{% assign base = include.album.dir %}{% else %}{% assign base = include.album.slug | prepend: '/assets/img/gallery/' %}{% endif -%}
+{%- comment -%}
+  One photo tile of an album (gallery-album.html). album, photo, base (the folder of the album's images; the photo is
+  <base>/<file>.jpg with <file>-thumb.jpg beside it). --ar is width/height; the stylesheet turns it into the tile's
+  share of its row.
+{%- endcomment -%}
 {%- assign ar = include.photo.width | times: 1.0 | divided_by: include.photo.height | round: 3 -%}
 <li class="album__photo" style="--ar:{{ ar }}">
-  <a href="{{ base | append: '/' | append: include.photo.file | append: '.jpg' | relative_url }}" data-figure data-group="album-{{ include.album.slug }}" data-title="{{ include.album.title | escape }}" data-alt="{{ include.photo.alt | escape }}"{% if include.photo.caption %} data-caption="{{ include.photo.caption | escape }}"{% endif %}{% if include.photo.credit %} data-credit="{{ include.photo.credit | escape }}"{% endif %}>
-    <img src="{{ base | append: '/' | append: include.photo.file | append: '-thumb.jpg' | relative_url }}" width="{{ include.photo.width }}" height="{{ include.photo.height }}" alt="{{ include.photo.alt | escape }}" loading="lazy">
+  <a href="{{ include.base | append: '/' | append: include.photo.file | append: '.jpg' | relative_url }}" data-figure data-group="album-{{ include.album.slug }}" data-title="{{ include.album.title | escape }}" data-alt="{{ include.photo.alt | escape }}"{% if include.photo.caption %} data-caption="{{ include.photo.caption | escape }}"{% endif %}{% if include.photo.credit %} data-credit="{{ include.photo.credit | escape }}"{% endif %}>
+    <img src="{{ include.base | append: '/' | append: include.photo.file | append: '-thumb.jpg' | relative_url }}" width="{{ include.photo.width }}" height="{{ include.photo.height }}" alt="{{ include.photo.alt | escape }}" loading="lazy">
   </a>
 </li>
