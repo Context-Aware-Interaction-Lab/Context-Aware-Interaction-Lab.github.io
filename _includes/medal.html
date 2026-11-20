@@ -1,0 +1,6 @@
+{%- comment -%}
+  venue  a publication's `venue`. Prints a medal after the venue of an award-winning paper.
+  Awards sit inside the venue string ("CHI'26 · Honourable Mention"), which JoinApplyTest also matches,
+  so this keys on that text instead of a second field. Decorative: the venue text already says it.
+{%- endcomment -%}
+{%- if include.venue contains "Honourable Mention" -%}<span class="medal" aria-hidden="true">🏅</span>{%- endif -%}

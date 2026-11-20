@@ -1,0 +1,4 @@
+# bun's runner also matches *.spec.js, which would run the Playwright specs in e2e/ as unit tests. Those are
+# browser tests, run by bin/e2e through Playwright's own runner.
+[test]
+pathIgnorePatterns = ["e2e/**", "node_modules/**"]

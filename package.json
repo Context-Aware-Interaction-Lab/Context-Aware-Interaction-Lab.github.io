@@ -1,0 +1,11 @@
+{
+  "name": "cailab-website",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "e2e": "bin/e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1"
+  }
+}
