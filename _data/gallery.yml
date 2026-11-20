@@ -1,8 +1,11 @@
-# Lab photos, as albums by event, newest first. The Gallery page is published exactly while `albums` has something in it
+# Lab photos, as albums by event. The page orders them by slug, which starts with the date, so list order does not matter
+# (keep it newest first anyway; GalleryDataTest checks). The Gallery page is published exactly while `albums` has something in it
 # (GalleryVisibilityTest ties the page, its nav entry and this list together). To add an album, see "Adding a gallery
 # album" in README.md.
 #
-# album:  slug (lowercase, hyphens; gives #album-<slug>), title, date ("YYYY", "YYYY-MM" or "YYYY-MM-DD", quoted),
+# album:  slug (YYYYMMDD-name: the album's date as eight digits, 00 for a missing month or day, then lowercase words
+#         joined by hyphens, e.g. 20260702-lab-day-out; it is the image folder, gives #album-<slug>, and is what the page
+#         sorts by, so folders list in date order in Finder), title, date ("YYYY", "YYYY-MM" or "YYYY-MM-DD", quoted),
 #         category (an id below), consent ("YYYY-MM-DD", quoted: the day Kenny confirmed that everyone identifiable in
 #         the photos AND named in the captions agreed to web use; a photo comes off on request), photos,
 #         optional: location, summary (Markdown), link (a path on this site, e.g. /news/#news-12)
@@ -16,7 +19,7 @@ categories:
   - {id: demos, label: Demos}
 
 albums:
-  - slug: lab-day-out-2026
+  - slug: 20260702-lab-day-out
     title: Lab day out in Chinatown
     date: "2026-07-02"
     category: lab-life

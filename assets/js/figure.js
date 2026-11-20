@@ -22,7 +22,7 @@
   var group = [];        // the anchors of the open album
   var index = 0;
   var albumEl = null;    // details.album, when the open photos belong to one
-  var viaCard = false;
+  var fixedReturn = false;   // focus goes back to returnTo (the card, or the slideshow photo), not the tile last viewed
 
   function el(tag, cls, attrs) {
     var n = document.createElement(tag);
@@ -79,7 +79,7 @@
     dlg.classList.toggle('is-grouped', many);
     nav.hidden = !many;
     allBtn.hidden = !(many && albumEl);
-    if (!viaCard) returnTo = a;   // opened from a tile: focus goes back to the tile last viewed
+    if (!fixedReturn) returnTo = a;   // opened from a tile: focus goes back to the tile last viewed
     title.textContent = a.dataset.title;
     stage.textContent = '';
     (a.hasAttribute('data-video') ? video : image)(a);
@@ -142,7 +142,7 @@
   function openAlbum(details) {
     var photos = groupOf(details.id);
     if (!photos.length) return;
-    viaCard = true;
+    fixedReturn = true;
     albumEl = details;
     group = photos;
     index = 0;
@@ -152,9 +152,11 @@
     setHash(details.id);
   }
 
-  // A thumbnail or video link, or a photo link, was pressed.
-  function open(a) {
-    viaCard = false;
+  // A thumbnail or video link, or a photo link, was pressed. `from` is the control that opened it when that is not
+  // the link itself (the slideshow's photo, whose album sits closed on the page): focus returns there.
+  function open(a, from) {
+    fixedReturn = !!from;
+    if (from) returnTo = from;
     albumEl = albumOf(a.dataset.group);
     group = groupOf(a.dataset.group);
     index = Math.max(group.indexOf(a), 0);
@@ -180,6 +182,13 @@
     if (card) {
       e.preventDefault();   // the card does not open in place; it opens the lightbox
       openAlbum(card.parentNode);
+      return;
+    }
+    var slide = e.target.closest('[data-opens]');   // the Gallery slideshow's photo: open the photo it shows
+    if (slide) {
+      var href = slide.getAttribute('data-opens');
+      var link = Array.prototype.filter.call(document.querySelectorAll('a[data-figure]'), function (x) { return x.getAttribute('href') === href; })[0];
+      if (link) { e.preventDefault(); open(link, slide); }
       return;
     }
     var a = e.target.closest('a[data-figure], a[data-video]');
@@ -215,7 +224,7 @@
 
   dlg.addEventListener('close', function () {
     stage.textContent = '';   // removes the iframe, which stops playback
-    if (viaCard && albumEl && location.hash === '#' + albumEl.id) setHash('');
+    if (fixedReturn && albumEl && location.hash === '#' + albumEl.id) setHash('');
     group = [];
     albumEl = null;
     if (returnTo) returnTo.focus();
