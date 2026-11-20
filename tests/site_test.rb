@@ -619,7 +619,9 @@ class PublicationFiltersTest < Minitest::Test
     refute_match(/data-filter="selected"/, html, "the Selected chip was dropped")
   end
 
-  # Each year's mix of types, one entry per type present: the type's dot, then "<n> <short>".
+  # Each year's mix of types, one entry per type present: the type's dot, the count, and the type's name. The name
+  # is its own span so a phone can hide it visually (dots and numbers only) while it stays in the page for screen
+  # readers, and the whole entry carries it as a tooltip.
   def test_each_year_summary_breaks_the_year_down_by_type_in_the_type_colours
     summaries = html_of("/publications/").scan(%r{<summary><h2>(\d{4})</h2>(.*?)</summary>}m)
     assert_equal PUBS.map { |p| p["year"] }.uniq.size, summaries.size
@@ -628,9 +630,10 @@ class PublicationFiltersTest < Minitest::Test
       expected = TYPES.map { |t| [t, papers.count { |p| p["type"] == t["id"] }] }.reject { |_, n| n.zero? }
         .map { |t, n| [t["tone"], "#{n} #{t["short"]}"] }
       types_html = inner[%r{<span class="year__types">(.*)</span>\z}m, 1] or flunk("#{year} has no .year__types")
-      actual = types_html.scan(%r{<span class="year__type"><span class="dot c(\d)" aria-hidden="true"></span>([^<]*)</span>})
-        .map { |tone, text| [tone.to_i, CGI.unescapeHTML(text)] }
-      assert_equal expected, actual, "#{year} breakdown (dot colour, count)"
+      entries = types_html.scan(%r{<span class="year__type" title="([^"]*)"><span class="dot c(\d)" aria-hidden="true"></span>(\d+) <span class="year__type-label">([^<]*)</span></span>})
+      actual = entries.map { |_, tone, n, label| [tone.to_i, "#{n} #{CGI.unescapeHTML(label)}"] }
+      assert_equal expected, actual, "#{year} breakdown (dot colour, count and name)"
+      entries.each { |title, _, n, label| assert_equal "#{n} #{label}", CGI.unescapeHTML(title), "#{year}: tooltip should match the entry" }
     end
   end
 
@@ -748,6 +751,15 @@ class PhoneLayoutTest < Minitest::Test
     assert_match(/\.publication-row\{[^}]*grid-template-areas/, css, "no phone grid for a plain row")
     assert_match(/\.publication-row\[data-figure\]\{[^}]*grid-template-areas/, css, "no phone grid for a row with a figure")
     assert_match(/\.publication-row__side,\s*\.publication-row__main\{[^}]*display:contents/, css, "side and main must dissolve into the grid")
+  end
+
+  def test_the_phone_query_tightens_the_page_header_the_year_summary_and_the_more_links
+    css = phone_css
+    assert_match(/\.page-header\{[^}]*padding-block/, css, "no compact page header on phones")
+    assert_match(/\.page-header h1\{[^}]*font-size/, css, "no smaller page title on phones")
+    assert_match(/\.year__type-label\{[^}]*position:absolute/, css, "the year summary's type names must be visually hidden on phones")
+    assert_match(/\.paper-link a\{[^}]*display:block/, css, "the More links should flow as text on phones")
+    assert_match(/\.paper-link__venue,\s*\.paper-link__title\{[^}]*display:inline/, css, "venue and title should share a line on phones")
   end
 
   def test_the_phone_query_turns_research_cards_into_a_snapping_strip
