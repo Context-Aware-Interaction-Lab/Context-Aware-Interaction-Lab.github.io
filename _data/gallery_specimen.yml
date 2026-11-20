@@ -1,8 +1,11 @@
 # The specimen albums on /design-language/: the Gallery components drawn from publication figures already on the
 # site (reuse rights confirmed 2026-11-18), so the cards, the filter chips, the year headings and the lightbox are
 # tested before the lab has many albums of its own. Not real data: nothing here is ever listed on /gallery/.
-# Three albums on purpose: a 14-photo one (captions, a credit), a 3-photo one in another category, and a single photo
-# in an earlier year (which skips the contact sheet). Their photos are in dir, not in gallery/<slug>/.
+# Seven albums on purpose. 2026 holds five (enough to overflow its strip at desktop width): a 14-photo one (captions, a
+# credit), one with a very long title and place (to show the two-line clamp), a one-word title with a single photo (which
+# skips the contact sheet), one with no place, and a 3-photo one in another category and month. 2025 holds a single photo.
+# The last is undated: true, tied to no year, as the real catch-all is. Every card must come out the same size whatever
+# its text. Their photos are in dir, not in gallery/<slug>/.
 albums:
   - slug: 20261100-specimen-demos
     title: Specimen album
@@ -26,6 +29,32 @@ albums:
       - {file: cscw26-sword-shield, width: 1600, height: 492, alt: "Diagram of the communication game: four timed rounds with Disinformer suspicion and vote steps."}
       - {file: dis26-sketch-speech, width: 1600, height: 387, alt: "Images generated from the same toaster sketch, with and without the designer's speech."}
       - {file: pg25-vr-modeling, width: 1600, height: 298, alt: "Four-step sequence in which a blue 3D model of a pot gains a handle and a spout."}
+  - slug: 20261000-specimen-long
+    title: "Specimen: an album with a very long title that has to be clamped to two lines"
+    date: "2026-10"
+    category: outreach
+    location: "A long place name, Somewhere Far Away, With Several Parts"
+    summary: "A long title and a long place, to show that every card is the same size however much text it carries."
+    dir: /assets/img/publications
+    photos:
+      - {file: cscw26-sword-shield, width: 1600, height: 492, alt: "Diagram of the communication game: four timed rounds with Disinformer suspicion and vote steps."}
+      - {file: emnlp25-pixelhumor, width: 1600, height: 476, alt: "Three donut charts of the PixelHumor comics by sound effects, humour carrier and humour style."}
+  - slug: 20260912-specimen-short
+    title: Short
+    date: "2026-09-12"
+    category: demos
+    location: SUTD
+    dir: /assets/img/publications
+    photos:
+      - {file: koli25-codehinter, width: 1600, height: 610, alt: "Screenshot of the CodeHinter VS Code extension with failed test cases highlighted and hint buttons."}
+  - slug: 20260800-specimen-no-place
+    title: No place given
+    date: "2026-08"
+    category: lab-life
+    dir: /assets/img/publications
+    photos:
+      - {file: springer26-talksketch, width: 1435, height: 480, alt: "Workflow diagram: a designer sketches while talking and a multimodal chatbot returns text and images."}
+      - {file: pg25-vr-modeling, width: 1600, height: 298, alt: "Four-step sequence in which a blue 3D model of a pot gains a handle and a spout."}
   - slug: 20260600-specimen-conferences
     title: "Specimen: a second album"
     date: "2026-06"
@@ -43,3 +72,12 @@ albums:
     dir: /assets/img/publications
     photos:
       - {file: eacl26-blend-vis, width: 1600, height: 985, alt: "Pipeline diagram of the BLEnD-Vis benchmark from cultural questions to human-validated image pairs."}
+  - slug: specimen-undated
+    title: "Specimen: any year"
+    undated: true
+    category: lab-life
+    summary: "Tied to no year, so it sits under its own heading after the years."
+    dir: /assets/img/publications
+    photos:
+      - {file: dis26-acts-configuration, width: 960, height: 535, alt: "Slide contrasting an AI agent available before, after and beyond a person losing capacity."}
+      - {file: chi26-parent-child-align, width: 1240, height: 660, alt: "Illustration of a parent reading a picture book with a toddler, watched by a speech-language pathologist and a robot."}

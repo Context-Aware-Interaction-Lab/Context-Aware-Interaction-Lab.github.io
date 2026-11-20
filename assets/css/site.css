@@ -493,23 +493,55 @@ svg line,svg path{stroke:var(--c);fill:none}
 .gallery-empty{color:var(--text-muted)}
 .gallery-year+.gallery-year{margin-top:var(--space-7)}
 .gallery-year__title{font:700 var(--fs-h2)/var(--lh-tight) var(--font-display);margin-bottom:var(--space-5)}
-/* Albums are cards in a grid under their year. An album is a native <details>: without JS its card opens in place and
-   takes the whole row (below); with JS figure.js opens the lightbox instead. */
-.album-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:var(--space-5)}
-.album{--row-h:220px}
-.album[open]{grid-column:1/-1}
-.album__card{display:block;overflow:hidden;border:1px solid var(--line);border-radius:var(--radius-l);background:var(--surface);list-style:none;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+/* Albums sit on one horizontal strip per year (and one for the undated ones): .album-cards is a flex row on scroll-snap,
+   so it scrolls and swipes with no script. gallery-carousel.js adds the arrows (.album-carousel__btn, shown only while the
+   strip overflows), the mouse drag, and the lens: --m on each .album, 1 for the card at the strip's centre easing to 0 a
+   pitch away, and --h, 1 for the card under the mouse or with focus. Together they set the card's scale, opacity and shadow.
+   A strip that fits is a plain row (the hovered card grows to --peak); one that overflows (.is-overflowing, decided by the
+   script from the card count) becomes a coverflow: cards centre-snap with centring padding, the active card grows to a
+   --peak of 1.25, and the rest shrink to --rest and fade to --dim. Every card is the same size whatever its text: a fixed
+   width (--card-w), a 4:3 cover, and a title and meta line each clamped to two lines with two lines reserved. The scroller
+   has room to spare (--pad-y above and below, --bleed at the sides, taken back as negative margin) so the bigger card is
+   not clipped by the overflow. An album is a native <details>: without JS its card opens in place as a full-width slide
+   (below); with JS figure.js opens the lightbox instead. */
+.album-carousel{--card-w:280px;--bleed:var(--gutter);--pad-y:46px;--room-y:24px;--card-pad:var(--space-4);--rest:1;--peak:1.15;--dim:1;position:relative}
+.album-carousel.is-overflowing{--rest:.88;--peak:1.25;--dim:.55}
+.album-cards{display:flex;gap:var(--space-5);overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:var(--bleed);scrollbar-width:thin;padding:var(--pad-y) var(--bleed);margin:calc(var(--room-y) - var(--pad-y)) calc(-1 * var(--bleed))}
+.is-overflowing .album-cards{padding-inline:calc((100% + 2 * var(--bleed) - var(--card-w)) / 2);scroll-padding-inline:0;scrollbar-width:none;cursor:grab}
+.is-overflowing .album-cards::-webkit-scrollbar{display:none}
+.album-cards.is-dragging{scroll-snap-type:none;user-select:none}
+.album-cards.is-dragging,.album-cards.is-dragging *{cursor:grabbing !important}
+.album-cards.is-dragging .album,.album-cards.after-drag .album{pointer-events:none}
+/* The scale and the fade are on .album (the wrapper), not on the card: the card has a clip (overflow and rounded corners)
+   that is costly to repaint, and the shadow is a pseudo-element whose OPACITY changes, never a box-shadow being redrawn.
+   Scale and opacity follow the scroll frame by frame (--m is set by the script), so they are not transitioned: a
+   transition on a value that is rewritten every frame only chases it, and runs on after the scroll has stopped. Only --h,
+   the hover and focus lift, is eased (it is a registered number, so it can transition). While a strip is moving its cards
+   are promoted to their own layers (.is-moving), and released at rest so they are drawn crisp. */
+@property --h{syntax:"<number>";inherits:false;initial-value:0}
+.album{--row-h:220px;position:relative;flex:0 0 var(--card-w);min-width:0;scroll-snap-align:start;z-index:calc(var(--m, 0) * 10);transform:scale(calc(var(--rest) + (var(--peak) - var(--rest)) * max(var(--m, 0), var(--h, 0))));opacity:calc(var(--dim) + (1 - var(--dim)) * max(var(--m, 0), var(--h, 0)));transition:--h .3s cubic-bezier(.2,.8,.2,1)}
+.album::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:var(--radius-l);box-shadow:0 18px 40px rgba(17,20,27,.3);opacity:max(var(--m, 0), var(--h, 0));pointer-events:none}
+.is-overflowing .album{scroll-snap-align:center;scroll-snap-stop:always}
+.is-moving .album{will-change:transform,opacity}
+.album[open]{flex-basis:100%;transform:none;opacity:1}
+.album[open]::before{display:none}
+.album__card{position:relative;display:block;overflow:hidden;padding-bottom:var(--card-pad);border:1px solid var(--line);border-radius:var(--radius-l);background:var(--surface);list-style:none;cursor:pointer;isolation:isolate;transition:border-color .15s}
 .album__card::-webkit-details-marker{display:none}
-.album__card:hover{border-color:var(--text);box-shadow:0 8px 24px rgba(17,20,27,.1)}
 .album__card:focus-visible{outline-offset:2px}
+.album:not([open]):has(> .album__card:focus-visible){--h:1;z-index:20}
+@media (hover:hover){.album:not([open]):hover{--h:1;z-index:20}.album__card:hover{border-color:var(--text)}}
 .album[open]>.album__card{max-width:360px}
-.album__cover{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;background:var(--surface-2);transition:transform .3s ease}
-.album__card:hover .album__cover{transform:scale(1.03)}
-.album__card{isolation:isolate}
+.album__cover{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;background:var(--surface-2);-webkit-user-drag:none}
 .album__title{font:700 var(--fs-h3)/1.2 var(--font-display)}
-.album__card .album__title{padding:var(--space-4) var(--space-4) 0}
+.album__card .album__title{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;min-height:calc(2 * 1.2em + var(--card-pad));padding:var(--card-pad) var(--card-pad) 0}
 .album__meta{display:block;margin-top:var(--space-1);font:500 var(--fs-label)/1.5 var(--font-mono);color:var(--text-muted)}
-.album__card .album__meta{padding:0 var(--space-4) var(--space-4)}
+.album__card .album__meta{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;min-height:calc(2 * 1.5em);padding:0 var(--card-pad)}
+.album-carousel__btn{position:absolute;z-index:30;top:calc(var(--room-y) + var(--card-w) * .375 - var(--tap) / 2);width:var(--tap);height:var(--tap);border:1.5px solid var(--line-strong);border-radius:var(--radius-pill);background:var(--bg);color:var(--text);font:400 1.5rem/1 var(--font-body);cursor:pointer;box-shadow:0 4px 14px rgba(17,20,27,.16)}
+.album-carousel__btn[hidden]{display:none}
+.album-carousel__btn:hover{border-color:var(--text);background:var(--surface-2)}
+.album-carousel__btn[aria-disabled="true"]{opacity:.35;cursor:default;box-shadow:none}
+.album-carousel__prev{left:var(--space-2)}
+.album-carousel__next{right:var(--space-2)}
 .album__body{padding-top:var(--space-4)}
 .album__summary{max-width:72ch;color:var(--text-muted)}
 .album__summary p+p{margin-top:var(--space-2)}
@@ -526,16 +558,22 @@ svg line,svg path{stroke:var(--c);fill:none}
 .album__photo img{width:100%;height:100%;object-fit:cover;transition:transform .25s ease}
 .album__photo a:hover img,.album__photo button:hover img{transform:scale(1.03)}
 @media (prefers-reduced-motion:reduce){
-  .album__photo img,.album__cover{transition:none}
-  .album__photo a:hover img,.album__photo button:hover img,.album__card:hover .album__cover{transform:none}
+  .album__photo img{transition:none}
+  .album__photo a:hover img,.album__photo button:hover img{transform:none}
+  .album{transition:none}
 }
 @media (max-width:640px){
-  .album-cards{grid-template-columns:repeat(2,1fr);gap:var(--space-3)}
+  .album-carousel{--card-w:min(72vw,280px);--card-pad:var(--space-3);--pad-y:26px;--room-y:10px}
+  .album-carousel.is-overflowing{--rest:.9;--peak:1.1;--dim:.6}
+  .album-cards{gap:var(--space-3)}
   .album{--row-h:140px}
-  .album__card .album__title{padding:var(--space-3) var(--space-3) 0;font-size:1rem}
-  .album__card .album__meta{padding:0 var(--space-3) var(--space-3)}
+  .album__card .album__title{font-size:1rem}
   .gallery-year+.gallery-year{margin-top:var(--space-6)}
 }
+/* A phone swipes the strip, so the arrows would only sit over the photos: hidden at phone width and on touch screens. */
+@media (max-width:640px),(hover:none) and (pointer:coarse){.album-carousel__btn{display:none}}
+/* After the phone rule above, which sets its own scale for an overflowing strip at the same specificity. */
+@media (prefers-reduced-motion:reduce){.album-carousel,.album-carousel.is-overflowing{--rest:1;--peak:1;--dim:1}}
 /* lightbox, album mode. Photo: a fixed-height dark stage so the dialog does not jump between photos, then the caption
    and All photos / Previous / counter / Next. Sheet: a scrolling grid of every photo under the album's summary.
    A lone figure (Publications) keeps its own sizing. */

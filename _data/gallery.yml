@@ -1,11 +1,15 @@
-# Lab photos, as albums by event. The page orders them by slug, which starts with the date, so list order does not matter
-# (keep it newest first anyway; GalleryDataTest checks). The Gallery page is published exactly while `albums` has something in it
+# Lab photos, as albums by event. The page orders dated albums by slug, which starts with the date, so list order does not
+# matter (keep it newest first anyway; GalleryDataTest checks). On the page each year's albums sit on one scroll-snap strip,
+# every card the same size; an album tied to no year (undated: true) sits last, under "Anytime". The Gallery page is published exactly while `albums` has something in it
 # (GalleryVisibilityTest ties the page, its nav entry and this list together). To add an album, see "Adding a gallery
 # album" in README.md.
 #
-# album:  slug (YYYYMMDD-name: the album's date as eight digits, 00 for a missing month or day, then lowercase words
-#         joined by hyphens, e.g. 20260702-lab-day-out; it is the image folder, gives #album-<slug>, and is what the page
-#         sorts by, so folders list in date order in Finder), title, date ("YYYY", "YYYY-MM" or "YYYY-MM-DD", quoted),
+# album:  slug (a dated album: YYYYMMDD-name, the album's date as eight digits, 00 for a missing month or day, then
+#         lowercase words joined by hyphens, e.g. 20260702-lab-day-out; an undated album: a plain name such as
+#         outtakes-and-oddities, which must not start with eight digits; it is the image folder, gives #album-<slug>, and
+#         for dated albums is what the page sorts by, so folders list in date order in Finder), title, then EITHER date
+#         ("YYYY", "YYYY-MM" or "YYYY-MM-DD", quoted) OR undated: true with no date at all (for the catch-all, tied to no
+#         year; a missing date without the flag is an error, so a forgotten date cannot turn an album into a catch-all),
 #         category (an id below), consent ("YYYY-MM-DD", quoted: the day Kenny confirmed that everyone identifiable in
 #         the photos AND named in the captions agreed to web use; a photo comes off on request), photos,
 #         optional: location, summary (Markdown), link (a path on this site, e.g. /news/#news-12)
@@ -78,11 +82,11 @@ albums:
       - {file: "08", width: 1280, height: 960, alt: "A lab member smiling at a lectern beside a laptop, below a projected title slide for Words to Describe What I'm Feeling, an advance care planning paper marked with an Honorable Mention Award."}
       - {file: "09", width: 1280, height: 946, alt: "Three lab members behind the CHI letters in the conference lobby, two holding open Honorable Mention certificates, with a Welcome to CHI 2026 banner behind them."}
 
-  - slug: 20240000-outtakes-and-oddities
+  - slug: outtakes-and-oddities
     title: "Outtakes & Oddities"
-    date: "2024"
+    undated: true
     category: lab-life
     consent: "2024-06-13"
-    summary: "The catch-all: stray frames, odd moments and happy accidents of lab life that fit no event. Dated by its first photo, so it keeps its place at the bottom as more turn up."
+    summary: "The catch-all: stray frames, odd moments and happy accidents of lab life that fit no event, and so belong to no year."
     photos:
       - {file: "01", width: 1280, height: 960, alt: "Selfie of a group working around long white tables in a bare classroom, laptops open and printed pages spread out, a person in a green T-shirt in the foreground and the others smiling behind them."}

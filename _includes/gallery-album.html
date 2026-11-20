@@ -1,5 +1,6 @@
 {%- comment -%}
-  One album, as a card: the first photo is the cover, then title, date, place and photo count. The card is the
+  One album, as a card: the first photo is the cover, then title, then date (none for an undated album), place and
+  photo count. Every card is the same size whatever its text (site.css clamps the title and the meta line to two lines). The card is the
   <summary> of a native <details>, so without JS it opens in place (the whole row, see site.css) to show the summary,
   the Read more link and a justified grid of every photo, each a plain link to its large image. With JS, figure.js
   intercepts the click and opens the lightbox on the album's contact sheet instead. Photos inside a closed <details>
@@ -9,14 +10,16 @@
 {%- if album.dir %}{% assign base = album.dir %}{% else %}{% assign base = album.slug | prepend: '/assets/img/gallery/' %}{% endif -%}
 {%- assign total = album.photos | size -%}
 {%- assign cover = album.photos | first -%}
+{%- if album.date -%}
 {%- assign d = album.date | append: "" -%}
 {%- assign dlen = d | size -%}
 {%- if dlen == 4 %}{% assign when = d %}{% elsif dlen == 7 %}{% assign d1 = d | append: "-01" %}{% assign when = d1 | date: "%B %Y" %}{% else %}{% assign when = d | date: "%-d %B %Y" %}{% endif -%}
+{%- endif -%}
 <details class="album" id="album-{{ album.slug }}" data-category="{{ album.category }}">
   <summary class="album__card" aria-haspopup="dialog">
     <img class="album__cover" src="{{ base | append: '/' | append: cover.file | append: '-thumb.jpg' | relative_url }}" width="{{ cover.width }}" height="{{ cover.height }}" alt="" loading="lazy">
     <h3 class="album__title">{{ album.title }}</h3>
-    <span class="album__meta"><time datetime="{{ d }}">{{ when }}</time>{% if album.location %} · {{ album.location }}{% endif %} · {{ total }} photo{% if total != 1 %}s{% endif %}</span>
+    <span class="album__meta">{% if album.date %}<time datetime="{{ d }}">{{ when }}</time> · {% endif %}{% if album.location %}{{ album.location }} · {% endif %}{{ total }} photo{% if total != 1 %}s{% endif %}</span>
   </summary>
   <div class="album__body">
     {%- if album.summary %}
