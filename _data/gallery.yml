@@ -77,3 +77,12 @@ albums:
       - {file: "07", width: 960, height: 1280, alt: "A lab member smiling beside the poster Foreign Domestic Workers' Perspectives on LLM-Based Emotional Support Tool for Caregiving Burden, on a yellow carpet, wearing a poster presenter badge."}
       - {file: "08", width: 1280, height: 960, alt: "A lab member smiling at a lectern beside a laptop, below a projected title slide for Words to Describe What I'm Feeling, an advance care planning paper marked with an Honorable Mention Award."}
       - {file: "09", width: 1280, height: 946, alt: "Three lab members behind the CHI letters in the conference lobby, two holding open Honorable Mention certificates, with a Welcome to CHI 2026 banner behind them."}
+
+  - slug: 20240000-outtakes-and-oddities
+    title: "Outtakes & Oddities"
+    date: "2024"
+    category: lab-life
+    consent: "2024-06-13"
+    summary: "The catch-all: stray frames, odd moments and happy accidents of lab life that fit no event. Dated by its first photo, so it keeps its place at the bottom as more turn up."
+    photos:
+      - {file: "01", width: 1280, height: 960, alt: "Selfie of a group working around long white tables in a bare classroom, laptops open and printed pages spread out, a person in a green T-shirt in the foreground and the others smiling behind them."}
