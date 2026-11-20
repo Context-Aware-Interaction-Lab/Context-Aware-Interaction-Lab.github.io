@@ -11,5 +11,6 @@ esac
 
 ruby -Itests -e 'Dir["tests/*_test.rb"].sort.each { |f| require File.expand_path(f) }'
 
-# The phone Menu button (assets/js/nav.js). bun's built-in runner, no extra dependency.
-bun test tests/nav.test.js
+# The phone Menu button (assets/js/nav.js) and the Publications year folds (assets/js/year-folds.js).
+# bun's built-in runner, no extra dependency.
+bun test tests/nav.test.js tests/year-folds.test.js

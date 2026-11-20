@@ -368,6 +368,50 @@ class PublicationsPageTest < Minitest::Test
       assert_equal pub["year"], placed[pub["title"]], "under the wrong year heading: #{pub["title"]}"
     end
   end
+
+  # Each year is a native <details> fold; only the newest starts open (assets/js/year-folds.js reveals the
+  # rest when a link such as /publications/#pub-<id> points into a closed year).
+  YEAR_FOLD = %r{<details class="year"([^>]*)>(.*?)</details>}m
+
+  def year_folds
+    html_of("/publications/").scan(YEAR_FOLD).map { |attrs, body| [attrs, body, body[%r{<h2>(\d{4})</h2>}, 1].to_i] }
+  end
+
+  def test_only_the_newest_year_starts_open
+    open_years = year_folds.select { |attrs, _, _| attrs.match?(/\bopen\b/) }.map(&:last)
+    assert_equal [data("publications").map { |p| p["year"] }.max], open_years, "only the newest year should start open"
+  end
+
+  def test_every_year_is_a_fold_that_holds_its_papers_and_states_their_count
+    groups = data("publications").group_by { |p| p["year"] }
+    folds = year_folds
+    assert_equal groups.keys.sort.reverse, folds.map(&:last), "year folds missing or out of order"
+    folds.each do |_, body, year|
+      n = groups[year].size
+      summary = body[%r{<summary>.*?</summary>}m] or flunk("#{year} fold has no summary")
+      assert_has summary, "#{n} #{n == 1 ? "publication" : "publications"}", "#{year} summary has the wrong count"
+      assert_equal n, body.scan('<li class="publication-row"').size, "#{year} fold holds the wrong rows"
+    end
+    assert_equal data("publications").size, folds.sum { |_, body, _| body.scan('<li class="publication-row"').size }, "a row sits outside every fold"
+  end
+
+  def test_year_sections_keep_their_year_anchor
+    data("publications").map { |p| p["year"] }.uniq.each do |year|
+      assert_has html_of("/publications/"), %(id="#{year}"), "#{year} anchor lost"
+    end
+  end
+
+  def test_year_folds_script_and_a_hidden_expand_all_button
+    html = html_of("/publications/")
+    assert_has html, 'src="/assets/js/year-folds.js"', "year-folds.js not included"
+    assert File.exist?(File.join(BUILD, "assets/js/year-folds.js")), "year-folds.js not published"
+    assert html.include?('<button type="button" class="year-controls__all" hidden>Expand all</button>'),
+      "Expand all button missing, or not hidden until the script reveals it"
+  end
+
+  def test_year_fold_is_listed_on_the_design_language_page
+    assert_has html_of("/design-language/"), "<code>.year</code>", ".year not listed in Components"
+  end
 end
 
 # The site is public. Work under review has no public artifact, so requiring one
