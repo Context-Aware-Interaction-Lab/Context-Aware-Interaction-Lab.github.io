@@ -185,6 +185,15 @@ svg line,svg path{stroke:var(--c);fill:none}
 @media (max-width:1000px){.members{grid-template-columns:repeat(2,1fr)}.collabs{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:640px){.person-card--director{grid-template-columns:1fr}.collabs{grid-template-columns:1fr}.members{gap:var(--space-3)}.person-card{padding:var(--space-3)}.person-card--compact{padding:var(--space-4)}}
 
+/* publication years: one native fold per year, newest open (assets/js/year-folds.js reveals deep links) */
+.year-controls{padding-top:var(--space-6)}
+.year-controls__all{display:inline-flex;align-items:center;min-height:var(--tap);padding:0 var(--space-4);border:1.5px solid var(--line-strong);border-radius:var(--radius-pill);background:none;color:var(--text);font:500 var(--fs-small)/1 var(--font-body);cursor:pointer}
+.year-controls__all:hover{border-color:var(--text);background:var(--surface-2)}
+.section--year{padding-block:var(--space-3)}
+.section--year:last-of-type{padding-bottom:var(--space-8)}
+.year summary h2{font:700 var(--fs-h2)/var(--lh-tight) var(--font-display);letter-spacing:-.015em}
+.year__count{color:var(--text-muted);font-size:var(--fs-small)}
+.year>.publications{margin-top:var(--space-4)}
 /* publication-row */
 .publications{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-l);padding:var(--space-2) var(--space-5)}
 .publication-row{display:grid;grid-template-columns:200px 1fr auto;gap:var(--space-4) var(--space-5);align-items:start;padding-block:var(--space-4)}
@@ -280,7 +289,14 @@ svg line,svg path{stroke:var(--c);fill:none}
 .fold{border-top:1px solid var(--line)}
 .tiles+.fold{margin-top:var(--space-5)}
 .fold:last-of-type{border-bottom:1px solid var(--line)}
-.fold summary{cursor:pointer;min-height:var(--tap);display:flex;align-items:center;font:600 1.0625rem/1.2 var(--font-display)}
+.fold summary{font:600 1.0625rem/1.2 var(--font-display)}
+/* folds (alumni lists, publication years): a visible chevron, since display:flex drops the native marker */
+.fold summary,.year summary{list-style:none;cursor:pointer;min-height:var(--tap);display:flex;align-items:center;gap:var(--space-3)}
+.fold summary::-webkit-details-marker,.year summary::-webkit-details-marker{display:none}
+.fold summary::before,.year summary::before{content:"";flex:none;width:8px;height:8px;margin-inline:4px 2px;border-right:2px solid var(--text);border-bottom:2px solid var(--text);transform:rotate(-45deg);transition:transform .15s ease}
+.fold[open]>summary::before,.year[open]>summary::before{transform:rotate(45deg)}
+.fold summary:focus-visible,.year summary:focus-visible{outline:2px solid var(--spec-6);outline-offset:2px;border-radius:var(--radius-s)}
+@media (prefers-reduced-motion:reduce){.fold summary::before,.year summary::before{transition:none}}
 .fold__list{columns:3 260px;column-gap:var(--space-6);padding-bottom:var(--space-4)}
 .person-row{break-inside:avoid;padding-block:4px;display:flex;align-items:flex-start;gap:var(--space-3)}
 .person-row__photo,.person-row__ring{width:28px;height:28px;flex:none;border-radius:50%}

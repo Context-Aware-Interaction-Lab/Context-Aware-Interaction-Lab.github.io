@@ -6,15 +6,21 @@ permalink: /publications/
 {% include page-header.html title="Publications" %}
 
 {% assign years = site.data.publications | group_by: "year" | sort: "name" | reverse %}
+<div class="container year-controls">
+  <button type="button" class="year-controls__all" hidden>Expand all</button>
+</div>
 {% for group in years %}
-<section class="section" id="{{ group.name }}">
+{%- assign count = group.items.size %}
+<section class="section section--year" id="{{ group.name }}">
   <div class="container">
-    <div class="section-header"><h2>{{ group.name }}</h2></div>
-    <ul class="publications">
-      {% for item in group.items %}
-      {% include publication-row.html item=item index=forloop.index0 %}
-      {% endfor %}
-    </ul>
+    <details class="year"{% if forloop.first %} open{% endif %}>
+      <summary><h2>{{ group.name }}</h2><span class="year__count">{{ count }} {% if count == 1 %}publication{% else %}publications{% endif %}</span></summary>
+      <ul class="publications">
+        {% for item in group.items %}
+        {% include publication-row.html item=item index=forloop.index0 %}
+        {% endfor %}
+      </ul>
+    </details>
   </div>
 </section>
 {% endfor %}
@@ -28,3 +34,4 @@ permalink: /publications/
   <p class="figure-dialog__caption"></p>
 </dialog>
 <script src="{{ '/assets/js/figure.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/year-folds.js' | relative_url }}" defer></script>
