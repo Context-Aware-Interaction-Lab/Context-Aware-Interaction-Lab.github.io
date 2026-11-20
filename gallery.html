@@ -12,11 +12,13 @@ description: Photos from the lab's conferences, demos, outreach and everyday lif
     {%- if site.data.gallery.albums.size == 0 %}
     <p class="gallery-empty">No albums yet.</p>
     {%- else %}
+    {% include gallery-slideshow.html albums=site.data.gallery.albums %}
     {% include gallery-index.html albums=site.data.gallery.albums categories=site.data.gallery.categories %}
     {%- endif %}
   </div>
 </section>
 
 {% include figure-dialog.html %}
+<script src="{{ '/assets/js/gallery-slideshow.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/gallery-filter.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/figure.js' | relative_url }}" defer></script>

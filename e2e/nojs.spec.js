@@ -35,3 +35,16 @@ test.describe("Research cards without JavaScript on a phone", () => {
     expect(await strip.evaluate(el => getComputedStyle(el).scrollSnapType)).toContain("mandatory");
   });
 });
+
+test.describe("The Gallery slideshow without JavaScript", () => {
+  test("shows the first album's cover as a plain still, and none of the script-only controls", async ({ page }) => {
+    await page.goto("/gallery/");
+    await expect(page.locator(".slideshow")).toBeHidden();
+    await expect(page.locator(".slideshow__toggle")).toBeHidden();
+    const still = page.locator(".slideshow-static");
+    await expect(still).toBeVisible();
+    await expect(still.locator("figcaption")).toHaveText("Lab day out in Chinatown");
+    await expect.poll(() => still.locator("img").evaluate(i => i.complete && i.naturalWidth > 0)).toBe(true);
+    expect(await still.locator("a").getAttribute("href")).toBe("/assets/img/gallery/lab-day-out-2026/01.jpg"); // the large photo, a plain link
+  });
+});

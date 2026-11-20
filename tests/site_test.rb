@@ -1785,6 +1785,39 @@ class GalleryPageTest < Minitest::Test
     assert_operator page.index('src="/assets/js/gallery-filter.js"'), :<, page.index('src="/assets/js/figure.js"')
     assert File.exist?(File.join(BUILD, "assets/js/gallery-filter.js"))
   end
+
+  # The slideshow that opens the page is drawn by script from the photo links in the albums below it. These guard
+  # what the script cannot: that it ships hidden (no empty hero without JS), that the no-JS still is a real photo of
+  # the first album, that the script is loaded before the lightbox, and that the specimen page has no autoplaying hero.
+  def test_the_slideshow_ships_hidden_above_the_albums_and_builds_no_images_of_its_own
+    section = page[%r{<section class="slideshow"[^>]*>.*?</section>}m]
+    refute_nil section, "no slideshow on /gallery/"
+    assert_match(/<section class="slideshow"[^>]* hidden>/, section, "it must start hidden; gallery-slideshow.js reveals it")
+    assert_equal 2, section.scan('<span class="slideshow__layer">').size, "two stacked layers"
+    refute_match(/<img\b/, section, "the script makes the images, so none ships without a source")
+    assert_operator page.index('class="slideshow"'), :<, page.index('class="gallery-year"'), "the slideshow opens the page"
+  end
+
+  def test_the_noscript_still_is_the_first_albums_cover_and_resolves_to_a_file
+    first = gallery_albums.first
+    cover = first["photos"].first
+    src = "/assets/img/gallery/#{first["slug"]}/#{cover["file"]}.jpg"
+    still = page[%r{<noscript>\s*<figure class="slideshow-static">.*?</figure>\s*</noscript>}m]
+    refute_nil still, "no noscript still"
+    assert_includes still, %(<a href="#{src}"><img src="#{src}" width="#{cover["width"]}" height="#{cover["height"]}")
+    assert File.exist?(File.join(BUILD, src)), "#{src} is not in the build"
+  end
+
+  def test_the_slideshow_script_loads_before_the_lightbox
+    assert_has page, 'src="/assets/js/gallery-slideshow.js"', "gallery-slideshow.js"
+    assert_operator page.index('src="/assets/js/gallery-slideshow.js"'), :<, page.index('src="/assets/js/figure.js"')
+    assert File.exist?(File.join(BUILD, "assets/js/gallery-slideshow.js"))
+  end
+
+  def test_the_design_language_page_has_no_autoplaying_hero
+    refute_match(/<section class="slideshow"/, html_of("/design-language/"))
+    refute_includes html_of("/design-language/"), 'src="/assets/js/gallery-slideshow.js"', "the page documents the slideshow in prose but must not run it"
+  end
 end
 
 # The page must stay organised as albums are added. The real data has one album, so this builds a throwaway copy of the
