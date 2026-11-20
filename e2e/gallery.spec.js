@@ -1,7 +1,7 @@
 // The Gallery's album cards and lightbox, driven in a real browser on the three specimen albums at /design-language/
 // (the same includes the real page uses, fed publication figures): 20261100-specimen-demos (14 photos, 2026-11, demos),
 // 20260600-specimen-conferences (3 photos, 2026-06, conferences) and 20250900-specimen-single (1 photo, 2025-09, lab life). The real
-// /gallery/ has one album, checked at the end.
+// The real /gallery/ has two albums, checked at the end.
 import { test, expect, hasNoHorizontalScroll } from "./fixtures.js";
 
 const PAGE = "/design-language/";
@@ -276,22 +276,57 @@ test.describe("Album cards without JavaScript", () => {
   });
 });
 
-// The real page: one album of 32 photos, one category, so no chips.
+// The real page: two albums in 2026, newest first by name (20260702-lab-day-out with 32 photos, then
+// 20260413-chi26-barcelona with 9), in two categories, so the category chips show (their first run on real data).
 test.describe("The Gallery page", () => {
-  test("lists the album as a card under its year, opens its contact sheet and a portrait photo", async ({ page }) => {
+  test("lists the albums as cards under one year, newest first, with their covers loaded", async ({ page }) => {
     await page.goto("/gallery/");
     await expect(page.locator("h1")).toHaveText("Gallery");
     await expect(page.locator(".gallery-year__title")).toHaveText("2026");
-    await expect(page.locator(".album__title")).toHaveText("Lab day out in Chinatown");
-    await expect(page.locator(".album__meta").first()).toContainText("32 photos");
-    await expect(page.locator(".gallery-filters")).toBeHidden(); // one category: nothing to choose between
-    await expect.poll(() => page.locator(".album__cover").evaluate(i => i.complete && i.naturalWidth > 0)).toBe(true);
+    await expect(page.locator(".album__title")).toHaveText(["Lab day out in Chinatown", "CHI 2026 in Barcelona"]);
+    await expect(page.locator(".album__meta").nth(0)).toContainText("32 photos");
+    await expect(page.locator(".album__meta").nth(1)).toContainText("Barcelona, Spain · 9 photos");
+    await expect.poll(() => page.locator(".album__cover").evaluateAll(imgs => imgs.every(i => i.complete && i.naturalWidth > 0))).toBe(true);
+  });
+
+  test("the category chips show for the two categories in use, filter the cards, and clear", async ({ page }) => {
+    await page.goto("/gallery/");
+    const chips = page.locator(".gallery-filters .chip");
+    await expect(page.locator(".gallery-filters")).toBeVisible();
+    await expect(chips).toHaveText(["Conferences 1", "Lab life 1"]);
+    await chips.nth(0).click(); // Conferences
+    await expect(chips.nth(0)).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("details.album:visible")).toHaveCount(1);
+    await expect(page.locator("#album-20260413-chi26-barcelona")).toBeVisible();
+    await expect(page.locator("#album-20260702-lab-day-out")).toBeHidden();
+    await expect(page.locator(".gallery-filters__status")).toHaveText("Showing 1 of 2 albums");
+    expect(new URL(page.url()).search).toBe("?category=conferences");
+    await page.locator(".gallery-filters__clear").click();
+    await expect(page.locator("details.album:visible")).toHaveCount(2);
+    expect(new URL(page.url()).search).toBe("");
+  });
+
+  test("the day-out album opens on its contact sheet, then a portrait photo", async ({ page }) => {
+    await page.goto("/gallery/");
     await card(page, "20260702-lab-day-out").click();
     expect(await page.locator(".album__sheet button").count()).toBe(32);
     await expect.poll(() => page.locator(".album__sheet img").evaluateAll(imgs => imgs.slice(0, 4).every(i => i.complete && i.naturalWidth > 0))).toBe(true);
     await sheetTile(page, 1).click(); // a portrait photo
     await expect(count(page)).toHaveText("2 / 32");
     await expect.poll(() => page.locator(".figure-dialog__stage img").evaluate(i => i.complete && i.naturalHeight > i.naturalWidth)).toBe(true);
+    await page.keyboard.press("Escape");
+    await expect(dialog(page)).toBeHidden();
+  });
+
+  test("the CHI album opens its nine photos, in order, with the poster photos upright", async ({ page }) => {
+    await page.goto("/gallery/");
+    await card(page, "20260413-chi26-barcelona").click();
+    expect(await page.locator(".album__sheet button").count()).toBe(9);
+    await expect(page.locator(".figure-dialog__title")).toHaveText("CHI 2026 in Barcelona");
+    await sheetTile(page, 4).click(); // 05: a poster photo, stored sideways and turned upright by bin/figure
+    await expect(count(page)).toHaveText("5 / 9");
+    await expect.poll(() => page.locator(".figure-dialog__stage img").evaluate(i => i.complete && i.naturalHeight > i.naturalWidth)).toBe(true);
+    await expect(page.locator(".figure-dialog__caption")).toContainText("Taxonomy of Human-MLLM Interaction");
     await page.keyboard.press("Escape");
     await expect(dialog(page)).toBeHidden();
   });
