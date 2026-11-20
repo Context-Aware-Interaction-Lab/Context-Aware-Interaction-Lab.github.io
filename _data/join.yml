@@ -14,7 +14,7 @@ values:
 intro: |-
   At CAILab, we aim to develop and train the next generation of Human-Centred AI researchers and designers. We are always on the look out for highly motivated and collaborative individuals who wish to work at the intersection of mobile and pervasive computing, context-aware computing, applied machine learning, and Human-Computer Interaction. Our research areas include:
 closing: |-
-  If you are interested in a position and wish to find out more, please email Prof Kenny Choo.
+  If you are interested in a position, see [How to apply](#apply) below.
 sections:
   - title: "PhD Students"
     body: |-
@@ -32,4 +32,54 @@ sections:
   - title: "Research Assistants"
     body: |-
       No current positions are available, but do watch this space!
+# The intake filter, in Kenny's wording (2026-11-20). Plain text in every field the tests compare (no Markdown
+# inside `items`, `questions`, `intro`, `close`, `body` or `reply_rule`). `subject` is shown as copyable code; the
+# mailto: button never prefills it, so the format has to be read and followed.
+# `paper.choices` holds publication ids; join-us.html renders each as a link to its row on /publications/.
+apply:
+  title: "How to apply"
+  lead: >-
+    We'd love to hear from you. So that our first conversation can be about your ideas rather than your
+    paperwork, we ask everyone to send a complete application in a single email. It takes an evening, not a
+    week, and it tells us far more than a cover letter can.
+  roles:
+    - role: "PhD students"
+      subject: "[CAILab PhD] Your Name – Title of the paper you chose"
+      items:
+        - "Your CV"
+        - "Your academic transcripts (Bachelor's, and Master's if you have one)"
+        - "Relevant awards and scholarships"
+        - "Up to three of your best publications or preprints, with links. No publications yet? Send a project, thesis or report you're proud of instead."
+        - "A link to something you've built: a code repository, a demo, a video, or a design portfolio"
+        - "Your response to one of our papers (below), about 500 words"
+    - role: "Research interns"
+      subject: "[CAILab Intern] Your Name – Title of the paper you chose"
+      items:
+        - "Your CV"
+        - "Your latest transcript"
+        - "A link to something you've built or written"
+        - "The period you're available for"
+        - "A shorter response to one of our papers (below), about 200 words: what it found, and one thing you would do next"
+  paper:
+    title: "The paper response"
+    # Publication ids applicants may choose from: the CHI Honourable Mention papers and the CSCW papers
+    # (Kenny, 2026-11-20). `JoinApplyTest` checks every id against that venue rule.
+    choices:
+      - chi26-acp-agent-roles
+      - chi26-parent-child-align
+      - cscw26-peer-supporter
+      - cscw26-sword-shield
+    intro: "Choose one of these papers and write about it in your own words:"
+    questions:
+      - "What question did it answer, and what did it find?"
+      - "What is one assumption, design choice or limitation you would challenge, and why?"
+      - "What follow-up study would you run? Who would take part, what would you build or measure, and what result would change your mind?"
+    close: "We're not looking for the right answer; we're looking for how you think. We'll talk about it when we meet, so write something you can explain and defend."
+  ai:
+    title: "Using AI"
+    body: "You're welcome to use AI tools, as we do in our own research. If you do, add a short note at the end saying what you used them for, what you kept, and what you changed or rejected and why. Thoughtful use counts in your favour. Text you can't explain doesn't."
+  send:
+    title: "How to send it"
+    body: "Attach one PDF (your CV, transcripts and awards, then your paper response) and put your links in the email body. Please remove your NRIC, FIN or passport number from your transcripts before sending. Use the subject line for your role, so your email reaches the right place:"
+  reply_rule: "We read every complete application. Because we receive a great many emails, we're not able to reply to ones that are incomplete or don't use this subject line."
 contact_note: "A mailto link to Prof Kenny Choo exists on the page; address deliberately not stored."
