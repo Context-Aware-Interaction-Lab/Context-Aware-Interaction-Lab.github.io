@@ -1,7 +1,8 @@
 <nav class="nav" aria-label="Main">
   <div class="container nav__inner">
     <a class="nav__brand" href="{{ '/' | relative_url }}"><span class="nav__logo"><img src="{{ '/assets/img/logo-96.png' | relative_url }}" width="46" height="45" alt="CAILab logo"></span>{{ site.data.lab.short_name }}</a>
-    <ul class="nav__links">
+    <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="nav-links" hidden>Menu</button>
+    <ul class="nav__links" id="nav-links">
       {% for item in site.data.nav %}
       <li><a href="{% if item.external %}{{ item.url }}{% else %}{{ item.url | relative_url }}{% endif %}"{% if item.url == page.url %} aria-current="page"{% endif %}>{{ item.title }}</a></li>
       {% endfor %}

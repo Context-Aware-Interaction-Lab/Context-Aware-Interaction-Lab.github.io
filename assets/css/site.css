@@ -72,10 +72,23 @@ svg line,svg path{stroke:var(--c);fill:none}
 .nav__links{display:flex;flex-wrap:wrap;gap:var(--space-1);margin-left:auto}
 .nav__links a{display:inline-flex;align-items:center;min-height:var(--tap);padding:0 var(--space-4);border-radius:var(--radius-pill);text-decoration:none;color:var(--text-muted);font-weight:500}
 .nav__links a:hover{color:var(--text);background:var(--surface-2)}
+.nav__toggle{display:none}
+@media (max-width:960px){
+ .nav__contact{display:none} /* brand + links + this button need ~920px of one row */
+}
 @media (max-width:900px){
  .nav{position:static}
+}
+/* Below ~780px the brand and six links no longer fit one row. assets/js/nav.js sets .is-js and the links sit behind a
+   Menu button; without JS they stay visible and wrap onto their own rows. */
+@media (max-width:780px){
  .nav__links{margin-left:calc(-1*var(--space-4));width:100%;justify-content:flex-start}
- .nav__contact{display:none}
+ .nav.is-js .nav__inner{row-gap:0}
+ .nav.is-js .nav__toggle{display:inline-flex;align-items:center;justify-content:center;min-height:var(--tap);margin-left:auto;padding:0 var(--space-5);border:1.5px solid var(--line-strong);border-radius:var(--radius-pill);background:transparent;color:var(--text);font:600 var(--fs-body)/1 var(--font-body);cursor:pointer;transition:background .15s,border-color .15s}
+ .nav.is-js .nav__toggle:hover,.nav.is-js.is-open .nav__toggle{background:var(--surface-2);border-color:var(--text)}
+ .nav.is-js .nav__links{display:none;flex-direction:column;flex-wrap:nowrap;gap:0;order:3;width:calc(100% + 2*var(--space-4));margin-inline:calc(-1*var(--space-4));padding:var(--space-2) 0 var(--space-3);border-top:1px solid var(--line)}
+ .nav.is-js.is-open .nav__links{display:flex}
+ .nav.is-js .nav__links a{display:flex;width:100%;border-radius:var(--radius-m)}
 }
 
 /* hero */
