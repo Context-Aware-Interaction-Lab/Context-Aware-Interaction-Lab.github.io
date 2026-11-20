@@ -1453,11 +1453,15 @@ module GalleryRules
     Date.valid_date?(year, month || 1, day || 1)
   end
 
-  # Newest first; a missing month or day sorts after the dated entries of its period, as on Publications.
+  # Newest first. A missing month or day counts as 00, the start of its period, so the order here is exactly the
+  # order of the YYYYMMDD names (slug_prefix) that the page sorts by and Finder lists.
   def self.sort_key(str)
     year, month, day = str.split("-").map(&:to_i)
-    [year, month || 13, day || 32]
+    [year, month || 0, day || 0]
   end
+
+  # "2026-07-02" -> "20260702", "2026-07" -> "20260700", "2026" -> "20260000": what an album's slug must start with.
+  def self.slug_prefix(str) = format("%04d%02d%02d", *sort_key(str))
 
   # Problems with the data alone (no files): an empty list means the albums are fit to publish.
   def self.problems(albums, categories, today: Date.today)
@@ -1470,6 +1474,9 @@ module GalleryRules
     albums.each do |a|
       name = a["slug"].inspect
       found << "#{name}: slug must be lowercase letters, digits and hyphens" unless a["slug"].to_s.match?(SLUG)
+      if valid_date?(a["date"]) && !a["slug"].to_s.match?(/\A#{slug_prefix(a["date"])}-[a-z0-9]/)
+        found << "#{name}: slug must start with #{slug_prefix(a["date"])}- (the date as YYYYMMDD, 00 for a missing month or day), then a name"
+      end
       found << "#{name}: needs a title" if a["title"].to_s.strip.empty?
       found << "#{name}: date must be a quoted YYYY, YYYY-MM or YYYY-MM-DD" unless valid_date?(a["date"])
       found << "#{name}: category #{a["category"].inspect} is not in categories" unless categories.include?(a["category"])
@@ -1565,7 +1572,7 @@ class GalleryDataTest < Minitest::Test
   end
 
   GOOD = {
-    "slug" => "chi26", "title" => "CHI 2026", "date" => "2026-04", "category" => "conferences", "consent" => "2026-05-01",
+    "slug" => "20260400-chi26", "title" => "CHI 2026", "date" => "2026-04", "category" => "conferences", "consent" => "2026-05-01",
     "photos" => [{"file" => "01", "alt" => "The lab's poster stand at the conference hall", "width" => 800, "height" => 600}]
   }.freeze
 
@@ -1598,16 +1605,32 @@ class GalleryDataTest < Minitest::Test
 
   def test_the_rules_catch_duplicates_and_wrong_order
     a = GOOD
-    b = GOOD.merge("slug" => "dis26", "date" => "2026-06")
+    b = GOOD.merge("slug" => "20260600-dis26", "date" => "2026-06")
     assert_match(/not newest first/, GalleryRules.problems([a, b], CATEGORIES).join)
     assert_empty GalleryRules.problems([b, a], CATEGORIES, today: Date.new(2026, 11, 20))
     assert_match(/duplicate album slug/, GalleryRules.problems([a, a], CATEGORIES).join)
   end
 
-  def test_a_month_only_date_sorts_after_dated_entries_of_that_month
+  # The folder name is the sort key: assets/img/gallery/<YYYYMMDD-name>/ lists in date order in Finder, and the page
+  # orders albums by the same name. A missing month or day is 00, so a month-only album sorts as the start of its month.
+  def test_a_month_only_date_sorts_as_the_start_of_its_month
     a = GOOD.merge("date" => "2026-04")
-    b = GOOD.merge("slug" => "dis26", "date" => "2026-04-20")
-    assert_empty GalleryRules.problems([a, b], CATEGORIES, today: Date.new(2026, 11, 20))
+    b = GOOD.merge("slug" => "20260420-dis26", "date" => "2026-04-20")
+    assert_empty GalleryRules.problems([b, a], CATEGORIES, today: Date.new(2026, 11, 20))
+    assert_match(/not newest first/, GalleryRules.problems([a, b], CATEGORIES, today: Date.new(2026, 11, 20)).join)
+  end
+
+  def test_the_slug_starts_with_the_albums_date_as_yyyymmdd
+    assert_equal "20260702", GalleryRules.slug_prefix("2026-07-02")
+    assert_equal "20260700", GalleryRules.slug_prefix("2026-07")
+    assert_equal "20260000", GalleryRules.slug_prefix("2026")
+    assert_match(/must start with 20260400-/, problems(slug: "chi26").join, "no date in the name")
+    assert_match(/must start with 20260400-/, problems(slug: "20260401-chi26").join, "the wrong day")
+    assert_match(/must start with 20260400-/, problems(slug: "202604-chi26").join, "six digits are not YYYYMMDD")
+    assert_match(/must start with 20260400-/, problems(slug: "20260400").join, "a date and nothing after it")
+    assert_empty problems(slug: "20260400-chi-2026-poster-stand")
+    assert_empty problems(date: "2026-04-20", slug: "20260420-chi26")
+    assert_empty problems(date: "2026", slug: "20260000-chi26")
   end
 
   def test_file_rules_catch_missing_oversize_and_misdeclared_images
@@ -1658,22 +1681,22 @@ class GallerySpecimenTest < Minitest::Test
     years = page.scan(/<h2 class="gallery-year__title"[^>]*>(\d{4})<\/h2>/).flatten
     assert_equal %w[2026 2025], years
     sections = page.scan(%r{<section class="gallery-year".*?</section>}m)
-    assert_equal %w[specimen-demos specimen-conferences], sections[0].scan(/<details class="album" id="album-([^"]+)"/).flatten
-    assert_equal %w[specimen-single], sections[1].scan(/<details class="album" id="album-([^"]+)"/).flatten
+    assert_equal %w[20261100-specimen-demos 20260600-specimen-conferences], sections[0].scan(/<details class="album" id="album-([^"]+)"/).flatten
+    assert_equal %w[20250900-specimen-single], sections[1].scan(/<details class="album" id="album-([^"]+)"/).flatten
     sections.each { |s| assert_match(/<div class="album-cards">/, s) }
   end
 
   def test_a_card_is_a_summary_with_the_first_photo_as_cover_a_title_and_the_facts
-    c = card("specimen-demos")
+    c = card("20261100-specimen-demos")
     refute_nil c
-    first = album("specimen-demos")["photos"][0]
+    first = album("20261100-specimen-demos")["photos"][0]
     assert_match(%r{<summary class="album__card" aria-haspopup="dialog">}, c, "the card announces that it opens a dialog")
     assert_match(%r{<img class="album__cover" src="/assets/img/publications/#{first["file"]}-thumb\.jpg" width="#{first["width"]}" height="#{first["height"]}" alt="" loading="lazy">}, c)
     assert_match(%r{<h3 class="album__title">Specimen album</h3>}, c)
     assert_match(%r{<time datetime="2026-11">November 2026</time> · Singapore · 14 photos}, c)
     assert_match(/data-category="demos"/, c)
-    assert_match(%r{· 1 photo</span>}, card("specimen-single"), "singular for one photo")
-    assert_match(%r{<time datetime="2026-06">June 2026</time> · 3 photos}, card("specimen-conferences"), "no place when there is none")
+    assert_match(%r{· 1 photo</span>}, card("20250900-specimen-single"), "singular for one photo")
+    assert_match(%r{<time datetime="2026-06">June 2026</time> · 3 photos}, card("20260600-specimen-conferences"), "no place when there is none")
   end
 
   def test_the_card_body_lists_every_photo_as_a_plain_link_without_an_inner_fold
@@ -1691,12 +1714,12 @@ class GallerySpecimenTest < Minitest::Test
   end
 
   def test_the_summary_and_a_caption_and_a_credit_travel_with_the_markup
-    assert_match(/class="album__summary"/, card("specimen-demos"))
-    refute_match(/album__summary/, card("specimen-single"), "no summary, no empty block")
-    photos = album("specimen-demos")["photos"]
+    assert_match(/class="album__summary"/, card("20261100-specimen-demos"))
+    refute_match(/album__summary/, card("20250900-specimen-single"), "no summary, no empty block")
+    photos = album("20261100-specimen-demos")["photos"]
     cap = photos.index { |p| p["caption"] }
     refute_nil cap
-    tile = tiles(card("specimen-demos"))
+    tile = tiles(card("20261100-specimen-demos"))
     assert_includes tile[cap], %(data-caption="#{CGI.escapeHTML(photos[cap]["caption"])}")
     cred = photos.index { |p| p["credit"] }
     refute_nil cred
@@ -1828,9 +1851,9 @@ class GalleryScaleTest < Minitest::Test
 
   def albums
     (0...12).map do |i|
-      slug = "scale-#{i}"
+      date = format("%d-%02d", 2026 - i / 5, 12 - 2 * (i % 5))
       {
-        "slug" => slug, "title" => "Scale album #{i}", "date" => format("%d-%02d", 2026 - i / 5, 12 - 2 * (i % 5)),
+        "slug" => "#{GalleryRules.slug_prefix(date)}-scale-#{i}", "title" => "Scale album #{i}", "date" => date,
         "category" => CATEGORIES[i % 3], "consent" => "2026-01-01",
         "photos" => [
           {"file" => "01", "width" => 1200, "height" => 800, "alt" => "First photo of scale album #{i}, the cover"},
@@ -1846,9 +1869,12 @@ class GalleryScaleTest < Minitest::Test
       src = File.join(dir, "src")
       FileUtils.mkdir_p(src)
       (Dir.children(ROOT) - %w[vendor .git _site .bundle .playwright-mcp node_modules .e2e-site test-results]).each { |n| FileUtils.cp_r(File.join(ROOT, n), src) }
-      gallery = data("gallery").merge("albums" => albums)
+      gallery = data("gallery")
       assert_empty GalleryRules.problems(albums, CATEGORIES, today: Date.new(2026, 11, 20)), "the synthetic albums are valid data"
-      File.write(File.join(src, "_data", "gallery.yml"), gallery.to_yaml)
+      # Listed out of order on purpose: the page orders albums by their YYYYMMDD names, not by how the file is arranged.
+      shuffled = albums.shuffle(random: Random.new(7))
+      refute_equal albums, shuffled, "the shuffle must actually reorder"
+      File.write(File.join(src, "_data", "gallery.yml"), gallery.merge("albums" => shuffled).to_yaml)
       out, status = Open3.capture2e({ "BUNDLE_GEMFILE" => File.join(ROOT, "Gemfile") },
         "bundle", "exec", "jekyll", "build", "--source", src, "--destination", File.join(dir, "out"), chdir: ROOT)
       assert status.success?, "build failed:\n#{out}"
@@ -1856,11 +1882,11 @@ class GalleryScaleTest < Minitest::Test
 
       assert_equal %w[2026 2025 2024], html.scan(/<h2 class="gallery-year__title"[^>]*>(\d{4})<\/h2>/).flatten
       ids = html.scan(/<details class="album" id="album-([^"]+)"/).flatten
-      assert_equal albums.map { |a| a["slug"] }, ids, "one card per album, newest first, years in order"
-      by_year = html.scan(%r{<section class="gallery-year".*?</section>}m).map { |s| s.scan(/id="album-scale-(\d+)"/).flatten.map(&:to_i) }
+      assert_equal albums.map { |a| a["slug"] }, ids, "one card per album, newest first by name, years in order, whatever the file order"
+      by_year = html.scan(%r{<section class="gallery-year".*?</section>}m).map { |s| s.scan(/id="album-\d{8}-scale-(\d+)"/).flatten.map(&:to_i) }
       assert_equal [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11]], by_year
       assert_equal 12, html.scan('<summary class="album__card"').size
-      assert_equal 12, html.scan(/<img class="album__cover" src="\/assets\/img\/gallery\/scale-\d+\/01-thumb\.jpg"/).size, "the first photo is the cover"
+      assert_equal 12, html.scan(/<img class="album__cover" src="\/assets\/img\/gallery\/\d{8}-scale-\d+\/01-thumb\.jpg"/).size, "the first photo is the cover"
       chips = html.scan(%r{data-filter="category" data-value="([^"]+)">[^<]+ <span class="chip__count">(\d+)</span>})
       assert_equal [["conferences", "4"], ["lab-life", "4"], ["demos", "4"]], chips
       assert_match(/<div class="gallery-filters" hidden>/, html)

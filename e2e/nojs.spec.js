@@ -45,6 +45,6 @@ test.describe("The Gallery slideshow without JavaScript", () => {
     await expect(still).toBeVisible();
     await expect(still.locator("figcaption")).toHaveText("Lab day out in Chinatown");
     await expect.poll(() => still.locator("img").evaluate(i => i.complete && i.naturalWidth > 0)).toBe(true);
-    expect(await still.locator("a").getAttribute("href")).toBe("/assets/img/gallery/lab-day-out-2026/01.jpg"); // the large photo, a plain link
+    expect(await still.locator("a").getAttribute("href")).toBe("/assets/img/gallery/20260702-lab-day-out/01.jpg"); // the large photo, a plain link
   });
 });

@@ -1,9 +1,10 @@
 {%- comment -%}
   The album index, shared by /gallery/ and the specimen on /design-language/: category chips (only when two or more
   categories are in use; gallery-filter.js reveals and runs them), then one section per year, newest first, each a
-  grid of album cards. albums = a list of albums, categories = gallery.yml's categories.
+  grid of album cards. albums = a list of albums (any order), categories = gallery.yml's categories.
 {%- endcomment -%}
-{%- assign albums = include.albums -%}
+{%- comment -%} Albums are named YYYYMMDD-<name> (GalleryRules enforces it), so sorting by slug is sorting by date: newest first, whatever order the data file lists them in. {%- endcomment -%}
+{%- assign albums = include.albums | sort: "slug" | reverse -%}
 {%- assign years = albums | group_by_exp: "a", "a.date | slice: 0, 4" | sort: "name" | reverse -%}
 {%- assign used_categories = 0 -%}
 {%- for c in include.categories %}

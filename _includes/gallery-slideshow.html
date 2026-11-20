@@ -2,10 +2,10 @@
   The slideshow that opens /gallery/ (assets/js/gallery-slideshow.js). It ships `hidden`: the script reads every photo
   link of every album on the page, reveals it, and builds the two stacked photo layers itself, so the markup holds no
   photo and no <img> without a source. Without JS the <noscript> figure beside it shows the first album's cover as a
-  plain link to the large image. albums = gallery.yml's albums, newest first. Called from gallery.html only, so the
+  plain link to the large image. "First" is the newest: albums are named YYYYMMDD-<name>, so the last by slug. albums = gallery.yml's albums, in any order. Called from gallery.html only, so the
   specimen on /design-language/ has no autoplaying hero.
 {%- endcomment -%}
-{%- assign first_album = include.albums | first -%}
+{%- assign first_album = include.albums | sort: "slug" | last -%}
 {%- assign cover = first_album.photos | first -%}
 {%- if first_album.dir %}{% assign base = first_album.dir %}{% else %}{% assign base = first_album.slug | prepend: '/assets/img/gallery/' %}{% endif -%}
 {%- assign cover_src = base | append: '/' | append: cover.file | append: '.jpg' | relative_url -%}

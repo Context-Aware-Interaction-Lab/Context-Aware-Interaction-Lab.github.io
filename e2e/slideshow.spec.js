@@ -47,7 +47,7 @@ test.describe("The slideshow on a desktop", () => {
     expect(pool).toHaveLength(32);
     expect(pool).toContain(await src(page));
     await expect(root(page).locator(".slideshow__album")).toHaveText("Lab day out in Chinatown");
-    await expect(root(page).locator(".slideshow__album")).toHaveAttribute("href", "#album-lab-day-out-2026");
+    await expect(root(page).locator(".slideshow__album")).toHaveAttribute("href", "#album-20260702-lab-day-out");
     await expect(root(page).locator(".slideshow__when")).toHaveText("2 July 2026");
     expect(await activeImg(page).evaluate(i => getComputedStyle(i).objectFit)).toBe("contain"); // never cropped
     await expect(root(page)).toHaveAttribute("aria-roledescription", "carousel");
