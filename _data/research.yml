@@ -19,7 +19,7 @@ areas:
   - slug: care
     title: "AI in Care and Sensitive Settings"
     short: Care
-    pastel: 1
+    pastel: 3
     summary: >-
       AI is entering the most personal parts of people's lives, from a child's early development to decisions
       at the end of life. We build and study AI that supports people in these moments: agents that help people
@@ -34,13 +34,16 @@ areas:
       - chi26-lbw-domestic-workers
       - chi26-ws-relationship-care
       - chi26-ws-more-than-1v1
+      - arxiv25-peer-support-sg
       - chi25-lbw-joint-attention
       - chi25-ws-mh-ecosystem
+      - arxiv24-gaze-asd
       - dis24-emotions-mh
+      - cscw21-ws-older-adults
   - slug: multimodal
     title: "Multimodal Human–AI Interaction"
     short: Multimodal
-    pastel: 2
+    pastel: 4
     summary: >-
       People communicate with more than text. We design AI that works across sketch, speech, video, and 3D:
       generative tools that let designers sketch and talk at the same time, interfaces for modelling physical
@@ -49,12 +52,17 @@ areas:
     papers: [pg25-vr-modeling, wacv26-dronaquatics, springer26-talksketch]
     more:
       - dis26-sketch-speech
+      - chi26-parent-child-align
       - chi26-sketch-taxonomy
+      - eacl26-blend-vis
+      - chi26-ws-more-than-1v1
+      - emnlp25-humor-pixels
+      - chi25-lbw-joint-attention
       - dronet24-swimming
   - slug: responsible-ai
     title: "Responsible AI: Risks and Robustness of Language Models"
     short: Responsible AI
-    pastel: 3
+    pastel: 1
     summary: >-
       Language models are already used to spread and to counter disinformation, and to moderate what people see
       online. We study where these models fail and whom those failures harm: how people use LLMs as both sword
@@ -62,9 +70,11 @@ areas:
       of online speech, and how well models understand cultures beyond the English-speaking world.
     papers: [cscw26-sword-shield, eacl26-blend-vis]
     more:
+      - emnlp25-humor-pixels
       - emnlp24-toxicloakcn
       - cscw25-comm-games
       - woah24-sghatecheck
       - ijcai23-gpt3-explanations
       - jcdl24-infotrace
       - www24-brinjal
+      - bigdata22-muscat

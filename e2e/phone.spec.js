@@ -118,6 +118,20 @@ test.describe("Publications on a phone", () => {
     expect(clipped).toBe(false); // authors are never clamped
   });
 
+  test("an award row's medal stays on the venue's last line, never alone on a line of its own", async ({ page }) => {
+    const medalSharesALine = await page.evaluate(() => {
+      const venue = document.querySelector("#pub-chi26-acp-agent-roles .publication-row__venue");
+      const medal = venue.querySelector(".medal").getBoundingClientRect();
+      const text = [...venue.childNodes].filter(node => node.nodeType === Node.TEXT_NODE).pop();
+      const range = document.createRange();
+      range.selectNodeContents(text);
+      const lines = [...range.getClientRects()];
+      const lastLine = lines[lines.length - 1];
+      return medal.top < lastLine.bottom && medal.bottom > lastLine.top;
+    });
+    expect(medalSharesALine).toBe(true);
+  });
+
   test("tapping a thumbnail opens the figure dialog", async ({ page }) => {
     await page.locator("#pub-chi26-acp-agent-roles .publication-row__figure").tap();
     await expect(page.locator("#figure-dialog")).toBeVisible();
@@ -130,6 +144,33 @@ test.describe("Publications on a phone", () => {
     const row = page.locator("#pub-dis24-emotions-mh");
     await expect(row).toBeVisible();
     await expect.poll(async () => (await row.boundingBox()).y).toBeLessThan(300);
+  });
+
+  // 116px before (48px of top padding, a 40px title).
+  test("the page header is compact", async ({ page }) => {
+    const header = await page.locator(".page-header").boundingBox();
+    expect(header.height).toBeLessThanOrEqual(92);
+  });
+
+  // 85px a year before: the type counts wrapped onto two lines.
+  test("a year's type counts are dots and numbers on one line, and the names stay for screen readers", async ({ page }) => {
+    const summary = page.locator("details.year > summary").first();
+    expect((await summary.boundingBox()).height).toBeLessThanOrEqual(72);
+    expect((await summary.locator(".year__types").boundingBox()).height).toBeLessThanOrEqual(28);
+
+    const entries = summary.locator(".year__type");
+    expect(await entries.count()).toBeGreaterThan(1);
+    const labels = summary.locator(".year__type-label");
+    const sizes = await labels.evaluateAll(list => list.map(el => {
+      const box = el.getBoundingClientRect();
+      return { width: box.width, height: box.height, text: el.textContent.trim() };
+    }));
+    for (const label of sizes) {
+      expect(label.width).toBeLessThanOrEqual(2); // visually hidden...
+      expect(label.height).toBeLessThanOrEqual(2);
+      expect(label.text.length).toBeGreaterThan(2); // ...but still in the page
+    }
+    await expect(entries.first()).toHaveAttribute("title", /^\d+ \w/); // and a tooltip names each count
   });
 });
 
@@ -190,6 +231,22 @@ test.describe("Research cards on a phone", () => {
     const strip = page.locator("#care .paper-cards");
     await page.locator("#care li.paper-card:last-child a").focus();
     await expect.poll(() => strip.evaluate(el => el.scrollLeft)).toBeGreaterThan(100);
+  });
+
+  // 107px each before: the venue on its own line, then a three-line 16px title.
+  test("the More in this area links run the venue into the title and are about two-thirds as tall", async ({ page }) => {
+    // A few venues are long enough to wrap themselves ("CHI'25 Workshop: Envisioning the Future of Interactive
+    // Health"); the title then starts on the venue's last line, which is what "inline" means.
+    const links = await page.evaluate(() => [...document.querySelectorAll("li.paper-link")].map(li => {
+      const venueLines = [...li.querySelector(".paper-link__venue").getClientRects()];
+      const firstTitleLine = li.querySelector(".paper-link__title").getClientRects()[0];
+      const lastVenueLine = venueLines[venueLines.length - 1];
+      return { height: li.getBoundingClientRect().height, titleStartsOnVenueLine: Math.abs(lastVenueLine.top - firstTitleLine.top) < 6 };
+    }));
+    expect(links.length).toBeGreaterThan(10);
+    links.forEach(link => expect(link.titleStartsOnVenueLine).toBe(true));
+    const average = links.reduce((sum, link) => sum + link.height, 0) / links.length;
+    expect(average).toBeLessThanOrEqual(100); // 85 with the fallback fonts these specs use; it was 107 with web fonts before
   });
 
   test("a card still carries its type and area labels, pinned to its foot", async ({ page }) => {
