@@ -1,0 +1,17 @@
+{%- comment -%}
+  The one lightbox, shared by /publications/, /gallery/ and the specimen on /design-language/ (assets/js/figure.js).
+  Photos that share a data-group get Previous / Next, the arrow keys, a swipe and an "n / N" counter.
+{%- endcomment -%}
+<dialog class="figure-dialog" id="figure-dialog" aria-labelledby="figure-dialog-title">
+  <div class="figure-dialog__bar">
+    <h2 class="figure-dialog__title" id="figure-dialog-title"></h2>
+    <button class="figure-dialog__close" type="button" aria-label="Close">×</button>
+  </div>
+  <div class="figure-dialog__stage"></div>
+  <p class="figure-dialog__caption"></p>
+  <div class="figure-dialog__nav" hidden>
+    <button class="figure-dialog__step figure-dialog__prev" type="button" aria-label="Previous photo">‹</button>
+    <span class="figure-dialog__count" aria-live="polite"></span>
+    <button class="figure-dialog__step figure-dialog__next" type="button" aria-label="Next photo">›</button>
+  </div>
+</dialog>

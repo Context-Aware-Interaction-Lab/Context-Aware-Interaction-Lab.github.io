@@ -1,0 +1,58 @@
+# Lab photos, as albums by event, newest first. The Gallery page is published exactly while `albums` has something in it
+# (GalleryVisibilityTest ties the page, its nav entry and this list together). To add an album, see "Adding a gallery
+# album" in README.md.
+#
+# album:  slug (lowercase, hyphens; gives #album-<slug>), title, date ("YYYY", "YYYY-MM" or "YYYY-MM-DD", quoted),
+#         category (an id below), consent ("YYYY-MM-DD", quoted: the day Kenny confirmed that everyone identifiable in
+#         the photos AND named in the captions agreed to web use; a photo comes off on request), photos,
+#         optional: location, summary (Markdown), link (a path on this site, e.g. /news/#news-12)
+# photo:  file (the quoted number "01", "02", ... of assets/img/gallery/<slug>/<file>.jpg and <file>-thumb.jpg, made by
+#         bin/figure photo, which also prints this line with width and height), alt (what the photo
+#         shows, for people who cannot see it), width, height (of the large image), optional: caption, credit
+categories:
+  - {id: conferences, label: Conferences}
+  - {id: lab-life, label: Lab life}
+  - {id: outreach, label: Outreach}
+  - {id: demos, label: Demos}
+
+albums:
+  - slug: lab-day-out-2026
+    title: Lab day out in Chinatown
+    date: "2026-07-02"
+    category: lab-life
+    consent: "2026-07-02"
+    location: Chinatown, Singapore
+    summary: "The lab's day out in Chinatown, Singapore: street murals, shophouses and dinner at Kok Seng."
+    photos:
+      - {file: "01", width: 1280, height: 960, alt: "Group selfie of six people on a Chinatown street, two making peace signs, with shophouses and a glass-roofed walkway behind them."}
+      - {file: "02", width: 960, height: 1280, alt: "Yellow wall poster reading Monopoly Hidden Singapore, Chinatown start point, with a QR code to scan; a wrist with a smartwatch and the back of a head at the bottom edge."}
+      - {file: "03", width: 960, height: 1280, alt: "Looking up a tall atrium toward a glass roof, with round white lamps hanging at different heights and a ceiling fan in the corner."}
+      - {file: "04", width: 960, height: 1280, alt: "A closed folding scissor-gate lift door in a wooden frame, with a call button panel and safety notices on the wall."}
+      - {file: "05", width: 960, height: 1280, alt: "Wooden door under a lit sign reading haus, with a signboard outside advertising cheesecake."}
+      - {file: "06", width: 1280, height: 960, alt: "Group selfie of six people in front of a tall red multi-tiered Chinese temple building, with scaffolding netting at its sides."}
+      - {file: "07", width: 1280, height: 960, alt: "A mural on a yellow wall of a cartoon lion-dance head with red firecracker bursts and the words Huat Ah, beside a blue Welcome to Chinatown Complex sign."}
+      - {file: "08", width: 1280, height: 960, alt: "A painted street mural of a kitchen-and-bedroom scene: children playing on a wooden loft over a board game, and a woman sewing at a low table on the right."}
+      - {file: "09", width: 1280, height: 960, alt: "The same mural seen at an angle along a back lane, with shuttered windows, a kitchen corner and children on a loft, above a yellow road marking."}
+      - {file: "10", width: 1280, height: 960, alt: "A man and a woman sit on the kerb in front of a painted mural of a table laid with food, shuttered windows and a cat at the right."}
+      - {file: "11", width: 1280, height: 960, alt: "A mural of a woman in a yellow outfit cooking over a wood fire, with a kettle, firewood, caged chickens, a sink and a stool."}
+      - {file: "12", width: 1280, height: 960, alt: "The cooking mural beside a grey door marked with an LPG warning notice, with a worn metal step on the pavement."}
+      - {file: "13", width: 1280, height: 960, alt: "A large mural on a corner shophouse wall showing a bustling coffee-shop and food-supply scene, laundry on lines and a giant teapot pouring tea."}
+      - {file: "14", width: 1280, height: 960, alt: "Group selfie of six people on a busy Chinatown pedestrian street, with a tea shop on the left and a cafe with an orange facade on the right."}
+      - {file: "15", width: 960, height: 1280, alt: "A tall red tower sign with white Chinese characters above a red building carrying a large heart-Singapore billboard, against a cloudy sky."}
+      - {file: "16", width: 960, height: 1280, alt: "The Kok Seng menu cover with large black calligraphy characters and a red seal, seen through crinkled, reflective plastic."}
+      - {file: "17", width: 1280, height: 960, alt: "A white bowl of stir-fried flat rice noodles with beef, greens and carrot, topped with a raw egg yolk."}
+      - {file: "18", width: 1280, height: 960, alt: "A bowl of spinach soup with century egg, tofu and a poached egg topped with orange roe."}
+      - {file: "19", width: 1280, height: 960, alt: "A plate of crispy roast chicken with golden skin, a few cucumber slices and a chicken wing."}
+      - {file: "20", width: 1280, height: 960, alt: "A bowl of stir-fried beef with red onion, green beans and red pepper in a dark glaze."}
+      - {file: "21", width: 1280, height: 960, alt: "Selfie of a group seated around a round restaurant table with dishes, drinks and phones on it, two people making peace signs."}
+      - {file: "22", width: 960, height: 1280, alt: "A dinner table at Kok Seng seen from above the plates: roast chicken on a white plate in front, other dishes behind and two diners at the edge."}
+      - {file: "23", width: 1280, height: 960, alt: "Close-up of wok-fried flat rice noodles with sliced beef, bean sprouts and greens in a white bowl."}
+      - {file: "24", width: 1280, height: 960, alt: "A crisp noodle basket filled with a yam-ring stir-fry of prawns, cashew nuts, snow peas and celery."}
+      - {file: "25", width: 1280, height: 960, alt: "Overview of the dinner table with roast chicken, soup, a claypot, a basket dish and fried noodles, with chilli and soy dipping sauces."}
+      - {file: "26", width: 1280, height: 960, alt: "A claypot of braised tofu, aubergine and red chilli in a thick sauce, wrapped at the base in foil."}
+      - {file: "27", width: 1280, height: 960, alt: "A whole chilli crab in thick orange sauce in a black bowl."}
+      - {file: "28", width: 1280, height: 960, alt: "Selfie of a group around a round restaurant table covered in dishes, one person making a peace sign and a can of cola on the table."}
+      - {file: "29", width: 1280, height: 960, alt: "A bright yellow stall counter with a sign reading Odour Here and a round 99 Old Trees logo."}
+      - {file: "30", width: 1280, height: 960, alt: "A bowl of cold coconut-milk dessert topped with sweet red beans and a heap of durian flesh."}
+      - {file: "31", width: 1280, height: 960, alt: "A bowl labelled Stinky holding a smooth durian dessert with a spoonful of durian on top, beside yellow sachets."}
+      - {file: "32", width: 1024, height: 1280, alt: "The group selfie in front of the red temple building, set in a decorative Monopoly Hidden Singapore frame reading Moneybags of Chinatown, CAILab."}

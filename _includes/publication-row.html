@@ -4,11 +4,11 @@
 {%- capture labels_html -%}{% include pub-labels.html item=include.item %}{%- endcapture -%}
 {%- capture search_text -%}{{ include.item.title }} {{ include.item.authors }} {{ include.item.venue }}{%- endcapture -%}
 {%- if fig -%}
-  {%- capture fig_large %}/assets/img/pub-{{ fig.slug }}.jpg{% endcapture -%}
-  {%- capture fig_thumb %}/assets/img/pub-{{ fig.slug }}-thumb.jpg{% endcapture -%}
+  {%- capture fig_large %}/assets/img/publications/{{ fig.slug }}.jpg{% endcapture -%}
+  {%- capture fig_thumb %}/assets/img/publications/{{ fig.slug }}-thumb.jpg{% endcapture -%}
 {%- endif -%}
 {%- if vid -%}
-  {%- capture vid_poster %}/assets/img/pub-{{ vid.slug }}-poster.jpg{% endcapture -%}
+  {%- capture vid_poster %}/assets/img/publications/{{ vid.slug }}-poster.jpg{% endcapture -%}
 {%- endif -%}
 <li class="publication-row"{% if include.item.id %} id="pub-{{ include.item.id }}"{% endif %}{% if fig %} data-figure{% endif %} data-type="{{ include.item.type }}" data-areas="{{ label_areas }}" data-text="{{ search_text | downcase | escape }}">
   <div class="publication-row__side">

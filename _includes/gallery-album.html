@@ -1,0 +1,39 @@
+{%- comment -%}
+  One album: heading, date, place, count, summary, then a justified grid of photos. More than 12 photos show the first
+  8 and fold the rest into a native <details>, so without JS every photo is still one click away. album = one entry of
+  gallery.yml's albums (or the specimen's data).
+{%- endcomment -%}
+{%- assign album = include.album -%}
+{%- assign total = album.photos | size -%}
+{%- assign shown = total -%}
+{%- if total > 12 %}{% assign shown = 8 %}{% endif -%}
+{%- assign d = album.date | append: "" -%}
+{%- assign dlen = d | size -%}
+{%- if dlen == 4 %}{% assign when = d %}{% elsif dlen == 7 %}{% assign d1 = d | append: "-01" %}{% assign when = d1 | date: "%B %Y" %}{% else %}{% assign when = d | date: "%-d %B %Y" %}{% endif -%}
+<section class="album" id="album-{{ album.slug }}" data-category="{{ album.category }}" aria-labelledby="album-{{ album.slug }}-title">
+  <header class="album__head">
+    <h3 class="album__title" id="album-{{ album.slug }}-title">{{ album.title }}</h3>
+    <p class="album__meta"><time datetime="{{ d }}">{{ when }}</time>{% if album.location %} · {{ album.location }}{% endif %} · {{ total }} photo{% if total != 1 %}s{% endif %}</p>
+    {%- if album.summary %}
+    <div class="album__summary">{{ album.summary | markdownify }}</div>
+    {%- endif %}
+    {%- if album.link %}
+    <a class="album__link" href="{{ album.link | relative_url }}">Read more</a>
+    {%- endif %}
+  </header>
+  <ul class="album__grid">
+    {%- for photo in album.photos limit: shown %}
+    {% include gallery-photo.html album=album photo=photo %}
+    {%- endfor %}
+  </ul>
+  {%- if shown < total %}
+  <details class="album__rest">
+    <summary>Show {{ total | minus: shown }} more photos</summary>
+    <ul class="album__grid">
+      {%- for photo in album.photos offset: shown %}
+      {% include gallery-photo.html album=album photo=photo %}
+      {%- endfor %}
+    </ul>
+  </details>
+  {%- endif %}
+</section>

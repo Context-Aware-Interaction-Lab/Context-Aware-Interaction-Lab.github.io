@@ -12,16 +12,16 @@ members:
     role: "Lab Director; Assistant Professor; Design and Artificial Intelligence Programme / Information Systems Technology and Design Pillar; Singapore University of Technology and Design"
   - name: "Kellie Sim Yu Hui"
     role: "PhD Student, SUTD"
-    photo: /assets/img/kellie-sim.jpg
+    photo: /assets/img/people/kellie-sim.jpg
   - name: "Weiyan Shi"
     role: "PhD Student, SUTD"
-    photo: /assets/img/weiyan-shi.jpg
+    photo: /assets/img/people/weiyan-shi.jpg
   - name: "Bryan Zhengyu Tan"
     role: "PhD Student (co-advised), SUTD"
-    photo: /assets/img/bryan-tan.jpg
+    photo: /assets/img/people/bryan-tan.jpg
   - name: "Pannapat Chanpaisaeng (Apple)"
     role: "PhD Student, SUTD"
-    photo: /assets/img/pannapat-chanpaisaeng.jpg
+    photo: /assets/img/people/pannapat-chanpaisaeng.jpg
   - name: "Nguyen Quoc Nam"
     role: "PhD Student, SUTD"
   - name: "Swarangi Subodh Mehta"
@@ -45,65 +45,65 @@ collaborators:
   - name: "Pin Sym Foong"
     role: "Head of Design, Telehealth Core"
     affiliation: "Saw Swee Hock School of Public Health; National University of Singapore"
-    photo: /assets/img/pin-sym-foong.jpg
+    photo: /assets/img/people/pin-sym-foong.jpg
   - name: "Roy Lee"
     role: "Associate Professor"
     affiliation: "University of British Columbia, Okanagan"
-    photo: /assets/img/roy-lee.jpg
+    photo: /assets/img/people/roy-lee.jpg
   - name: "Wang Yong"
     role: "Assistant Professor"
     affiliation: "Nanyang Technological University"
-    photo: /assets/img/wang-yong.jpg
+    photo: /assets/img/people/wang-yong.jpg
   - name: "Christophe Hurter"
     role: "Professor"
     affiliation: "Fédération ENAC ISAE-SUPAERO ONERA, France"
-    photo: /assets/img/christophe-hurter.jpg
+    photo: /assets/img/people/christophe-hurter.jpg
   - name: "Hwajung Hong"
     role: "Associate Professor"
     affiliation: "Korea Advanced Institute of Science & Technology"
-    photo: /assets/img/hwajung-hong.jpg
+    photo: /assets/img/people/hwajung-hong.jpg
   - name: "Uichin Lee"
     role: "Professor"
     affiliation: "Korea Advanced Institute of Science & Technology"
-    photo: /assets/img/uichin-lee.jpg
+    photo: /assets/img/people/uichin-lee.jpg
   - name: "Youngki Lee"
     role: "Professor"
     affiliation: "Seoul National University"
-    photo: /assets/img/youngki-lee.jpg
+    photo: /assets/img/people/youngki-lee.jpg
   - name: "Camellia Zakaria"
     role: "Assistant Professor"
     affiliation: "University of Toronto, USA"
-    photo: /assets/img/camellia-zakaria.jpg
+    photo: /assets/img/people/camellia-zakaria.jpg
   - name: "Rajesh Balan"
     role: "Professor"
     affiliation: "Singapore Management University"
-    photo: /assets/img/rajesh-balan.jpg
+    photo: /assets/img/people/rajesh-balan.jpg
   - name: "Geraldine Quek"
     role: "Lecturer"
     affiliation: "Singapore University of Technology and Design"
-    photo: /assets/img/geraldine-quek.jpg
+    photo: /assets/img/people/geraldine-quek.jpg
   - name: "Dorien Herremans"
     role: "Associate Professor"
     affiliation: "Singapore University of Technology and Design"
-    photo: /assets/img/dorien-herremans.jpg
+    photo: /assets/img/people/dorien-herremans.jpg
   - name: "Peng Song"
     role: "Assistant Professor"
     affiliation: "Singapore University of Technology and Design"
-    photo: /assets/img/peng-song.jpg
+    photo: /assets/img/people/peng-song.jpg
 
 collaborators_former:
   - name: "Simon Perrault"
     role: "Professor"
     affiliation: "Télécom Paris, Institut Polytechnique de Paris, France"
-    photo: /assets/img/simon-perrault.jpg
+    photo: /assets/img/people/simon-perrault.jpg
   - name: "Archan Misra"
     role: "Professor / Vice Provost (Research)"
     affiliation: "Singapore Management University"
-    photo: /assets/img/archan-misra.jpg
+    photo: /assets/img/people/archan-misra.jpg
   - name: "JeongGil Ko"
     role: "Professor"
     affiliation: "Yonsei University"
-    photo: /assets/img/jeonggil-ko.jpg
+    photo: /assets/img/people/jeonggil-ko.jpg
 
 alumni_graduate:
   - name: "Aaron Zhe Yu Tua"
