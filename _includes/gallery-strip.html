@@ -1,0 +1,15 @@
+{%- comment -%}
+  One strip of album cards: a year's albums, or the undated ones. The scroller is .album-cards (plain CSS: a flex row on
+  scroll-snap, so it swipes and scrolls without JS); the two arrows ship `hidden` and gallery-carousel.js shows them only
+  while the strip overflows, and magnifies the card nearest its centre as it scrolls. albums = a list of albums, already
+  in the order to show.
+{%- endcomment -%}
+<div class="album-carousel">
+  <button class="album-carousel__btn album-carousel__prev" type="button" aria-label="Scroll albums left" aria-disabled="true" hidden>‹</button>
+  <div class="album-cards">
+    {%- for album in include.albums %}
+    {% include gallery-album.html album=album %}
+    {%- endfor %}
+  </div>
+  <button class="album-carousel__btn album-carousel__next" type="button" aria-label="Scroll albums right" aria-disabled="false" hidden>›</button>
+</div>

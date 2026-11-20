@@ -4,8 +4,9 @@
 #   bin/figure page   PDF PAGE OUTDIR                    render one PDF page at 300 dpi to look at and pick a crop
 #   bin/figure make   SLUG PAGE.png X Y W H [TX TY TW TH | pad]   publications/SLUG.jpg (large), SLUG-thumb.jpg (480x300, 16:10)
 #   bin/figure poster SLUG IMAGE X Y W H                 publications/SLUG-poster.jpg (1280x720, 16:9) for a video
-#   bin/figure photo  ALBUM N SRC.jpg                    gallery/ALBUM/NN.jpg (ALBUM is YYYYMMDD-name; at most 1280 long)
+#   bin/figure photo  ALBUM N SRC.jpg                    gallery/ALBUM/NN.jpg (ALBUM is the album's slug; at most 1280 long)
 #                                                        and NN-thumb.jpg (within 640x480); prints the gallery.yml line
+#                                                        (a dated album is YYYYMMDD-name, an undated one a plain name: GalleryRules checks)
 #
 # Crops are in pixels of the 300 dpi page image, from its top-left corner. The thumbnail crop may differ from
 # the large one (a wide figure needs a tighter thumbnail); 'pad' instead shows the whole figure centred on white
@@ -133,12 +134,6 @@ case "$cmd" in
     need sips; need python3
     slug=$1; n=$2; src=$3
     slug_ok "$slug"; num_ok "$n"; [ -f "$src" ] || die "no such file: $src"
-    # An album folder is named YYYYMMDD-name (the album's date, 00 for a missing month or day), so the folders list
-    # in date order and the page orders albums by the same name. GalleryRules checks the prefix against the date.
-    case "$slug" in
-      [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[a-z0-9]*) ;;
-      *) die "album must be named YYYYMMDD-name, such as 20260702-lab-day-out: '$slug'" ;;
-    esac
     # Judge the file by its first two bytes, not its extension: an iPhone export named .HEIC can hold a plain JPEG.
     [ "$(head -c 2 "$src" | od -An -tx1 | tr -d ' \n')" = "ffd8" ] || die "photo takes JPEG data, and $src is not (a real HEIC or a PNG: export it as JPEG first)"
     nn=$(printf '%02d' "$n")   # two digits at least, so an album sorts in order in Finder

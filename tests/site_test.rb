@@ -1468,17 +1468,24 @@ module GalleryRules
     found = []
     slugs = albums.map { |a| a["slug"] }
     found << "duplicate album slug(s): #{slugs.select { |s| slugs.count(s) > 1 }.uniq.join(", ")}" if slugs.uniq.size != slugs.size
-    dated = albums.select { |a| valid_date?(a["date"]) }
+    # Undated albums (undated: true) sit outside the order: only dated ones are checked for newest first.
+    dated = albums.select { |a| a["undated"] != true && valid_date?(a["date"]) }
     keys = dated.map { |a| sort_key(a["date"]) }
     found << "albums are not newest first" unless keys == keys.sort.reverse
     albums.each do |a|
       name = a["slug"].inspect
       found << "#{name}: slug must be lowercase letters, digits and hyphens" unless a["slug"].to_s.match?(SLUG)
-      if valid_date?(a["date"]) && !a["slug"].to_s.match?(/\A#{slug_prefix(a["date"])}-[a-z0-9]/)
-        found << "#{name}: slug must start with #{slug_prefix(a["date"])}- (the date as YYYYMMDD, 00 for a missing month or day), then a name"
+      if a["undated"] == true
+        found << "#{name}: an undated album must not have a date" if a.key?("date")
+        found << "#{name}: an undated album's slug must not start with a date (eight digits)" if a["slug"].to_s.match?(/\A\d{8}/)
+      else
+        found << "#{name}: undated must be true (or left out)" if a.key?("undated")
+        if valid_date?(a["date"]) && !a["slug"].to_s.match?(/\A#{slug_prefix(a["date"])}-[a-z0-9]/)
+          found << "#{name}: slug must start with #{slug_prefix(a["date"])}- (the date as YYYYMMDD, 00 for a missing month or day), then a name"
+        end
       end
       found << "#{name}: needs a title" if a["title"].to_s.strip.empty?
-      found << "#{name}: date must be a quoted YYYY, YYYY-MM or YYYY-MM-DD" unless valid_date?(a["date"])
+      found << "#{name}: date must be a quoted YYYY, YYYY-MM or YYYY-MM-DD (or the album is undated: true)" unless a["undated"] == true || valid_date?(a["date"])
       found << "#{name}: category #{a["category"].inspect} is not in categories" unless categories.include?(a["category"])
       consent = a["consent"]
       if !consent.is_a?(String) || !consent.match?(ISO_DAY) || !valid_date?(consent)
@@ -1633,6 +1640,43 @@ class GalleryDataTest < Minitest::Test
     assert_empty problems(date: "2026", slug: "20260000-chi26")
   end
 
+  # An album tied to no year (the catch-all, "Outtakes & Oddities") says so explicitly, with undated: true. Without a
+  # date and without the flag it is an error, so a typo'd or forgotten date never turns an album into a catch-all by
+  # accident. Its slug has no date prefix, and must not look like one.
+  UNDATED = GOOD.reject { |k, _| k == "date" }.merge("slug" => "outtakes-and-oddities", "undated" => true).freeze
+
+  def undated_problems(**changes) = GalleryRules.problems([UNDATED.merge(changes.transform_keys(&:to_s))], CATEGORIES, today: Date.new(2026, 11, 20))
+
+  def test_an_undated_album_has_the_flag_no_date_and_a_plain_slug
+    assert_empty undated_problems
+    assert_empty undated_problems(slug: "odds-1")
+  end
+
+  def test_an_undated_album_must_not_carry_a_date_or_a_dated_slug
+    assert_match(/must not have a date/, undated_problems(date: "2026-04").join)
+    assert_match(/must not start with a date/, undated_problems(slug: "20260400-outtakes").join)
+    assert_match(/must not start with a date/, undated_problems(slug: "20240000-outtakes").join)
+  end
+
+  def test_a_missing_date_without_the_flag_is_an_error_and_so_is_a_flag_that_is_not_true
+    assert_match(/date must be a quoted/, problems(date: nil).join, "a forgotten date is not a catch-all")
+    assert_match(/date must be a quoted/, GalleryRules.problems([GOOD.reject { |k, _| k == "date" }], CATEGORIES, today: Date.new(2026, 11, 20)).join)
+    assert_match(/undated must be true/, problems(undated: false).join)
+    assert_match(/undated must be true/, undated_problems(undated: "yes").join)
+  end
+
+  def test_undated_albums_sit_outside_the_newest_first_order_and_still_need_the_rest
+    today = Date.new(2026, 11, 20)
+    a = GOOD
+    b = GOOD.merge("slug" => "20260600-dis26", "date" => "2026-06")
+    assert_empty GalleryRules.problems([UNDATED, b, a], CATEGORIES, today: today), "an undated album may sit anywhere in the file"
+    assert_empty GalleryRules.problems([b, UNDATED, a], CATEGORIES, today: today)
+    assert_match(/not newest first/, GalleryRules.problems([a, UNDATED, b], CATEGORIES, today: today).join, "the dated ones are still checked")
+    assert_match(/consent/, undated_problems(consent: nil).join)
+    assert_match(/no photos/, undated_problems(photos: []).join)
+    assert_match(/duplicate album slug/, GalleryRules.problems([UNDATED, UNDATED], CATEGORIES, today: today).join)
+  end
+
   def test_file_rules_catch_missing_oversize_and_misdeclared_images
     Dir.mktmpdir do |dir|
       img = File.join(ROOT, "assets", "img")
@@ -1661,11 +1705,15 @@ class GallerySpecimenTest < Minitest::Test
   def tiles(html) = html.scan(%r{<li class="album__photo".*?</li>}m)
   def album(slug) = ALBUMS.find { |a| a["slug"] == slug }
 
-  def test_the_specimen_has_three_albums_in_two_years_and_three_categories
-    assert_equal 3, ALBUMS.size
-    assert_equal %w[2025 2026], ALBUMS.map { |a| a["date"][0, 4] }.uniq.sort
-    assert_equal 3, ALBUMS.map { |a| a["category"] }.uniq.size
-    assert_equal [14, 3, 1], ALBUMS.map { |a| a["photos"].size }, "a big album, a small one and a single photo"
+  def test_the_specimen_has_seven_albums_five_in_2026_one_in_2025_and_one_tied_to_no_year
+    assert_equal 7, ALBUMS.size
+    dated = ALBUMS.reject { |a| a["undated"] }
+    assert_equal %w[2025 2026], dated.map { |a| a["date"][0, 4] }.uniq.sort
+    assert_equal 5, dated.count { |a| a["date"].start_with?("2026") }, "enough cards to overflow a strip at desktop width"
+    assert_equal 1, ALBUMS.count { |a| a["undated"] }
+    assert_nil ALBUMS.find { |a| a["undated"] }["date"], "an undated album has no date"
+    assert_equal 4, ALBUMS.map { |a| a["category"] }.uniq.size
+    assert_equal [14, 2, 1, 2, 3, 1, 2], ALBUMS.map { |a| a["photos"].size }, "a big album, small ones and single photos"
   end
 
   def test_the_specimen_photos_have_alt_text_sizes_and_files
@@ -1677,13 +1725,35 @@ class GallerySpecimenTest < Minitest::Test
     end
   end
 
-  def test_each_album_is_a_card_in_its_year_newest_first
+  def ids_in(html) = html.scan(/<details class="album" id="album-([^"]+)"/).flatten
+
+  def test_each_album_is_a_card_in_its_year_newest_first_and_the_undated_one_comes_last_under_anytime
     years = page.scan(/<h2 class="gallery-year__title"[^>]*>(\d{4})<\/h2>/).flatten
     assert_equal %w[2026 2025], years
-    sections = page.scan(%r{<section class="gallery-year".*?</section>}m)
-    assert_equal %w[20261100-specimen-demos 20260600-specimen-conferences], sections[0].scan(/<details class="album" id="album-([^"]+)"/).flatten
-    assert_equal %w[20250900-specimen-single], sections[1].scan(/<details class="album" id="album-([^"]+)"/).flatten
-    sections.each { |s| assert_match(/<div class="album-cards">/, s) }
+    sections = page.scan(%r{<section class="gallery-year" .*?</section>}m)
+    assert_equal %w[20261100-specimen-demos 20261000-specimen-long 20260912-specimen-short 20260800-specimen-no-place 20260600-specimen-conferences], ids_in(sections[0])
+    assert_equal %w[20250900-specimen-single], ids_in(sections[1])
+    undated = page[%r{<section class="gallery-year gallery-year--undated".*?</section>}m]
+    refute_nil undated, "no undated section"
+    assert_equal %w[specimen-undated], ids_in(undated)
+    assert_match(%r{<h2 class="gallery-year__title" id="gallery-undated">Anytime</h2>}, undated)
+    assert_operator page.index("gallery-year--undated"), :>, page.index('id="gallery-2025"'), "after every year"
+    [*sections, undated].each { |sec| assert_match(/<div class="album-cards">/, sec) }
+  end
+
+  def test_an_undated_card_has_no_date_and_no_year
+    c = card("specimen-undated")
+    refute_nil c
+    refute_match(/<time/, c, "no date, so no <time>")
+    assert_match(%r{<span class="album__meta">2 photos</span>}, c)
+    assert_match(/data-category="lab-life"/, c)
+  end
+
+  def test_every_strip_has_two_arrows_that_start_hidden_for_gallery_carousel_js
+    assert_equal 3, page.scan('<div class="album-carousel">').size, "two years and the undated section"
+    prevs = page.scan(%r{<button class="album-carousel__btn album-carousel__prev" type="button" aria-label="Scroll albums left" aria-disabled="true" hidden>})
+    nexts = page.scan(%r{<button class="album-carousel__btn album-carousel__next" type="button" aria-label="Scroll albums right" aria-disabled="false" hidden>})
+    assert_equal [3, 3], [prevs.size, nexts.size]
   end
 
   def test_a_card_is_a_summary_with_the_first_photo_as_cover_a_title_and_the_facts
@@ -1729,10 +1799,10 @@ class GallerySpecimenTest < Minitest::Test
     refute_includes plain, "data-credit"
   end
 
-  def test_chips_cover_the_three_categories_with_counts_and_start_hidden
+  def test_chips_cover_the_four_categories_in_use_with_counts_and_start_hidden
     assert_match(/<div class="gallery-filters" hidden>/, page, "revealed by gallery-filter.js")
     chips = page.scan(%r{data-filter="category" data-value="([^"]+)">([^<]+) <span class="chip__count">(\d+)</span>})
-    assert_equal [%w[conferences Conferences 1], %w[lab-life Lab\ life 1], %w[demos Demos 1]], chips.map { |v, l, n| [v, l, n] }
+    assert_equal [%w[conferences Conferences 1], %w[lab-life Lab\ life 3], %w[outreach Outreach 1], %w[demos Demos 2]], chips.map { |v, l, n| [v, l, n] }
   end
 
   def test_the_lightbox_has_steps_a_counter_all_photos_and_its_scripts_here_and_on_publications
@@ -1748,6 +1818,12 @@ class GallerySpecimenTest < Minitest::Test
     end
   end
 
+  def test_the_carousel_script_loads_here_and_before_the_filter_and_the_lightbox
+    html = page
+    assert_has html, 'src="/assets/js/gallery-carousel.js"', "gallery-carousel.js"
+    assert_operator html.index('src="/assets/js/gallery-carousel.js"'), :<, html.index('src="/assets/js/gallery-filter.js"')
+  end
+
   def test_the_filter_script_loads_before_the_lightbox_script
     html = page
     assert_operator html.index('src="/assets/js/gallery-filter.js"'), :<, html.index('src="/assets/js/figure.js"'),
@@ -1759,7 +1835,7 @@ class GallerySpecimenTest < Minitest::Test
   end
 
   def test_the_components_are_listed_on_the_design_language_page
-    %w[.album .album__card .album__grid .figure-dialog].each { |c| assert_has page, "<code>#{c}</code>", "#{c} is not listed" }
+    %w[.album .album-carousel .album__card .album__grid .figure-dialog].each { |c| assert_has page, "<code>#{c}</code>", "#{c} is not listed" }
     assert_match(/Gallery photos\./, page)
   end
 
@@ -1785,9 +1861,39 @@ class GalleryPageTest < Minitest::Test
     end
   end
 
+  def dated_albums = gallery_albums.reject { |a| a["undated"] }
+  def undated_albums = gallery_albums.select { |a| a["undated"] }
+
   def test_albums_sit_under_their_year_newest_first
     years = page.scan(/<h2 class="gallery-year__title"[^>]*>(\d{4})<\/h2>/).flatten
-    assert_equal gallery_albums.map { |a| a["date"][0, 4] }.uniq, years
+    assert_equal dated_albums.map { |a| a["date"][0, 4] }.uniq, years
+  end
+
+  # An undated album (the catch-all) is tied to no year: its own section after every year, headed "Anytime", with no
+  # date on its card, and never inside a year's section.
+  def test_undated_albums_follow_the_years_under_their_own_heading_and_show_no_date
+    skip "no undated album in gallery.yml" if undated_albums.empty?
+    section = page[%r{<section class="gallery-year gallery-year--undated".*?</section>}m]
+    refute_nil section, "no undated section"
+    assert_match(%r{<h2 class="gallery-year__title" id="gallery-undated">Anytime</h2>}, section)
+    assert_equal undated_albums.map { |a| a["slug"] }, section.scan(/<details class="album" id="album-([^"]+)"/).flatten
+    refute_match(/<time/, section, "an undated card has no date")
+    assert_operator page.index("gallery-year--undated"), :>, page.rindex('class="gallery-year__title" id="gallery-20'), "after every year"
+    years_html = page.scan(%r{<section class="gallery-year" .*?</section>}m).join
+    undated_albums.each { |a| refute_includes years_html, %(id="album-#{a["slug"]}"), "#{a["slug"]} must not sit under a year" }
+  end
+
+  def test_every_strip_ships_two_hidden_arrows
+    strips = page.scan('<div class="album-carousel">').size
+    assert_equal dated_albums.map { |a| a["date"][0, 4] }.uniq.size + (undated_albums.empty? ? 0 : 1), strips
+    assert_equal strips, page.scan(/album-carousel__prev" type="button"[^>]* hidden>/).size
+    assert_equal strips, page.scan(/album-carousel__next" type="button"[^>]* hidden>/).size
+  end
+
+  def test_the_carousel_script_loads_before_the_filter
+    assert_has page, 'src="/assets/js/gallery-carousel.js"', "gallery-carousel.js"
+    assert_operator page.index('src="/assets/js/gallery-carousel.js"'), :<, page.index('src="/assets/js/gallery-filter.js"')
+    assert File.exist?(File.join(BUILD, "assets/js/gallery-carousel.js"))
   end
 
   def test_chips_appear_only_for_categories_in_use_and_only_with_a_choice
@@ -1822,7 +1928,7 @@ class GalleryPageTest < Minitest::Test
   end
 
   def test_the_noscript_still_is_the_first_albums_cover_and_resolves_to_a_file
-    first = gallery_albums.first
+    first = dated_albums.max_by { |a| a["slug"] } # the newest dated album; an undated one is never it
     cover = first["photos"].first
     src = "/assets/img/gallery/#{first["slug"]}/#{cover["file"]}.jpg"
     still = page[%r{<noscript>\s*<figure class="slideshow-static">.*?</figure>\s*</noscript>}m]
@@ -1849,7 +1955,20 @@ end
 class GalleryScaleTest < Minitest::Test
   CATEGORIES = %w[conferences lab-life demos].freeze
 
+  # Twelve dated albums in three years, then one tied to no year (undated: true), which must render last, under its own
+  # heading and outside every year.
   def albums
+    dated + [undated]
+  end
+
+  def undated
+    {
+      "slug" => "scale-undated", "title" => "Scale undated", "undated" => true, "category" => "demos", "consent" => "2026-01-01",
+      "photos" => [{"file" => "01", "width" => 1200, "height" => 800, "alt" => "The only photo of the undated scale album"}]
+    }
+  end
+
+  def dated
     (0...12).map do |i|
       date = format("%d-%02d", 2026 - i / 5, 12 - 2 * (i % 5))
       {
@@ -1863,7 +1982,7 @@ class GalleryScaleTest < Minitest::Test
     end
   end
 
-  def test_twelve_albums_stay_organised_by_year_and_category
+  def test_twelve_dated_albums_and_one_undated_stay_organised_by_year_and_category
     Dir.mktmpdir("cailab-scale-") do |tmp|
       dir = File.realpath(tmp)
       src = File.join(dir, "src")
@@ -1885,10 +2004,16 @@ class GalleryScaleTest < Minitest::Test
       assert_equal albums.map { |a| a["slug"] }, ids, "one card per album, newest first by name, years in order, whatever the file order"
       by_year = html.scan(%r{<section class="gallery-year".*?</section>}m).map { |s| s.scan(/id="album-\d{8}-scale-(\d+)"/).flatten.map(&:to_i) }
       assert_equal [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11]], by_year
-      assert_equal 12, html.scan('<summary class="album__card"').size
+      assert_equal 13, html.scan('<summary class="album__card"').size
+      assert_equal "scale-undated", ids.last, "the undated album is last, whatever the file order"
+      refute_match(/<time datetime=""/, html, "an undated card must not print an empty date")
+      undated_section = html[%r{<section class="gallery-year gallery-year--undated".*?</section>}m]
+      refute_nil undated_section
+      assert_equal ["scale-undated"], undated_section.scan(/<details class="album" id="album-([^"]+)"/).flatten
+      assert_equal 4, html.scan('<div class="album-carousel">').size, "a strip for each of the three years and one for the undated album"
       assert_equal 12, html.scan(/<img class="album__cover" src="\/assets\/img\/gallery\/\d{8}-scale-\d+\/01-thumb\.jpg"/).size, "the first photo is the cover"
       chips = html.scan(%r{data-filter="category" data-value="([^"]+)">[^<]+ <span class="chip__count">(\d+)</span>})
-      assert_equal [["conferences", "4"], ["lab-life", "4"], ["demos", "4"]], chips
+      assert_equal [["conferences", "4"], ["lab-life", "4"], ["demos", "5"]], chips
       assert_match(/<div class="gallery-filters" hidden>/, html)
     end
   end
