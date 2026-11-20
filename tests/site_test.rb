@@ -22,8 +22,15 @@ end
 
 def data(name) = YAML.safe_load(File.read(File.join(ROOT, "_data", "#{name}.yml")))
 
-# Only current members and collaborators may carry a photo (consent given 2026-11-18).
-def photo_people = data("people").values_at("members", "collaborators").flatten.select { |p| p["photo"] }
+# Consent (2026-11-18, extended 2026-11-20): a photo already on the site stays with the person when a member
+# becomes an alumnus or a collaborator becomes a former collaborator, and comes off on request. Nobody who never
+# had one here is photographed without consent first. `.compact` matters: `collaborators_former` is absent from
+# people.yml until someone moves, and a nil here would crash the suite when StrayFilesTest loads.
+PHOTO_LISTS = %w[members collaborators collaborators_former alumni_graduate alumni_undergraduate].freeze
+def photo_people = data("people").values_at(*PHOTO_LISTS).flatten.compact.select { |p| p["photo"] }
+
+# Everyone who has left: alumni of both kinds plus former collaborators (the key may be absent).
+def left_people = data("people").values_at("alumni_graduate", "alumni_undergraduate", "collaborators_former").flatten.compact
 
 # A publication may declare a figure and/or a video. The files sit flat in assets/img (the stray-file
 # test does not recurse): pub-<slug>.jpg (large), pub-<slug>-thumb.jpg, and for a video pub-<slug>-poster.jpg.
@@ -401,7 +408,7 @@ class PeoplePageTest < Minitest::Test
 
   def test_lists_everyone
     text = text_of("/people/")
-    (PEOPLE["members"] + PEOPLE["collaborators"] + PEOPLE["alumni_graduate"] + PEOPLE["alumni_undergraduate"])
+    (PEOPLE["members"] + PEOPLE["collaborators"] + left_people)
       .each { |person| assert_has text, person["name"], "missing person: #{person["name"]}" }
   end
 
@@ -435,6 +442,69 @@ class PeoplePageTest < Minitest::Test
     (plain_members + plain_collabs).each do |person|
       refute_match(/<img[^>]*alt="#{Regexp.escape(person["name"])}"/, html, "unexpected photo for #{person["name"]}")
     end
+  end
+
+  # Alumni and former collaborators without a photo get a small ring, never an initials disc or nothing.
+  def test_people_who_left_without_a_photo_get_a_small_ring
+    html = html_of("/people/")
+    plain_left = left_people.reject { |p| p["photo"] }
+    refute_empty plain_left
+    assert_equal plain_left.size, html.scan(/<svg class="ring person-row__ring"/).size
+  end
+
+  # Alumni stay folded: no <details> on the page opens by itself.
+  def test_every_fold_on_people_starts_closed
+    folds = html_of("/people/").scan(/<details[^>]*>/)
+    refute_empty folds
+    folds.each { |tag| assert_includes tag, 'class="fold"', "unexpected <details>: #{tag}" }
+    folds.each { |tag| refute_match(/\bopen\b/, tag, "fold starts open: #{tag}") }
+  end
+
+  # Vacuous until someone with a photo moves to alumni or former collaborators; it then pins the rendering:
+  # the original file scaled down to 28px, lazy, inside a fold.
+  def test_photos_of_people_who_left_are_small_lazy_and_inside_a_fold
+    html = html_of("/people/")
+    left_people.select { |p| p["photo"] }.each do |person|
+      tag = html[/<img[^>]*alt="#{Regexp.escape(person["name"])}"[^>]*>/] or flunk("no photo for #{person["name"]}")
+      assert_includes tag, %(src="#{person["photo"]}"), "wrong file for #{person["name"]}"
+      %w[class="person-row__photo" width="28" height="28" loading="lazy"].each { |attr| assert_includes tag, attr, "#{person["name"]} photo lacks #{attr}" }
+      folds = html.scan(%r{<details class="fold">.*?</details>}m)
+      assert folds.any? { |fold| fold.include?(tag) }, "#{person["name"]}'s photo is outside a fold"
+    end
+  end
+
+  # The "Former collaborators" fold exists exactly when there is someone to list.
+  def test_former_collaborators_fold_appears_only_with_entries
+    former = PEOPLE["collaborators_former"] || []
+    text = text_of("/people/")
+    if former.empty?
+      refute_has text, "Former collaborators", "empty fold rendered"
+    else
+      assert_has text, "Former collaborators", "fold missing"
+      former.each { |p| assert_has text, p["name"], "former collaborator not listed: #{p["name"]}" }
+    end
+  end
+end
+
+# The row component is documented on /design-language/ with one live specimen of each branch. The director's
+# real, already-public photo is used (never a real face under a placeholder name); the ring row is a pure example.
+class PersonRowSpecimenTest < Minitest::Test
+  def specimen = html_of("/design-language/")
+
+  def test_photo_row_shows_the_directors_photo_scaled_to_28px
+    director = data("lab")["director"]
+    photo = data("lab")["director_photo"]
+    pattern = %r{<img class="person-row__photo" src="#{Regexp.escape(photo)}" width="28" height="28" alt="#{Regexp.escape(director)}"}
+    assert pattern.match?(specimen), "no photo specimen with the director's photo and name"
+  end
+
+  def test_ring_row_shows_the_fallback
+    assert(/<svg class="ring person-row__ring" data-ring="[^"]+"/.match?(specimen), "no ring specimen")
+  end
+
+  def test_the_component_is_listed
+    assert_has specimen, "<code>.person-row</code>", "person-row not listed in Components"
+    assert_has specimen, "<code>.fold</code>", "fold not listed in Components"
   end
 end
 
@@ -888,7 +958,8 @@ end
 class PeopleDataTest < Minitest::Test
   PEOPLE = data("people")
 
-  def names(key) = PEOPLE[key].map { |p| p["name"] }
+  # `collaborators_former` is absent from people.yml until someone becomes a former collaborator.
+  def names(key) = (PEOPLE[key] || []).map { |p| p["name"] }
 
   def test_nobody_is_listed_twice_anywhere
     all = PEOPLE.keys.flat_map { |key| names(key) }
@@ -898,8 +969,8 @@ class PeopleDataTest < Minitest::Test
 
   def test_current_members_are_not_also_alumni
     current = names("members") + names("collaborators")
-    alumni = names("alumni_graduate") + names("alumni_undergraduate")
-    assert_empty current & alumni, "both current and alumni: #{(current & alumni).join(', ')}"
+    gone = names("alumni_graduate") + names("alumni_undergraduate") + names("collaborators_former")
+    assert_empty current & gone, "both current and alumni or former collaborator: #{(current & gone).join(', ')}"
   end
 
   # The alumni list is newest-first and every graduate has a year.
@@ -929,15 +1000,9 @@ class PeopleDataTest < Minitest::Test
     assert File.size?(File.join(ROOT, path)), "missing director photo: #{path}"
   end
 
-  # Consent covers current members and collaborators only; alumni are never photographed here.
-  def test_alumni_carry_no_photo
-    (PEOPLE["alumni_graduate"] + PEOPLE["alumni_undergraduate"]).each do |person|
-      refute person.key?("photo"), "alumni must not carry a photo: #{person["name"]}"
-    end
-  end
-
   def test_every_entry_has_a_name_and_a_role_or_note
     PEOPLE["members"].each { |p| assert p["role"].to_s.strip != "", "#{p["name"]} has no role" }
-    PEOPLE["collaborators"].each { |p| assert p["role"].to_s.strip != "", "#{p["name"]} has no role" }
+    (PEOPLE["collaborators"] + (PEOPLE["collaborators_former"] || [])).each { |p| assert p["role"].to_s.strip != "", "#{p["name"]} has no role" }
+    (PEOPLE["alumni_graduate"] + PEOPLE["alumni_undergraduate"]).each { |p| assert p["note"].to_s.strip != "", "#{p["name"]} has no note" }
   end
 end
