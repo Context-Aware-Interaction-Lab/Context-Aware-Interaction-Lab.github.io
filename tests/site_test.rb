@@ -94,7 +94,8 @@ def refute_has(haystack, needle, msg) = refute(haystack.include?(needle), msg)
 
 class PublishedFilesTest < Minitest::Test
   # Setting `exclude:` in Jekyll 3 replaces its defaults, so these must be listed by hand.
-  INTERNAL = %w[Gemfile Gemfile.lock AGENTS.md CLAUDE.md README.md tests bin design-demos vendor].freeze
+  INTERNAL = %w[Gemfile Gemfile.lock AGENTS.md CLAUDE.md README.md tests bin design-demos vendor
+                package.json bun.lock bunfig.toml node_modules e2e playwright.config.js test-results playwright-report].freeze
 
   def test_repo_internals_are_not_published
     leaked = INTERNAL.select { |name| File.exist?(File.join(BUILD, name)) }
@@ -566,6 +567,24 @@ class PublicationFiltersTest < Minitest::Test
     refute_match(/class="container year-controls"/, html, "the standalone Expand all container is still there")
   end
 
+  # On phones (max-width 640px, year-folds.js) the menus sit behind one Filters button: the toggle follows the
+  # search box, and the panel it controls holds both menus, Clear and Expand all. Above 640px the panel is
+  # display:contents, so the row is unchanged.
+  def test_a_filters_toggle_controls_a_panel_holding_the_menus_clear_and_expand_all
+    html = html_of("/publications/")
+    row = html[%r{<div class="pub-filters__row">.*?<p class="pub-filters__status"}m] or flunk("no filter row")
+    toggle = '<button type="button" class="pub-filters__toggle" aria-expanded="false" aria-controls="pub-filters-panel">Filters<span class="pub-menu__count" hidden></span></button>'
+    assert_has row, toggle, "the Filters toggle is missing or malformed"
+    panel_at = row.index('<div class="pub-filters__panel" id="pub-filters-panel">') or flunk("no #pub-filters-panel")
+    assert_operator row.index('id="pub-search"'), :<, row.index(toggle), "the toggle must follow the search box"
+    assert_operator row.index(toggle), :<, panel_at, "the toggle must come before the panel it controls"
+    panel = row[panel_at..]
+    %w[type area].each { |m| assert_has panel, %(<details class="pub-menu" data-menu="#{m}">), "the #{m} menu is not inside the panel" }
+    assert_has panel, 'class="pub-filters__clear"', "Clear is not inside the panel"
+    assert_has panel, 'class="year-controls__all"', "Expand all is not inside the panel"
+    refute_has row[0...panel_at], 'class="pub-menu"', "a menu sits outside the panel"
+  end
+
   def test_the_filter_bar_is_hidden_until_the_script_reveals_it
     html = html_of("/publications/")
     bar = html[%r{<div class="[^"]*\bpub-filters\b[^"]*"[^>]*>}] or flunk("no .pub-filters bar")
@@ -675,6 +694,67 @@ class MultiAreaTest < Minitest::Test
       research_page = File.read(File.join(dir, "out", "research", "index.html"))
       assert_equal 2, research_page.scan(%(href="/publications/#pub-#{PAPER}")).size, "the paper should appear in both sections"
     end
+  end
+end
+
+# Phone layouts (max-width 640px). A publication row becomes a compact card: its side and main wrappers dissolve
+# (display:contents) so venue, figure, title, authors, labels and links sit in one grid, with the thumbnail beside
+# the title. On /research/ each area's cards become a swipeable strip. The rendered layout is verified by browser
+# measurement, not here (an E2E test needs @playwright/test, a new dependency). What is tested is what that
+# layout relies on: the row's structure, a `data-figure` hook, and that both phone rules exist in the phone query.
+class PhoneLayoutTest < Minitest::Test
+  PUBS = data("publications")
+
+  def rows = html_of("/publications/").scan(%r{<li class="publication-row".*?</li>}m)
+
+  def test_every_row_has_the_structure_the_phone_grid_relies_on
+    assert_equal PUBS.size, rows.size
+    rows.each_with_index do |row, i|
+      at = ->(marker) { row.index(marker) or flunk("row #{i} lacks #{marker}") }
+      assert_operator at.('class="publication-row__side"'), :<, at.('class="publication-row__main"')
+      assert_operator at.('class="publication-row__main"'), :<, at.('class="publication-row__links"')
+      assert_match(%r{<div class="publication-row__side">\s*<p class="publication-row__venue">}, row, "row #{i}: side must start with the venue")
+      assert_operator at.('class="publication-row__title"'), :<, at.('class="publication-row__authors"')
+      assert_operator at.('class="publication-row__authors"'), :<, at.('class="pub-labels"')
+    end
+  end
+
+  def test_exactly_the_rows_with_a_figure_carry_data_figure
+    rows.zip(PUBS).each do |row, pub|
+      tag = row[/<li class="publication-row"[^>]*>/]
+      assert_equal !pub["figure"].nil?, tag.match?(/ data-figure(?= |>)/), "data-figure vs figure: #{pub["title"]}"
+      assert_equal !pub["figure"].nil?, row.include?('class="publication-row__figure"'), "figure link vs figure: #{pub["title"]}"
+    end
+  end
+
+  # Everything inside the @media (max-width:640px) blocks of site.css, brace-matched.
+  def phone_css
+    css = File.read(File.join(BUILD, "assets/css/site.css"))
+    css.enum_for(:scan, /@media \(max-width:640px\)\{/).map do
+      start = Regexp.last_match.end(0)
+      depth = 1
+      i = start
+      while depth.positive? && i < css.size
+        depth += 1 if css[i] == "{"
+        depth -= 1 if css[i] == "}"
+        i += 1
+      end
+      css[start...(i - 1)]
+    end.join("\n")
+  end
+
+  def test_the_phone_query_lays_rows_out_as_a_grid_with_and_without_a_figure
+    css = phone_css
+    assert_match(/\.publication-row\{[^}]*grid-template-areas/, css, "no phone grid for a plain row")
+    assert_match(/\.publication-row\[data-figure\]\{[^}]*grid-template-areas/, css, "no phone grid for a row with a figure")
+    assert_match(/\.publication-row__side,\s*\.publication-row__main\{[^}]*display:contents/, css, "side and main must dissolve into the grid")
+  end
+
+  def test_the_phone_query_turns_research_cards_into_a_snapping_strip
+    css = phone_css
+    assert_match(/\.paper-cards\{[^}]*overflow-x:auto/, css)
+    assert_match(/\.paper-cards\{[^}]*scroll-snap-type/, css)
+    assert_match(/\.paper-card\{[^}]*scroll-snap-align/, css)
   end
 end
 

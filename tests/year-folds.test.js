@@ -45,6 +45,16 @@ const el = (tag, { id, classes = [], attrs = {}, parent = null, text = "" } = {}
       return null;
     },
   };
+  n.classList = {
+    add: c => n.classes.add(c),
+    remove: c => n.classes.delete(c),
+    contains: c => n.classes.has(c),
+    toggle(c, force) {
+      const on = force === undefined ? !n.classes.has(c) : force;
+      if (on) n.classes.add(c); else n.classes.delete(c);
+      return on;
+    },
+  };
   if (parent) parent.children.push(n);
   return n;
 };
@@ -62,17 +72,23 @@ const CHIPS = {
 };
 const COUNT_TEXT = { 2026: "2 publications", 2025: "2 publications", 2024: "1 publication" };
 
-const load = (hash = "", search = "") => {
+// `phone: true` makes matchMedia('(max-width: 640px)') report a phone, as the page does below 640px.
+const load = (hash = "", search = "", { phone = false } = {}) => {
   const root = el("body");
   const bar = el("div", { classes: ["pub-filters"], parent: root });
   bar.hidden = true;
-  const button = el("button", { classes: ["year-controls__all"], parent: bar, text: "Expand all" });
-  button.hidden = true;
   const input = el("input", { id: "pub-search", parent: bar });
+  // The Filters toggle (phones only, in CSS) controls the panel that holds the menus, Clear and Expand all.
+  const toggle = el("button", { classes: ["pub-filters__toggle"], attrs: { "aria-expanded": "false", "aria-controls": "pub-filters-panel" }, parent: bar, text: "Filters" });
+  const toggleCount = el("span", { classes: ["pub-menu__count"], parent: toggle });
+  toggleCount.hidden = true;
+  const filtersPanel = el("div", { id: "pub-filters-panel", classes: ["pub-filters__panel"], parent: bar });
+  const button = el("button", { classes: ["year-controls__all"], parent: filtersPanel, text: "Expand all" });
+  button.hidden = true;
   // Type and area chips live in a <details class="pub-menu">.
   const menus = {};
   for (const name of ["type", "area"]) {
-    const details = el("details", { classes: ["pub-menu"], attrs: { "data-menu": name }, parent: bar });
+    const details = el("details", { classes: ["pub-menu"], attrs: { "data-menu": name }, parent: filtersPanel });
     const summary = el("summary", { parent: details });
     const count = el("span", { classes: ["pub-menu__count"], parent: summary });
     count.hidden = true;
@@ -85,13 +101,13 @@ const load = (hash = "", search = "") => {
       chips[`${group}:${value}`] = el("button", {
         classes: ["chip"],
         attrs: { "data-filter": group, "data-value": value, "aria-pressed": "false" },
-        parent: menus[group] ? menus[group].panel : bar,
+        parent: menus[group].panel,
       });
     }
   }
-  const status = el("p", { classes: ["pub-filters__status"], parent: bar });
-  const clear = el("button", { classes: ["pub-filters__clear"], parent: bar });
+  const clear = el("button", { classes: ["pub-filters__clear"], parent: filtersPanel });
   clear.hidden = true;
+  const status = el("p", { classes: ["pub-filters__status"], parent: bar });
 
   const years = {};
   const rows = {};
@@ -121,7 +137,14 @@ const load = (hash = "", search = "") => {
   const byId = Object.fromEntries(all.filter(n => n.id).map(n => [n.id, n]));
   const winHandlers = {};
   const docHandlers = {};
+  const mqHandlers = [];
+  const mq = { matches: phone, addEventListener(type, fn) { if (type === "change") mqHandlers.push(fn); } };
   win = {
+    matchMedia: query => {
+      if (query !== "(max-width: 640px)") throw new Error(`stand-in does not support media query: ${query}`);
+      return mq;
+    },
+    setPhone(on) { mq.matches = on; mqHandlers.forEach(fn => fn({ matches: on })); },
     location: { hash, search, pathname: "/publications/" },
     history: { urls: [], replaceState(_state, _title, url) { this.urls.push(url); } },
     addEventListener(type, fn) { (winHandlers[type] ||= []).push(fn); },
@@ -135,7 +158,7 @@ const load = (hash = "", search = "") => {
     fire(type, event = {}) { (docHandlers[type] || []).forEach(fn => fn(event)); },
   };
   new Function("document", "window", SOURCE)(document, win);
-  page = { years, rows, button, bar, input, chips, status, clear, menus, document };
+  page = { years, rows, button, bar, input, chips, status, clear, menus, document, toggle, toggleCount };
 };
 
 const openYears = () => Object.entries(page.years).filter(([, y]) => y.details.open).map(([year]) => year).sort();
@@ -358,6 +381,97 @@ test("Escape closes an open menu and returns focus to its summary", () => {
   page.document.fire("keydown", { key: "Escape" });
   expect(page.menus.area.details.open).toBe(false);
   expect(page.menus.area.summary.focused).toBe(1);
+});
+
+// ---- phones: the menus sit behind one Filters button ----
+
+const panelOpen = () => page.bar.classList.contains("is-open");
+
+test("the Filters toggle flips the bar's open state and aria-expanded", () => {
+  expect(panelOpen()).toBe(false);
+  expect(page.toggle.getAttribute("aria-expanded")).toBe("false");
+  page.toggle.fire("click");
+  expect(panelOpen()).toBe(true);
+  expect(page.toggle.getAttribute("aria-expanded")).toBe("true");
+  page.toggle.fire("click");
+  expect(panelOpen()).toBe(false);
+  expect(page.toggle.getAttribute("aria-expanded")).toBe("false");
+});
+
+test("on a phone, opening the panel opens both menus so its chips show at once", () => {
+  load("", "", { phone: true });
+  page.toggle.fire("click");
+  expect(page.menus.type.details.open).toBe(true);
+  expect(page.menus.area.details.open).toBe(true);
+});
+
+test("on a desktop width, opening the toggle leaves the menus alone", () => {
+  page.toggle.fire("click");
+  expect(page.menus.type.details.open).toBe(false);
+  expect(page.menus.area.details.open).toBe(false);
+});
+
+test("on a phone, opening one menu does not close the other, and an outside click closes nothing", () => {
+  load("", "", { phone: true });
+  page.toggle.fire("click");
+  page.menus.type.details.fire("toggle");
+  page.menus.area.details.fire("toggle");
+  expect(page.menus.type.details.open && page.menus.area.details.open).toBe(true);
+  page.document.fire("click", { target: page.years[2026].row });
+  expect(page.menus.type.details.open && page.menus.area.details.open).toBe(true);
+});
+
+test("on a phone, a menu closed by hand while the panel is open reopens", () => {
+  load("", "", { phone: true });
+  page.toggle.fire("click");
+  page.menus.type.details.open = false;
+  page.menus.type.details.fire("toggle");
+  expect(page.menus.type.details.open).toBe(true);
+});
+
+test("on a phone, Escape closes the panel and returns focus to the toggle", () => {
+  load("", "", { phone: true });
+  page.toggle.fire("click");
+  page.document.fire("keydown", { key: "Escape" });
+  expect(panelOpen()).toBe(false);
+  expect(page.toggle.getAttribute("aria-expanded")).toBe("false");
+  expect(page.toggle.focused).toBe(1);
+});
+
+test("the Filters badge counts chips on across both groups, ignores search text, and hides at zero", () => {
+  expect(page.toggleCount.hidden).toBe(true);
+  search("ada");
+  expect(page.toggleCount.hidden).toBe(true);
+  press("type", "journal");
+  press("type", "conference");
+  press("area", "care");
+  expect(page.toggleCount.hidden).toBe(false);
+  expect(page.toggleCount.textContent).toBe("3");
+  press("type", "journal");
+  expect(page.toggleCount.textContent).toBe("2");
+  page.clear.fire("click");
+  expect(page.toggleCount.hidden).toBe(true);
+});
+
+test("a filter restored from the address shows the Filters badge on load", () => {
+  load("", "?type=journal&area=care");
+  expect(page.toggleCount.hidden).toBe(false);
+  expect(page.toggleCount.textContent).toBe("2");
+});
+
+test("crossing the breakpoint closes the panel and every menu, in both directions", () => {
+  load("", "", { phone: true });
+  page.toggle.fire("click");
+  win.setPhone(false);
+  expect(panelOpen()).toBe(false);
+  expect(page.toggle.getAttribute("aria-expanded")).toBe("false");
+  expect(page.menus.type.details.open || page.menus.area.details.open).toBe(false);
+
+  load("", "", { phone: false });
+  page.menus.type.details.open = true;
+  win.setPhone(true);
+  expect(page.menus.type.details.open).toBe(false);
+  expect(panelOpen()).toBe(false);
 });
 
 // ---- the query string ----

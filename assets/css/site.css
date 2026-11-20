@@ -68,6 +68,15 @@ svg line,svg path{stroke:var(--c);fill:none}
 .cta-banner{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-l)}
 .cta-banner--strip{border:0;border-bottom:1px solid var(--line);border-radius:0;display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-4);align-items:center;justify-content:center;padding:var(--space-2) var(--gutter)}
 .cta-banner--strip .btn{min-height:var(--tap)}
+/* Phones: the text and a smaller Join Us pill share one row (~53px, was ~118px). The pill looks 36px tall but
+   keeps a 44px tap area through ::after (inset -6px: it is measured from the padding edge, 1.5px inside the
+   border, so -6px reaches 4.5px past the visible edge each side, 45px in all). */
+@media (max-width:640px){
+  .cta-banner--strip{flex-wrap:nowrap;justify-content:space-between;gap:var(--space-3)}
+  .cta-banner--strip p{flex:1;font-size:.875rem;line-height:1.3;text-align:left}
+  .cta-banner--strip .btn{position:relative;flex:none;min-height:36px;padding:0 var(--space-4);font-size:var(--fs-small)}
+  .cta-banner--strip .btn::after{content:"";position:absolute;inset:-6px}
+}
 .cta-banner--tile{padding:var(--space-5);display:flex;flex-direction:column;justify-content:space-between;gap:var(--space-4);align-items:flex-start;list-style:none}
 .cta-banner--tile .cta-banner__text{font:600 var(--fs-h3)/1.2 var(--font-display)}
 .cta-banner--block{padding:var(--space-7) var(--space-6);display:grid;gap:var(--space-5)}
@@ -219,11 +228,11 @@ svg line,svg path{stroke:var(--c);fill:none}
 .pub-filters__row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2)}
 .pub-filters__search{flex:1 1 240px;max-width:360px}
 .pub-filters__search input{width:100%;min-height:var(--tap);padding:0 var(--space-4);border:1.5px solid var(--line-strong);border-radius:var(--radius-pill);background:var(--bg);color:var(--text);font:400 var(--fs-body)/1 var(--font-body)}
-.pub-filters__search input:focus-visible,.chip:focus-visible,.pub-filters__clear:focus-visible,.pub-menu summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.pub-filters__search input:focus-visible,.chip:focus-visible,.pub-filters__clear:focus-visible,.pub-filters__toggle:focus-visible,.pub-menu summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .chip{display:inline-flex;align-items:center;gap:var(--space-2)}
 .chip[aria-pressed="true"] .dot{box-shadow:0 0 0 2px var(--on-accent)}
-.chip,.pub-menu summary{min-height:var(--tap);padding:var(--space-2) var(--space-4);border:1.5px solid var(--line-strong);border-radius:var(--radius-pill);background:none;color:var(--text);font:500 var(--fs-small)/1.2 var(--font-body);text-align:left;cursor:pointer}
-.chip:hover,.pub-menu summary:hover{border-color:var(--text);background:var(--surface-2)}
+.chip,.pub-filters__toggle,.pub-menu summary{min-height:var(--tap);padding:var(--space-2) var(--space-4);border:1.5px solid var(--line-strong);border-radius:var(--radius-pill);background:none;color:var(--text);font:500 var(--fs-small)/1.2 var(--font-body);text-align:left;cursor:pointer}
+.chip:hover,.pub-filters__toggle:hover,.pub-menu summary:hover{border-color:var(--text);background:var(--surface-2)}
 .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .pub-menu{position:relative}
 .pub-menu summary{list-style:none;display:inline-flex;align-items:center;gap:var(--space-2)}
@@ -235,7 +244,24 @@ svg line,svg path{stroke:var(--c);fill:none}
 .pub-menu__panel{position:absolute;top:calc(100% + var(--space-2));left:0;z-index:20;display:flex;flex-wrap:wrap;gap:var(--space-2);width:max-content;max-width:min(560px,calc(100vw - 2 * var(--gutter)));padding:var(--space-4);background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-m);box-shadow:0 8px 24px rgba(17,20,27,.12)}
 .pub-filters__status{margin-top:var(--space-3);font-size:var(--fs-small);color:var(--text-muted)}
 .pub-filters__status:empty{margin:0}
-@media (max-width:640px){.pub-filters__search{flex-basis:100%;max-width:none}.pub-menu[open]{flex:1 0 100%}.pub-menu__panel{position:static;width:auto;max-width:none;margin-top:var(--space-2);box-shadow:none;background:var(--surface)}}
+/* Above 640px the Filters toggle is hidden and its panel dissolves, so the menus sit in the row as popovers. */
+.pub-filters__toggle{display:none}
+.pub-filters__panel{display:contents}
+/* Phones: search and one Filters button share the row (~44px). The panel opens below it (year-folds.js) and shows
+   both menus flat: each summary becomes a section label and its chips are always visible. */
+@media (max-width:640px){
+  .pub-filters__search{flex:1 1 0;min-width:0;max-width:none}
+  .pub-filters__toggle{display:inline-flex;align-items:center;gap:var(--space-2);flex:none}
+  .pub-filters__toggle::after{content:"";flex:none;width:7px;height:7px;margin-left:var(--space-1);border-right:2px solid var(--text);border-bottom:2px solid var(--text);transform:translateY(-2px) rotate(45deg);transition:transform .15s ease}
+  .pub-filters__toggle[aria-expanded="true"]{border-color:var(--text);background:var(--surface-2)}
+  .pub-filters__toggle[aria-expanded="true"]::after{transform:translateY(2px) rotate(-135deg)}
+  .pub-filters__panel{display:none}
+  .pub-filters.is-open .pub-filters__panel{display:flex;flex:1 0 100%;flex-direction:column;align-items:flex-start;gap:var(--space-3);margin-top:var(--space-2)}
+  .pub-menu{width:100%}
+  .pub-menu summary{pointer-events:none;min-height:0;padding:0;border:0;background:none;margin-bottom:var(--space-2);font:600 var(--fs-label)/1.2 var(--font-mono);color:var(--text-muted)}
+  .pub-menu summary::after{display:none}
+  .pub-menu__panel{position:static;width:auto;max-width:none;margin:0;padding:0;border:0;box-shadow:none;background:none}
+}
 .year>.publications{margin-top:var(--space-4)}
 /* publication-row */
 .publications{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-l);padding:var(--space-2) var(--space-5)}
@@ -367,6 +393,23 @@ svg line,svg path{stroke:var(--c);fill:none}
 .publication-row__figure{display:block;width:168px;border:1px solid var(--line);border-radius:var(--radius-s);overflow:hidden;background:var(--surface)}
 .publication-row__figure img{width:100%;height:auto;aspect-ratio:480/300;object-fit:cover}
 .publication-row__figure:hover{border-color:var(--text)}
+/* Phones: a row is a compact card. The side and main wrappers dissolve (display:contents), so venue, figure, title,
+   authors, labels and links are all items of the row's own grid. A row with a figure (data-figure) puts the 96px
+   thumbnail beside the venue and title; authors run full width below; one footer line holds the labels and links.
+   About 230px a row with a figure and 240px without, down from 427px and 306px. Nothing is hidden or clamped. */
+@media (max-width:640px){
+  .publication-row{grid-template-columns:1fr auto;grid-template-areas:"venue venue" "title title" "authors authors" "labels links";gap:var(--space-1) var(--space-3);padding-block:var(--space-3)}
+  .publication-row[data-figure]{grid-template-columns:96px 1fr auto;grid-template-areas:"fig venue venue" "fig title title" "authors authors authors" "labels labels links"}
+  .publication-row__side,
+  .publication-row__main{display:contents}
+  .publication-row__venue{grid-area:venue;padding-top:0;font-size:var(--fs-label)}
+  .publication-row__figure{grid-area:fig;width:96px;align-self:start}
+  .publication-row__title{grid-area:title;font-size:1rem}
+  .publication-row__authors{grid-area:authors;margin-top:var(--space-2);font-size:.875rem}
+  .publication-row .pub-labels{grid-area:labels;margin-top:0;padding-top:var(--space-2)}
+  .publication-row__links{grid-area:links;align-self:end;justify-self:end;gap:var(--space-1)}
+  .publication-row__links a{padding:0 var(--space-3);font-size:var(--fs-small)}
+}
 .figure-dialog{width:min(1100px,calc(100vw - 2*var(--gutter)));max-height:calc(100vh - 2*var(--gutter));padding:var(--space-4) var(--space-5) var(--space-5);border:1px solid var(--line);border-radius:var(--radius-l);background:var(--bg);color:var(--text)}
 .figure-dialog::backdrop{background:rgba(17,20,27,.6)}
 .figure-dialog__bar{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-4)}
@@ -398,7 +441,13 @@ svg line,svg path{stroke:var(--c);fill:none}
 .paper-link__venue{font:500 var(--fs-small)/1.4 var(--font-mono);color:var(--text-muted)}
 .paper-link__title{font-size:var(--fs-small);line-height:1.4}
 @media (max-width:900px){.paper-cards{grid-template-columns:1fr 1fr}.paper-link a{grid-template-columns:1fr;gap:var(--space-1)}}
-@media (max-width:640px){.paper-cards{grid-template-columns:1fr}}
+/* Phones: an area's cards are one strip you swipe, snapping a card at a time; 82% wide, so the next card peeks in as
+   the cue. The strip runs to the screen edge (negative margin, matching padding). Equal heights come from flex
+   stretch, so each card's label strip stays at its foot. */
+@media (max-width:640px){
+  .paper-cards{display:flex;gap:var(--space-3);overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:var(--gutter);margin-inline:calc(-1 * var(--gutter));padding:var(--space-1) var(--gutter) var(--space-2)}
+  .paper-card{flex:0 0 82%;scroll-snap-align:start}
+}
 
 /* home tiles and Join Us topics lead to their area on /research/ */
 .project-block{position:relative;transition:border-color .15s,background .15s}
