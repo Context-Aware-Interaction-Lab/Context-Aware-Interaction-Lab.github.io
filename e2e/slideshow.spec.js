@@ -1,4 +1,6 @@
-// The slideshow that opens /gallery/ (assets/js/gallery-slideshow.js), on the real page: one album of 32 photos.
+// The slideshow that opens /gallery/ (assets/js/gallery-slideshow.js), on the real page, whose albums are all in its pool.
+// Which photo (so which album) is shown first is random, so these specs read the shown photo's own album from the page
+// and never assume one.
 // Time is Playwright's fake clock: the 6 s dwell is crossed with clock.runFor, so no test waits six real seconds. The
 // CSS fade itself still runs in real time (a fake clock does not slow transitions), which is why the checks on it
 // read the computed transition and the layers' classes rather than a pixel mid-way.
@@ -10,6 +12,17 @@ const activeImg = page => page.locator(".slideshow__layer.is-active .slideshow__
 const src = page => activeImg(page).getAttribute("src");
 const idle = page => expect(page.locator(".slideshow__layer.is-leaving")).toHaveCount(0);
 const dialog = page => page.locator("#figure-dialog");
+// The photo on show, and the album it belongs to, read from the page's own photo links.
+const current = page => page.evaluate(() => {
+  const src = document.querySelector(".slideshow__layer.is-active .slideshow__img").getAttribute("src");
+  const a = [...document.querySelectorAll("a[data-figure]")].find(x => x.getAttribute("href") === src);
+  const album = document.getElementById(a.dataset.group);
+  return {
+    src, group: a.dataset.group, title: a.dataset.title,
+    when: album.querySelector(".album__meta time").textContent,
+    size: document.querySelectorAll(`a[data-figure][data-group="${a.dataset.group}"]`).length,
+  };
+});
 const poolOf = page => page.locator('a[data-figure][data-group^="album-"]').evaluateAll(as => as.map(a => a.getAttribute("href")));
 
 // Open the page with the clock installed, wait for the first photo to be fully in, and stop time there.
@@ -44,15 +57,23 @@ test.describe("The slideshow on a desktop", () => {
   test("opens on one photo from the album, named and dated, and shows it whole", async ({ page }) => {
     await open(page);
     const pool = await poolOf(page);
-    expect(pool).toHaveLength(32);
     expect(pool).toContain(await src(page));
-    await expect(root(page).locator(".slideshow__album")).toHaveText("Lab day out in Chinatown");
-    await expect(root(page).locator(".slideshow__album")).toHaveAttribute("href", "#album-20260702-lab-day-out");
-    await expect(root(page).locator(".slideshow__when")).toHaveText("2 July 2026");
+    const shown = await current(page);
+    await expect(root(page).locator(".slideshow__album")).toHaveText(shown.title);
+    await expect(root(page).locator(".slideshow__album")).toHaveAttribute("href", `#${shown.group}`);
+    await expect(root(page).locator(".slideshow__when")).toHaveText(shown.when);
     expect(await activeImg(page).evaluate(i => getComputedStyle(i).objectFit)).toBe("contain"); // never cropped
     await expect(root(page)).toHaveAttribute("aria-roledescription", "carousel");
     await expect(page.locator(".slideshow__layer.is-active")).toHaveAttribute("aria-hidden", "false");
     expect(await page.locator(".slideshow__layer:not(.is-active)").getAttribute("aria-hidden")).toBe("true");
+  });
+
+  test("the pool holds every photo of every album", async ({ page }) => {
+    await open(page);
+    const groups = await page.locator('a[data-figure][data-group^="album-"]').evaluateAll(as => as.map(a => a.dataset.group));
+    expect(groups.length).toBe((await poolOf(page)).length);
+    expect(new Set(groups).size).toBe(await page.locator("details.album").count()); // each album is in it
+    expect(new Set(groups).size).toBeGreaterThan(1); // so the pick really is across albums
   });
 
   test("after the dwell it crossfades to a different photo of the pool, the old one held opaque beneath", async ({ page }) => {
@@ -85,7 +106,7 @@ test.describe("The slideshow on a desktop", () => {
       heights.add(Math.round(box.height));
       orientations.add(await activeImg(page).evaluate(i => (i.naturalHeight > i.naturalWidth ? "portrait" : "landscape")));
     }
-    expect(new Set(seen).size).toBe(32); // no repeat inside a round
+    expect(new Set(seen).size).toBe(pool.length); // no repeat inside a round, and every photo of every album comes up
     expect([...seen].sort()).toEqual([...pool].sort()); // and nothing outside the pool
     expect(heights.size).toBe(1);
     expect([...orientations].sort()).toEqual(["landscape", "portrait"]); // the check covered both shapes
@@ -174,11 +195,12 @@ test.describe("The slideshow on a desktop", () => {
   test("pressing the photo opens the lightbox on that photo and holds it; closing returns focus and resumes", async ({ page }) => {
     await open(page);
     const first = await src(page);
+    const shown = await current(page);
     await root(page).locator(".slideshow__photo").click();
     await expect(dialog(page)).toBeVisible();
     // the dialog writes an absolute URL, the page a relative one: compare the paths
     await expect.poll(() => dialog(page).locator(".figure-dialog__img").evaluate(i => new URL(i.src).pathname)).toBe(first);
-    await expect(dialog(page).locator(".figure-dialog__count")).toHaveText(/ \/ 32$/);
+    await expect(dialog(page).locator(".figure-dialog__count")).toHaveText(new RegExp(` / ${shown.size}$`)); // the shown photo's own album
     await staysFor(page, 30_000);
     await dialog(page).locator(".figure-dialog__close").click();
     await expect(dialog(page)).toBeHidden();
@@ -200,10 +222,12 @@ test.describe("The slideshow on a desktop", () => {
 
   test("the caption link opens the album's contact sheet", async ({ page }) => {
     await open(page);
+    const shown = await current(page);
     await root(page).locator(".slideshow__album").click();
     await expect(dialog(page)).toBeVisible();
     expect(await dialog(page).evaluate(el => el.classList.contains("is-sheet"))).toBe(true);
-    await expect(page.locator(".album__sheet button")).toHaveCount(32);
+    await expect(page.locator(".figure-dialog__title")).toHaveText(shown.title);
+    await expect(page.locator(".album__sheet button")).toHaveCount(shown.size);
   });
 
   // At 1280x720 the banner, nav and page header take about 330px. An uncapped 70vh stage pushed the caption and Pause

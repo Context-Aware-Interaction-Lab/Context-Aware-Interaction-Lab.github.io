@@ -59,3 +59,21 @@ albums:
       - {file: "30", width: 1280, height: 960, alt: "A bowl of cold coconut-milk dessert topped with sweet red beans and a heap of durian flesh."}
       - {file: "31", width: 1280, height: 960, alt: "A bowl labelled Stinky holding a smooth durian dessert with a spoonful of durian on top, beside yellow sachets."}
       - {file: "32", width: 1024, height: 1280, alt: "The lab members' group selfie in front of the red temple building, set in a decorative Monopoly Hidden Singapore frame reading Moneybags of Chinatown, CAILab."}
+
+  - slug: 20260413-chi26-barcelona
+    title: CHI 2026 in Barcelona
+    date: "2026-04-13"
+    category: conferences
+    consent: "2026-04-16"
+    location: Barcelona, Spain
+    summary: "The lab at CHI 2026, held at the Centre de Convencions Internacional de Barcelona on 13 to 17 April 2026: two Honourable Mention papers, two Late-Breaking Work posters, and a tapas dinner in the rain."
+    photos:
+      - {file: "01", width: 1280, height: 960, alt: "Three lab members giving thumbs up behind the large foam letters C, H and I in the conference centre lobby, each wearing a CHI 2026 presenter badge, with attendees gathered at tables behind them."}
+      - {file: "02", width: 1280, height: 960, alt: "A group at an outdoor tapas table under a red awning on a rainy street, raising glasses of orange drink around a jug of sangria, with a restaurant sign and a graffitied shutter behind them."}
+      - {file: "03", width: 1280, height: 960, alt: "Selfie of three lab members in the front rows of a large, almost empty auditorium of blue seats under a glittering ceiling, two of them making peace signs."}
+      - {file: "04", width: 1280, height: 720, alt: "Castells performers in teal shirts and white trousers form a human tower on the CHI 2026 stage, a climber in a red helmet at the top, with a giant close-up on the screen above and a CHI'26 lectern on the right."}
+      - {file: "05", width: 960, height: 1280, alt: "A lab member giving a thumbs up beside the poster A Taxonomy of Human-MLLM Interaction in Early-Stage Sketch-Based Design Ideation, on a green carpet in the poster hall."}
+      - {file: "06", width: 1219, height: 1280, alt: "A lab member at a lectern holding up an Honorable Mention certificate, beneath a projected slide titled Towards Aligning Multimodal LLMs with Human Experts: A Focus on Parent-Child Interaction."}
+      - {file: "07", width: 960, height: 1280, alt: "A lab member smiling beside the poster Foreign Domestic Workers' Perspectives on LLM-Based Emotional Support Tool for Caregiving Burden, on a yellow carpet, wearing a poster presenter badge."}
+      - {file: "08", width: 1280, height: 960, alt: "A lab member smiling at a lectern beside a laptop, below a projected title slide for Words to Describe What I'm Feeling, an advance care planning paper marked with an Honorable Mention Award."}
+      - {file: "09", width: 1280, height: 946, alt: "Three lab members behind the CHI letters in the conference lobby, two holding open Honorable Mention certificates, with a Welcome to CHI 2026 banner behind them."}
