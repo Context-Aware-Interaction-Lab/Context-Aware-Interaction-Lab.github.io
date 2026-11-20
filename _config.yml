@@ -22,6 +22,15 @@ exclude:
   - design-demos
   - tests
   - vendor
+  # Browser E2E tooling (Playwright): none of it is part of the site.
+  - package.json
+  - bun.lock
+  - bunfig.toml
+  - node_modules
+  - e2e
+  - playwright.config.js
+  - test-results
+  - playwright-report
 
 # Old Google Site URLs redirect via stub pages (home.html, media.html, funding.html).
 # jekyll-redirect-from is on GitHub Pages' allowed list.

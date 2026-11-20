@@ -11,7 +11,8 @@
 // title, authors or venue, ignoring case and accents. The state lives in the chips' aria-pressed and the input,
 // is mirrored to the query string (?type=journal,conference&area=care&q=llm) so a filtered view can be linked,
 // and is read back from it on load. Values the page does not offer are ignored. A link to a paper or year the
-// filter is hiding clears the filter first.
+// filter is hiding clears the filter first. Below 640px the Type and Research area menus, Clear and Expand all
+// sit behind one Filters button (see setPanel) so the controls take one row of a phone screen when closed.
 (() => {
   const folds = Array.from(document.querySelectorAll('details.year'));
   if (!folds.length) return;
@@ -22,6 +23,8 @@
   const clearButton = document.querySelector('.pub-filters__clear');
   const status = document.querySelector('.pub-filters__status');
   const menus = Array.from(document.querySelectorAll('details.pub-menu'));
+  const toggle = document.querySelector('.pub-filters__toggle');
+  const phone = window.matchMedia('(max-width: 640px)');
 
   const fold = text => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   const plural = n => (n === 1 ? 'publication' : 'publications');
@@ -66,13 +69,17 @@
       words.every(w => row.text.includes(w));
   };
 
-  // Each menu's summary shows how many of its chips are on, so a closed menu still says it is filtering.
-  const syncMenus = () => menus.forEach(menu => {
-    const on = Array.from(menu.querySelectorAll('button.chip')).filter(c => c.getAttribute('aria-pressed') === 'true').length;
-    const count = menu.querySelector('.pub-menu__count');
-    count.textContent = on ? String(on) : '';
-    count.hidden = on === 0;
-  });
+  // Each menu's summary shows how many of its chips are on, so a closed menu still says it is filtering. The
+  // Filters toggle (phones) shows the total across both menus; search text is not counted, it is in plain sight.
+  const showCount = (el, n) => {
+    el.textContent = n ? String(n) : '';
+    el.hidden = n === 0;
+  };
+  const pressedIn = scope => scope.filter(c => c.getAttribute('aria-pressed') === 'true').length;
+  const syncMenus = () => {
+    menus.forEach(menu => showCount(menu.querySelector('.pub-menu__count'), pressedIn(Array.from(menu.querySelectorAll('button.chip')))));
+    showCount(toggle.querySelector('.pub-menu__count'), pressedIn(chips));
+  };
 
   const applyFilter = () => {
     const f = current();
@@ -189,16 +196,42 @@
   }));
   input.addEventListener('input', refilter);
   clearButton.addEventListener('click', clearAll);
-  // One menu open at a time; a click outside or Escape closes it (Escape returns focus to its summary).
+  // Phones (max-width 640px): the two menus sit behind one Filters button. Opening its panel opens both menus,
+  // since their chips are what the panel shows. Above 640px the toggle is hidden (CSS) and the menus are popovers.
+  const setPanel = open => {
+    bar.classList.toggle('is-open', open);
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (phone.matches) menus.forEach(menu => { menu.open = open; });
+  };
+  toggle.addEventListener('click', () => setPanel(toggle.getAttribute('aria-expanded') !== 'true'));
+  // Crossing the breakpoint (rotating, resizing): start over, panel and menus closed.
+  phone.addEventListener('change', () => {
+    setPanel(false);
+    menus.forEach(menu => { menu.open = false; });
+  });
+  // Popovers: one menu open at a time; a click outside or Escape closes it (Escape returns focus to its summary).
+  // On a phone the panel shows both menus at once, so none of that applies and a menu closed by hand reopens.
   menus.forEach(menu => menu.addEventListener('toggle', () => {
+    if (phone.matches) {
+      if (!menu.open && bar.classList.contains('is-open')) menu.open = true;
+      return;
+    }
     if (menu.open) menus.forEach(other => { if (other !== menu) other.open = false; });
   }));
   document.addEventListener('click', event => {
+    if (phone.matches) return;
     const inside = event.target.closest('details.pub-menu');
     menus.forEach(menu => { if (menu !== inside) menu.open = false; });
   });
   document.addEventListener('keydown', event => {
     if (event.key !== 'Escape') return;
+    if (phone.matches) {
+      if (bar.classList.contains('is-open')) {
+        setPanel(false);
+        toggle.focus();
+      }
+      return;
+    }
     const open = menus.find(menu => menu.open);
     if (!open) return;
     open.open = false;

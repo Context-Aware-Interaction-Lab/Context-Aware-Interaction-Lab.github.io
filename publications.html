@@ -10,8 +10,10 @@ permalink: /publications/
   <div class="pub-filters__row">
     <div class="pub-filters__search">
       <label class="visually-hidden" for="pub-search">Search publications</label>
-      <input type="search" id="pub-search" placeholder="Search title, author or venue" autocomplete="off">
+      <input type="search" id="pub-search" placeholder="Title, author or venue" autocomplete="off">
     </div>
+    <button type="button" class="pub-filters__toggle" aria-expanded="false" aria-controls="pub-filters-panel">Filters<span class="pub-menu__count" hidden></span></button>
+    <div class="pub-filters__panel" id="pub-filters-panel">
     <details class="pub-menu" data-menu="type">
       <summary>Type<span class="pub-menu__count" hidden></span></summary>
       <div class="pub-menu__panel" role="group" aria-label="Type">
@@ -34,6 +36,7 @@ permalink: /publications/
     </details>
     <button type="button" class="pub-filters__clear" hidden>Clear filters</button>
     <button type="button" class="year-controls__all" hidden>Expand all</button>
+    </div>
   </div>
   <p class="pub-filters__status" role="status" aria-live="polite"></p>
 </div>

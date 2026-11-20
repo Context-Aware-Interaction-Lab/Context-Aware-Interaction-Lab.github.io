@@ -8,5 +8,11 @@ vendor/bundle/
 .playwright-mcp/
 .claude/
 
+# browser E2E (bin/e2e): dependencies, its built copy of the site, and Playwright output
+node_modules/
+.e2e-site/
+test-results/
+playwright-report/
+
 # local design record, not published
 design-demos/

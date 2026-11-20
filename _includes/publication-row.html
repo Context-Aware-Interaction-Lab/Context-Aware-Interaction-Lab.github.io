@@ -10,7 +10,7 @@
 {%- if vid -%}
   {%- capture vid_poster %}/assets/img/pub-{{ vid.slug }}-poster.jpg{% endcapture -%}
 {%- endif -%}
-<li class="publication-row"{% if include.item.id %} id="pub-{{ include.item.id }}"{% endif %} data-type="{{ include.item.type }}" data-areas="{{ label_areas }}" data-text="{{ search_text | downcase | escape }}">
+<li class="publication-row"{% if include.item.id %} id="pub-{{ include.item.id }}"{% endif %}{% if fig %} data-figure{% endif %} data-type="{{ include.item.type }}" data-areas="{{ label_areas }}" data-text="{{ search_text | downcase | escape }}">
   <div class="publication-row__side">
     <p class="publication-row__venue">{{ include.item.venue }}{% include medal.html venue=include.item.venue %}</p>
     {% if fig %}<a class="publication-row__figure" href="{{ fig_large | relative_url }}" data-figure data-title="{{ include.item.title | escape }}" data-alt="{{ fig.alt | escape }}" aria-label="Enlarge figure: {{ include.item.title | escape }}"><img src="{{ fig_thumb | relative_url }}" alt="{{ fig.alt | escape }}" width="480" height="300" loading="lazy"></a>{% endif %}

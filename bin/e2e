@@ -1,0 +1,17 @@
+#!/bin/sh
+# Browser E2E: builds the site, serves it on port 4010 and drives it in Chromium with Playwright.
+# Takes about half a minute. Arguments pass through to `playwright test` (e.g. bin/e2e e2e/phone.spec.js).
+set -eu
+cd "$(dirname "$0")/.."
+
+want="$(cat .ruby-version)"
+case "$(ruby -v)" in
+  "ruby $want"*) ;;
+  *) echo "need ruby $want, got: $(ruby -v)" >&2; exit 1 ;;
+esac
+
+[ -d node_modules/@playwright/test ] || { echo "Playwright is not installed: run 'bun install'" >&2; exit 1; }
+
+# Playwright's pinned version wants Chromium revision 1234. If it is missing, say how to get it; this script
+# does not download browsers on its own.
+exec bunx playwright test "$@"
