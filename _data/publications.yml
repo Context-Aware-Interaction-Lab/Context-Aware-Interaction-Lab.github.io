@@ -158,6 +158,7 @@
   date: "2025-11"
   year: 2025
   type: conference
+  id: emnlp25-humor-pixels
   figure: {slug: emnlp25-pixelhumor, alt: "Three donut charts of the PixelHumor comics: how often sound effects are present, whether text or visuals carry the humour, and the distribution of humour styles, with surprise the most common."}
   links:
     - {label: paper, url: "https://doi.org/10.18653/v1/2025.findings-emnlp.755"}
@@ -187,6 +188,7 @@
   date: "2025-06"
   year: 2025
   type: preprint
+  id: arxiv25-peer-support-sg
   links:
     - {label: preprint, url: "https://doi.org/10.48550/arXiv.2506.09362"}
 - title: "Towards Multimodal Large-Language Models for Parent-Child Interaction: A Focus on Joint Attention"
@@ -231,6 +233,7 @@
   date: "2024-09"
   year: 2024
   type: preprint
+  id: arxiv24-gaze-asd
   links:
     - {label: paper, url: "https://doi.org/10.48550/arXiv.2409.11744"}
 - title: "Towards Understanding Emotions for Engaged Mental Health Conversations"
@@ -309,6 +312,7 @@
   date: "2022-12-17"
   year: 2022
   type: conference
+  id: bigdata22-muscat
   links:
     - {label: paper, url: "https://ieeexplore.ieee.org/document/10021113/"}
 - title: "Laboratory Activities for an Introductory Programming Course"
@@ -349,5 +353,6 @@
   date: "2021"
   year: 2021
   type: extended
+  id: cscw21-ws-older-adults
   links:
     - {label: paper, url: "https://scholar.google.com/citations?view_op=view_citation&hl=en&user=B9HCv0oAAAAJ&cstart=20&pagesize=80&sortby=pubdate&citation_for_view=B9HCv0oAAAAJ:maZDTaKrznsC"}

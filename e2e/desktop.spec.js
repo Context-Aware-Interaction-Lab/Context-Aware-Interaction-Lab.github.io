@@ -167,6 +167,16 @@ test.describe("Publications on a desktop", () => {
     const banner = await page.locator(".cta-banner--strip").boundingBox();
     expect(banner.height).toBeLessThanOrEqual(70);
   });
+
+  test("a year's type counts keep their names visible, and the page header keeps its generous padding", async ({ page }) => {
+    const labels = await page.locator("details.year > summary").first().locator(".year__type-label").evaluateAll(
+      list => list.map(el => ({ width: el.getBoundingClientRect().width, text: el.textContent.trim() })),
+    );
+    expect(labels.length).toBeGreaterThan(1);
+    labels.forEach(label => expect(label.width).toBeGreaterThan(20));
+    const paddingTop = await page.locator(".page-header").evaluate(el => parseFloat(getComputedStyle(el).paddingTop));
+    expect(paddingTop).toBe(48);
+  });
 });
 
 test.describe("Research cards on a desktop", () => {
@@ -184,6 +194,9 @@ test.describe("Research cards on a desktop", () => {
       areas: [...card.querySelectorAll(".pill--area")].map(p => p.dataset.area),
     })));
     expect(labelled.length).toBeGreaterThan(0);
+    // The one-line "More" links keep their two columns here: venue on the left, title on the right.
+    const link = page.locator("li.paper-link a").first();
+    expect(await link.evaluate(el => getComputedStyle(el).gridTemplateColumns.split(" ").length)).toBe(2);
     await page.goto("/publications/");
     for (const card of labelled) {
       const row = page.locator(`#pub-${card.id}`);

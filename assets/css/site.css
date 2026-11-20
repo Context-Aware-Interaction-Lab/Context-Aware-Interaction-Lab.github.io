@@ -220,7 +220,13 @@ svg line,svg path{stroke:var(--c);fill:none}
 .year__type{display:inline-flex;align-items:center;gap:6px}
 .year__type .dot{width:8px;height:8px}
 .year__count{white-space:nowrap}
-@media (max-width:640px){.year summary{flex-wrap:wrap;row-gap:var(--space-1)}.year__types{flex:1 0 100%;padding-left:26px}}
+/* Phones: the type counts drop to their own line as dots and numbers; each name stays in the page for screen
+   readers (the same clip as .visually-hidden) and as the entry's tooltip. */
+@media (max-width:640px){
+  .year summary{flex-wrap:wrap;row-gap:var(--space-1)}
+  .year__types{flex:1 0 100%;padding-left:26px;column-gap:var(--space-4)}
+  .year__type-label{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+}
 /* publication filter (year-folds.js): one row of search, Type and Research area menus, then Clear (while
    filtering) or Expand all (otherwise) in the same slot, and a live result line. The menus are native
    <details>; their chips take no room until opened. */
@@ -268,7 +274,7 @@ svg line,svg path{stroke:var(--c);fill:none}
 .publication-row{display:grid;grid-template-columns:200px 1fr auto;gap:var(--space-4) var(--space-5);align-items:start;padding-block:var(--space-4)}
 .publication-row+.publication-row{border-top:1px solid var(--line)}
 .publication-row__venue{padding-top:3px;font:500 var(--fs-small)/1.4 var(--font-mono);color:var(--text)}
-.medal{margin-left:.35em;font-style:normal}
+.medal{font-style:normal}
 .publication-row__title{font:600 1.125rem/1.3 var(--font-display)}
 .publication-row__authors{font-size:var(--fs-small);color:var(--text-muted);margin-top:var(--space-1)}
 .publication-row__authors strong{color:var(--text);font-weight:600}
@@ -333,6 +339,12 @@ svg line,svg path{stroke:var(--c);fill:none}
 .page-header{padding-block:var(--space-7) var(--space-5);border-bottom:1px solid var(--line)}
 .page-header h1{font:800 var(--fs-display)/var(--lh-tight) var(--font-display);letter-spacing:-.02em}
 .page-header+.section{padding-top:var(--space-7)}
+/* Phones: a shorter title block (116px was 48px of padding, a 40px title and 24px below) on every page */
+@media (max-width:640px){
+  .page-header{padding-block:var(--space-5) var(--space-4)}
+  .page-header h1{font-size:clamp(2rem,9vw,2.5rem)}
+  .page-header+.section{padding-top:var(--space-5)}
+}
 
 /* markdown bodies (news text, research themes, join copy) */
 .prose{max-width:68ch;display:grid;gap:var(--space-4)}
@@ -441,6 +453,15 @@ svg line,svg path{stroke:var(--c);fill:none}
 .paper-link__venue{font:500 var(--fs-small)/1.4 var(--font-mono);color:var(--text-muted)}
 .paper-link__title{font-size:var(--fs-small);line-height:1.4}
 @media (max-width:900px){.paper-cards{grid-template-columns:1fr 1fr}.paper-link a{grid-template-columns:1fr;gap:var(--space-1)}}
+/* Phones: a "More in this area" link flows as text, the venue a small prefix on the title's first line, not a
+   line of its own (about 107px each before, 17 links; roughly two-thirds of that now). */
+@media (max-width:640px){
+  .paper-link a{display:block;padding:var(--space-2) 0}
+  .paper-link__venue,
+  .paper-link__title{display:inline}
+  .paper-link__venue{margin-right:var(--space-2);font-size:var(--fs-label)}
+  .paper-link__title{font-size:.9375rem}
+}
 /* Phones: an area's cards are one strip you swipe, snapping a card at a time; 82% wide, so the next card peeks in as
    the cue. The strip runs to the screen edge (negative margin, matching padding). Equal heights come from flex
    stretch, so each card's label strip stays at its foot. */

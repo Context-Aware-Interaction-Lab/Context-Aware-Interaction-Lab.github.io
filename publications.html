@@ -45,7 +45,7 @@ permalink: /publications/
 {%- assign breakdown = "" %}
 {%- for t in site.data.publication_types %}
   {%- assign n = group.items | where: "type", t.id | size %}
-  {%- if n > 0 %}{% capture piece %}<span class="year__type"><span class="dot c{{ t.tone }}" aria-hidden="true"></span>{{ n }} {{ t.short }}</span>{% endcapture %}{% assign breakdown = breakdown | append: piece %}{% endif %}
+  {%- if n > 0 %}{% capture piece %}<span class="year__type" title="{{ n }} {{ t.short | escape }}"><span class="dot c{{ t.tone }}" aria-hidden="true"></span>{{ n }} <span class="year__type-label">{{ t.short }}</span></span>{% endcapture %}{% assign breakdown = breakdown | append: piece %}{% endif %}
 {%- endfor %}
 <section class="section section--year" id="{{ group.name }}">
   <div class="container">
