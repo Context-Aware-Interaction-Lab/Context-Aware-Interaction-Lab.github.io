@@ -4,7 +4,7 @@
 # Three albums on purpose: a 14-photo one (captions, a credit), a 3-photo one in another category, and a single photo
 # in an earlier year (which skips the contact sheet). Their photos are in dir, not in gallery/<slug>/.
 albums:
-  - slug: specimen-demos
+  - slug: 20261100-specimen-demos
     title: Specimen album
     date: "2026-11"
     category: demos
@@ -26,7 +26,7 @@ albums:
       - {file: cscw26-sword-shield, width: 1600, height: 492, alt: "Diagram of the communication game: four timed rounds with Disinformer suspicion and vote steps."}
       - {file: dis26-sketch-speech, width: 1600, height: 387, alt: "Images generated from the same toaster sketch, with and without the designer's speech."}
       - {file: pg25-vr-modeling, width: 1600, height: 298, alt: "Four-step sequence in which a blue 3D model of a pot gains a handle and a spout."}
-  - slug: specimen-conferences
+  - slug: 20260600-specimen-conferences
     title: "Specimen: a second album"
     date: "2026-06"
     category: conferences
@@ -36,7 +36,7 @@ albums:
       - {file: wacv26-dronaquatics, width: 1225, height: 640, alt: "System diagram of Dronaquatics from swimmer pose estimation to coach feedback."}
       - {file: chi26-acp-agent-roles, width: 1600, height: 963, alt: "Quadrant diagram placing envisioned roles for an advance-care-planning AI agent by autonomy and human control."}
       - {file: dis26-sketch-speech, width: 1600, height: 387, alt: "Images generated from the same toaster sketch, with and without the designer's speech."}
-  - slug: specimen-single
+  - slug: 20250900-specimen-single
     title: "Specimen: one photo"
     date: "2025-09"
     category: lab-life

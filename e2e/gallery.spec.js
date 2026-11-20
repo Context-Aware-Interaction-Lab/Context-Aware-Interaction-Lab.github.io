@@ -1,6 +1,6 @@
 // The Gallery's album cards and lightbox, driven in a real browser on the three specimen albums at /design-language/
-// (the same includes the real page uses, fed publication figures): specimen-demos (14 photos, 2026-11, demos),
-// specimen-conferences (3 photos, 2026-06, conferences) and specimen-single (1 photo, 2025-09, lab life). The real
+// (the same includes the real page uses, fed publication figures): 20261100-specimen-demos (14 photos, 2026-11, demos),
+// 20260600-specimen-conferences (3 photos, 2026-06, conferences) and 20250900-specimen-single (1 photo, 2025-09, lab life). The real
 // /gallery/ has one album, checked at the end.
 import { test, expect, hasNoHorizontalScroll } from "./fixtures.js";
 
@@ -28,7 +28,7 @@ test.describe("Album cards on a desktop", () => {
   test("albums are cards under their year, newest first, two to a row, each with a 4:3 cover", async ({ page }) => {
     await expect(page.locator(".gallery-year__title")).toHaveText(["2026", "2025"]);
     const ids = await page.locator("details.album").evaluateAll(els => els.map(e => e.id));
-    expect(ids).toEqual(["album-specimen-demos", "album-specimen-conferences", "album-specimen-single"]);
+    expect(ids).toEqual(["album-20261100-specimen-demos", "album-20260600-specimen-conferences", "album-20250900-specimen-single"]);
     const boxes = await page.locator(".album__card").evaluateAll(els => els.map(e => { const b = e.getBoundingClientRect(); return { top: Math.round(b.top), width: b.width }; }));
     expect(boxes[0].top).toBe(boxes[1].top); // the two 2026 albums share a row
     expect(boxes[2].top).toBeGreaterThan(boxes[1].top); // the 2025 album is under its own heading
@@ -40,13 +40,13 @@ test.describe("Album cards on a desktop", () => {
   test("the cards show covers only: the photos stay inside closed albums, which do not open", async ({ page }) => {
     expect(await page.locator("details.album[open]").count()).toBe(0);
     await expect(page.locator(".album__body .album__photo").first()).toBeHidden();
-    await card(page, "specimen-demos").click();
+    await card(page, "20261100-specimen-demos").click();
     await expect(dialog(page)).toBeVisible();
     expect(await page.locator("details.album[open]").count()).toBe(0); // the click opened the lightbox, not the card
   });
 
   test("a card opens the lightbox on the album's contact sheet: facts, summary and every photo", async ({ page }) => {
-    await card(page, "specimen-demos").click();
+    await card(page, "20261100-specimen-demos").click();
     await expect(dialog(page)).toBeVisible();
     expect(await dialog(page).evaluate(el => el.classList.contains("is-sheet"))).toBe(true);
     await expect(page.locator(".figure-dialog__title")).toHaveText("Specimen album");
@@ -54,11 +54,11 @@ test.describe("Album cards on a desktop", () => {
     await expect(page.locator(".album__intro .album__summary")).toContainText("Publication figures standing in for photos");
     expect(await page.locator(".album__sheet button").count()).toBe(14);
     await expect(page.locator(".figure-dialog__nav")).toBeHidden();
-    expect(new URL(page.url()).hash).toBe("#album-specimen-demos");
+    expect(new URL(page.url()).hash).toBe("#album-20261100-specimen-demos");
   });
 
   test("the sheet's rows are justified: all but the last fill the width, all one 150px height", async ({ page }) => {
-    await card(page, "specimen-demos").click();
+    await card(page, "20261100-specimen-demos").click();
     await expect.poll(() => page.locator(".album__sheet img").evaluateAll(imgs => imgs.slice(0, 4).every(i => i.complete && i.naturalWidth > 0))).toBe(true);
     const { gridLeft, gridRight, rows } = await rowsOf(page, ".album__sheet");
     expect(rows.length).toBeGreaterThanOrEqual(3);
@@ -70,7 +70,7 @@ test.describe("Album cards on a desktop", () => {
   });
 
   test("a tile opens that photo; All photos goes back to the sheet and lands on the tile just viewed", async ({ page }) => {
-    await card(page, "specimen-demos").click();
+    await card(page, "20261100-specimen-demos").click();
     await sheetTile(page, 2).click();
     await expect(count(page)).toHaveText("3 / 14");
     expect(await dialog(page).evaluate(el => el.classList.contains("is-grouped"))).toBe(true);
@@ -83,7 +83,7 @@ test.describe("Album cards on a desktop", () => {
   });
 
   test("arrow keys and the buttons step through, wrapping at both ends, with a caption and a credit", async ({ page }) => {
-    await card(page, "specimen-demos").click();
+    await card(page, "20261100-specimen-demos").click();
     await sheetTile(page, 0).click();
     await expect(count(page)).toHaveText("1 / 14");
     await page.keyboard.press("ArrowRight");
@@ -102,7 +102,7 @@ test.describe("Album cards on a desktop", () => {
   });
 
   test("the stage keeps one size from photo to photo, so the dialog does not jump", async ({ page }) => {
-    await card(page, "specimen-demos").click();
+    await card(page, "20261100-specimen-demos").click();
     await sheetTile(page, 0).click();
     const stage = page.locator(".figure-dialog__stage");
     const first = await stage.boundingBox();
@@ -114,21 +114,21 @@ test.describe("Album cards on a desktop", () => {
   });
 
   test("arrow keys do nothing on the sheet; Escape closes, focus returns to the card and the hash is cleared", async ({ page }) => {
-    await card(page, "specimen-demos").click();
+    await card(page, "20261100-specimen-demos").click();
     await page.keyboard.press("ArrowRight");
     expect(await dialog(page).evaluate(el => el.classList.contains("is-sheet"))).toBe(true);
     await expect(count(page)).toHaveText("");
     await sheetTile(page, 5).click();
     await page.keyboard.press("Escape");
     await expect(dialog(page)).toBeHidden();
-    await expect(card(page, "specimen-demos")).toBeFocused();
+    await expect(card(page, "20261100-specimen-demos")).toBeFocused();
     expect(new URL(page.url()).hash).toBe("");
     await page.keyboard.press("ArrowRight");
     await expect(dialog(page)).toBeHidden();
   });
 
   test("a card opens from the keyboard", async ({ page }) => {
-    await card(page, "specimen-conferences").focus();
+    await card(page, "20260600-specimen-conferences").focus();
     await page.keyboard.press("Enter");
     await expect(dialog(page)).toBeVisible();
     await expect(page.locator(".figure-dialog__title")).toHaveText("Specimen: a second album");
@@ -139,7 +139,7 @@ test.describe("Album cards on a desktop", () => {
   });
 
   test("an album of one photo skips the sheet: straight to the photo, no steps, no All photos", async ({ page }) => {
-    await card(page, "specimen-single").click();
+    await card(page, "20250900-specimen-single").click();
     await expect(dialog(page)).toBeVisible();
     expect(await dialog(page).evaluate(el => el.classList.contains("is-sheet"))).toBe(false);
     expect(await page.locator(".album__sheet").count()).toBe(0);
@@ -147,7 +147,7 @@ test.describe("Album cards on a desktop", () => {
     await expect(page.locator(".figure-dialog__nav")).toBeHidden();
     await expect(page.locator(".figure-dialog__all")).toBeHidden();
     await page.keyboard.press("Escape");
-    await expect(card(page, "specimen-single")).toBeFocused();
+    await expect(card(page, "20250900-specimen-single")).toBeFocused();
   });
 });
 
@@ -171,18 +171,18 @@ test.describe("Category chips and deep links", () => {
   });
 
   test("/#album-<slug> opens that album on load", async ({ page }) => {
-    await page.goto(`${PAGE}#album-specimen-conferences`);
+    await page.goto(`${PAGE}#album-20260600-specimen-conferences`);
     await expect(dialog(page)).toBeVisible();
     await expect(page.locator(".figure-dialog__title")).toHaveText("Specimen: a second album");
     await page.keyboard.press("Escape");
     await expect(dialog(page)).toBeHidden();
     // Nothing was focused before the dialog opened, so the browser has nothing to restore: the script must focus the card.
-    await expect(card(page, "specimen-conferences")).toBeFocused();
+    await expect(card(page, "20260600-specimen-conferences")).toBeFocused();
     expect(new URL(page.url()).hash).toBe("");
   });
 
   test("a link to an album the filter hides clears the filter first, then opens the album", async ({ page }) => {
-    await page.goto(`${PAGE}?category=demos#album-specimen-conferences`);
+    await page.goto(`${PAGE}?category=demos#album-20260600-specimen-conferences`);
     await expect(dialog(page)).toBeVisible();
     await expect(page.locator(".figure-dialog__title")).toHaveText("Specimen: a second album");
     await expect(page.locator("details.album[hidden]")).toHaveCount(0);
@@ -218,7 +218,7 @@ test.describe("Album cards on a phone", () => {
   });
 
   test("the sheet fills the screen with 110px rows; a tile opens a photo; the buttons are at least 44px", async ({ page }) => {
-    await card(page, "specimen-demos").click();
+    await card(page, "20261100-specimen-demos").click();
     await expect(dialog(page)).toBeVisible();
     expect(Math.round((await dialog(page).boundingBox()).width)).toBe(390);
     const { rows } = await rowsOf(page, ".album__sheet");
@@ -234,7 +234,7 @@ test.describe("Album cards on a phone", () => {
   });
 
   test("a swipe left steps forward, a swipe right steps back, and a short drag does nothing", async ({ page }) => {
-    await card(page, "specimen-demos").click();
+    await card(page, "20261100-specimen-demos").click();
     await sheetTile(page, 0).click();
     await expect(count(page)).toHaveText("1 / 14");
     const box = await page.locator(".figure-dialog__stage").boundingBox();
@@ -261,7 +261,7 @@ test.describe("Album cards without JavaScript", () => {
   test("a card opens in place into a full-width grid of plain links; no script-only control shows", async ({ page }) => {
     await page.goto(PAGE);
     await expect(page.locator(".gallery-filters")).toBeHidden();
-    const album = page.locator("#album-specimen-demos");
+    const album = page.locator("#album-20261100-specimen-demos");
     await album.locator("> summary").click();
     expect(await album.evaluate(el => el.open)).toBe(true);
     await expect(dialog(page)).toBeHidden();
@@ -286,7 +286,7 @@ test.describe("The Gallery page", () => {
     await expect(page.locator(".album__meta").first()).toContainText("32 photos");
     await expect(page.locator(".gallery-filters")).toBeHidden(); // one category: nothing to choose between
     await expect.poll(() => page.locator(".album__cover").evaluate(i => i.complete && i.naturalWidth > 0)).toBe(true);
-    await card(page, "lab-day-out-2026").click();
+    await card(page, "20260702-lab-day-out").click();
     expect(await page.locator(".album__sheet button").count()).toBe(32);
     await expect.poll(() => page.locator(".album__sheet img").evaluateAll(imgs => imgs.slice(0, 4).every(i => i.complete && i.naturalWidth > 0))).toBe(true);
     await sheetTile(page, 1).click(); // a portrait photo

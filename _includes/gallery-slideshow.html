@@ -1,0 +1,34 @@
+{%- comment -%}
+  The slideshow that opens /gallery/ (assets/js/gallery-slideshow.js). It ships `hidden`: the script reads every photo
+  link of every album on the page, reveals it, and builds the two stacked photo layers itself, so the markup holds no
+  photo and no <img> without a source. Without JS the <noscript> figure beside it shows the first album's cover as a
+  plain link to the large image. "First" is the newest: albums are named YYYYMMDD-<name>, so the last by slug. albums = gallery.yml's albums, in any order. Called from gallery.html only, so the
+  specimen on /design-language/ has no autoplaying hero.
+{%- endcomment -%}
+{%- assign first_album = include.albums | sort: "slug" | last -%}
+{%- assign cover = first_album.photos | first -%}
+{%- if first_album.dir %}{% assign base = first_album.dir %}{% else %}{% assign base = first_album.slug | prepend: '/assets/img/gallery/' %}{% endif -%}
+{%- assign cover_src = base | append: '/' | append: cover.file | append: '.jpg' | relative_url -%}
+<noscript>
+  <figure class="slideshow-static">
+    <a href="{{ cover_src }}"><img src="{{ cover_src }}" width="{{ cover.width }}" height="{{ cover.height }}" alt="{{ cover.alt | escape }}"></a>
+    <figcaption>{{ first_album.title }}</figcaption>
+  </figure>
+</noscript>
+<section class="slideshow" aria-roledescription="carousel" aria-label="Photos from across the lab" hidden>
+  <div class="slideshow__stage">
+    <button class="slideshow__photo" type="button" aria-haspopup="dialog" data-opens="">
+      <span class="slideshow__layer"></span>
+      <span class="slideshow__layer"></span>
+    </button>
+  </div>
+  <div class="slideshow__bar">
+    <p class="slideshow__caption"><a class="slideshow__album" href="#"></a><span class="slideshow__when"></span></p>
+    <div class="slideshow__controls">
+      <button class="slideshow__step slideshow__prev" type="button" aria-label="Previous photo" aria-disabled="true">‹</button>
+      <button class="slideshow__toggle" type="button">Pause</button>
+      <button class="slideshow__step slideshow__next" type="button" aria-label="Next photo">›</button>
+    </div>
+  </div>
+  <p class="slideshow__announce visually-hidden" aria-live="off" aria-atomic="true"></p>
+</section>
