@@ -597,6 +597,87 @@ class JoinPageTest < Minitest::Test
   end
 end
 
+# The "How to apply" section is the lab's intake filter (Kenny's wording, 2026-11-20): a complete package
+# per role, a paper response, an AI note and a subject-line format. Everything renders from join.yml, and the
+# paper choices come from the research areas, so the list is defined once.
+class JoinApplyTest < Minitest::Test
+  APPLY = data("join")["apply"]
+
+  def apply_html = html_of("/join-us/")[%r{<section class="section" id="apply">.*?</section>}m] || flunk("no #apply section on /join-us/")
+
+  def apply_text = plain(apply_html.gsub(/<[^>]+>/, " "))
+
+  def test_has_an_apply_section_titled_from_data
+    assert_has apply_text, APPLY["title"], "apply section lacks its title"
+  end
+
+  def test_lists_every_requirement_for_every_role
+    refute_empty APPLY["roles"], "no roles in join.yml apply"
+    APPLY["roles"].each do |role|
+      assert_has apply_text, role["role"], "apply lacks role #{role["role"]}"
+      refute_empty role["items"], "#{role["role"]} has no requirements"
+      role["items"].each { |item| assert_has apply_text, plain(item), "#{role["role"]} requirement missing: #{item[0, 50]}" }
+    end
+  end
+
+  def test_each_role_has_its_subject_line_in_code
+    APPLY["roles"].each do |role|
+      assert_has plain(apply_html), "<code>#{role["subject"]}</code>", "subject line for #{role["role"]} not shown as code"
+    end
+    assert_equal APPLY["roles"].size, APPLY["roles"].map { |r| r["subject"] }.uniq.size, "two roles share a subject line"
+  end
+
+  # Kenny's rule (2026-11-20): applicants choose among the CHI Honourable Mention papers and the CSCW
+  # papers only. The ids live in join.yml `apply.paper.choices`; the venues are read from publications.yml.
+  CHOICE_VENUE = /\A(CHI'\d+ · Honourable Mention|PACM HCI \(CSCW'\d+\))\z/
+
+  def test_paper_choices_are_only_chi_honourable_mentions_and_cscw_papers
+    ids = APPLY["paper"]["choices"]
+    refute_empty ids, "no paper choices in join.yml"
+    pubs = data("publications")
+    ids.each do |id|
+      pub = pubs.find { |p| p["id"] == id } or flunk("choice #{id} is not a publication id")
+      assert_match CHOICE_VENUE, pub["venue"], "#{id} (#{pub["venue"]}) is not a CHI Honourable Mention or CSCW paper"
+    end
+    assert_equal ids.uniq, ids, "a paper is listed twice"
+  end
+
+  def test_apply_offers_exactly_the_chosen_papers
+    ids = APPLY["paper"]["choices"]
+    offered = apply_html.scan(%r{href="/publications/#pub-([^"]+)"}).flatten
+    assert_equal ids, offered, "papers offered on the page differ from join.yml apply.paper.choices"
+  end
+
+  def test_paper_response_questions_render
+    refute_empty APPLY["paper"]["questions"]
+    assert_has apply_text, plain(APPLY["paper"]["intro"]), "paper intro missing"
+    APPLY["paper"]["questions"].each { |q| assert_has apply_text, plain(q), "paper question missing: #{q[0, 50]}" }
+    assert_has apply_text, plain(APPLY["paper"]["close"]), "paper closing line missing"
+  end
+
+  def test_ai_note_is_asked_for
+    assert_has apply_text, APPLY["ai"]["title"], "AI heading missing"
+    assert_has apply_text, plain(APPLY["ai"]["body"]), "AI note text missing"
+  end
+
+  def test_asks_applicants_to_strip_identity_numbers_and_states_the_reply_rule
+    assert_has apply_text, "NRIC, FIN or passport number", "privacy line about identity numbers missing"
+    assert_has apply_text, plain(APPLY["reply_rule"]), "reply rule missing"
+  end
+
+  def test_contact_button_sits_in_apply_and_never_prefills_a_subject
+    assert_match %r{<a class="btn[^"]*" href="mailto:[^"]*">Contact Us</a>}, apply_html, "no Contact Us button inside #apply"
+    hrefs = html_of("/join-us/").scan(/href="(mailto:[^"]*)"/).flatten
+    refute_empty hrefs
+    hrefs.each { |h| refute_match(/subject=/i, h, "mailto prefills a subject, which defeats the format check") }
+  end
+
+  def test_team_closing_points_to_apply
+    assert_has html_of("/join-us/"), 'href="#apply"', "closing text does not link to #apply"
+    refute_match(/please email Prof/i, text_of("/join-us/"), "old 'just email me' closing still on the page")
+  end
+end
+
 # The old Google Site had /home, /media and /funding. People have those saved.
 class OldUrlRedirectsTest < Minitest::Test
   REDIRECTS = {

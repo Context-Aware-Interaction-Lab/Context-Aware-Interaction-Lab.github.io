@@ -28,7 +28,6 @@ permalink: /join-us/
       </ul>
       {{ site.data.join.closing | markdownify }}
     </div>
-    <p class="join-contact"><a class="btn btn--primary" href="{{ site.data.lab.contact.href }}">{{ site.data.lab.contact.label }}</a></p>
   </div>
 </section>
 
@@ -40,3 +39,59 @@ permalink: /join-us/
   </div>
 </section>
 {% endfor %}
+
+{%- assign apply = site.data.join.apply %}
+<section class="section" id="apply">
+  <div class="container">
+    <div class="section-header"><h2>{{ apply.title }}</h2></div>
+    <div class="prose">
+      {{ apply.lead | markdownify }}
+      {%- for role in apply.roles %}
+      <h3>{{ role.role }}, please send:</h3>
+      <ul>
+        {%- for item in role.items %}
+        <li>{{ item }}</li>
+        {%- endfor %}
+      </ul>
+      {%- endfor %}
+    </div>
+
+    <div class="apply-block">
+      <div class="prose">
+        <h3>{{ apply.paper.title }}</h3>
+        <p>{{ apply.paper.intro }}</p>
+      </div>
+      <ul class="paper-list">
+        {%- for id in apply.paper.choices %}
+        {% include paper-link.html id=id %}
+        {%- endfor %}
+      </ul>
+      <div class="prose">
+        <ol>
+          {%- for question in apply.paper.questions %}
+          <li>{{ question }}</li>
+          {%- endfor %}
+        </ol>
+        <p>{{ apply.paper.close }}</p>
+      </div>
+    </div>
+
+    <div class="apply-block prose">
+      <h3>{{ apply.ai.title }}</h3>
+      <p>{{ apply.ai.body }}</p>
+    </div>
+
+    <div class="apply-block prose">
+      <h3>{{ apply.send.title }}</h3>
+      <p>{{ apply.send.body }}</p>
+      <ul class="apply-subjects">
+        {%- for role in apply.roles %}
+        <li><code>{{ role.subject }}</code></li>
+        {%- endfor %}
+      </ul>
+      <p>{{ apply.reply_rule }}</p>
+    </div>
+
+    <p class="join-contact"><a class="btn btn--primary" href="{{ site.data.lab.contact.href }}">{{ site.data.lab.contact.label }}</a></p>
+  </div>
+</section>

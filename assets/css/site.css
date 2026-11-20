@@ -245,7 +245,10 @@ svg line,svg path{stroke:var(--c);fill:none}
 
 /* markdown bodies (news text, research themes, join copy) */
 .prose{max-width:68ch;display:grid;gap:var(--space-4)}
-.prose ul,.news-item__text ul{list-style:disc;padding-left:var(--space-5);display:grid;gap:var(--space-2)}
+.prose ul,.prose ol,.news-item__text ul{list-style:disc;padding-left:var(--space-5);display:grid;gap:var(--space-2)}
+.prose ol{list-style:decimal}
+.apply-block{margin-top:var(--space-6)}
+.apply-subjects code{overflow-wrap:anywhere}
 .prose a,.news-item__text a,.media-item a{text-underline-offset:3px}
 .news-item__text>*+*{margin-top:var(--space-2)}
 .news--list{grid-template-columns:1fr;max-width:860px}
