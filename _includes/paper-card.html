@@ -10,8 +10,9 @@
     {%- if paper.figure %}
     <img class="paper-card__thumb" src="{{ '/assets/img/pub-' | append: paper.figure.slug | append: '-thumb.jpg' | relative_url }}" alt="" width="480" height="300" loading="lazy">
     {%- endif %}
-    <span class="paper-card__venue">{{ paper.venue }}</span>
+    <span class="paper-card__venue">{{ paper.venue }}{% include medal.html venue=paper.venue %}</span>
     <span class="paper-card__title">{{ paper.title }}</span>
+    {% include pub-labels.html item=paper %}
   </a>
 </li>
 {%- endif -%}

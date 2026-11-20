@@ -1,9 +1,12 @@
 # The lab's research framing, defined once. It feeds the Research page, the home tiles and the Join Us topics.
 #
 # Each area: `slug` (its anchor on /research/, linked from the home tiles and Join Us; keep it stable),
-# `title`, `summary` (Markdown), `papers` (full papers shown as thumbnail cards; each needs a figure in
-# publications.yml) and `more` (other papers, shown as links: PWiP, LBW, workshop). All ids are publication `id`s.
-# A paper sits in one area only.
+# `title`, `short` (the name on a paper's area pill), `pastel` (the area's colour, 1-7: the research-area
+# pastels, --area-N-* and .aN in site.css, shown on /design-language/; one per area, so seven areas at most;
+# tested), `summary` (Markdown), `papers` (full papers shown as thumbnail cards; each needs a figure in publications.yml) and
+# `more` (other papers, shown as links: PWiP, LBW, workshop). All ids are publication `id`s.
+# A paper may sit in several areas: it then shows a pill for each and appears in each area's section. It may
+# not be listed twice in one area. A paper listed in none shows no area pill and is "Other" in the filter.
 #
 # Placement rule: Care is about designing AI for care; Responsible AI is about auditing where models fail.
 # Unpublished work, such as the Small Language Model / mental-health line, joins an area only once it is public.
@@ -15,6 +18,8 @@ intro: >-
 areas:
   - slug: care
     title: "AI in Care and Sensitive Settings"
+    short: Care
+    pastel: 1
     summary: >-
       AI is entering the most personal parts of people's lives, from a child's early development to decisions
       at the end of life. We build and study AI that supports people in these moments: agents that help people
@@ -34,6 +39,8 @@ areas:
       - dis24-emotions-mh
   - slug: multimodal
     title: "Multimodal Human–AI Interaction"
+    short: Multimodal
+    pastel: 2
     summary: >-
       People communicate with more than text. We design AI that works across sketch, speech, video, and 3D:
       generative tools that let designers sketch and talk at the same time, interfaces for modelling physical
@@ -46,6 +53,8 @@ areas:
       - dronet24-swimming
   - slug: responsible-ai
     title: "Responsible AI: Risks and Robustness of Language Models"
+    short: Responsible AI
+    pastel: 3
     summary: >-
       Language models are already used to spread and to counter disinformation, and to moderate what people see
       online. We study where these models fail and whom those failures harm: how people use LLMs as both sword
