@@ -276,16 +276,18 @@ test.describe("Album cards without JavaScript", () => {
   });
 });
 
-// The real page: two albums in 2026, newest first by name (20260702-lab-day-out with 32 photos, then
-// 20260413-chi26-barcelona with 9), in two categories, so the category chips show (their first run on real data).
+// The real page: three albums, newest first by name. 2026: 20260702-lab-day-out (32 photos), 20260413-chi26-barcelona
+// (9); then 2024: 20240000-outtakes-and-oddities (1, the catch-all, dated by the year of its first photo so it sits
+// last). Two categories, so the category chips show.
 test.describe("The Gallery page", () => {
-  test("lists the albums as cards under one year, newest first, with their covers loaded", async ({ page }) => {
+  test("lists the albums as cards under their years, newest first, with their covers loaded", async ({ page }) => {
     await page.goto("/gallery/");
     await expect(page.locator("h1")).toHaveText("Gallery");
-    await expect(page.locator(".gallery-year__title")).toHaveText("2026");
-    await expect(page.locator(".album__title")).toHaveText(["Lab day out in Chinatown", "CHI 2026 in Barcelona"]);
+    await expect(page.locator(".gallery-year__title")).toHaveText(["2026", "2024"]);
+    await expect(page.locator(".album__title")).toHaveText(["Lab day out in Chinatown", "CHI 2026 in Barcelona", "Outtakes & Oddities"]);
     await expect(page.locator(".album__meta").nth(0)).toContainText("32 photos");
     await expect(page.locator(".album__meta").nth(1)).toContainText("Barcelona, Spain · 9 photos");
+    await expect(page.locator(".album__meta").nth(2)).toHaveText("2024 · 1 photo"); // a year-only date, no place
     await expect.poll(() => page.locator(".album__cover").evaluateAll(imgs => imgs.every(i => i.complete && i.naturalWidth > 0))).toBe(true);
   });
 
@@ -293,16 +295,17 @@ test.describe("The Gallery page", () => {
     await page.goto("/gallery/");
     const chips = page.locator(".gallery-filters .chip");
     await expect(page.locator(".gallery-filters")).toBeVisible();
-    await expect(chips).toHaveText(["Conferences 1", "Lab life 1"]);
+    await expect(chips).toHaveText(["Conferences 1", "Lab life 2"]);
     await chips.nth(0).click(); // Conferences
     await expect(chips.nth(0)).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator("details.album:visible")).toHaveCount(1);
     await expect(page.locator("#album-20260413-chi26-barcelona")).toBeVisible();
     await expect(page.locator("#album-20260702-lab-day-out")).toBeHidden();
-    await expect(page.locator(".gallery-filters__status")).toHaveText("Showing 1 of 2 albums");
+    await expect(page.locator(".gallery-year__title:visible")).toHaveText(["2026"]); // 2024 holds only a lab-life album
+    await expect(page.locator(".gallery-filters__status")).toHaveText("Showing 1 of 3 albums");
     expect(new URL(page.url()).search).toBe("?category=conferences");
     await page.locator(".gallery-filters__clear").click();
-    await expect(page.locator("details.album:visible")).toHaveCount(2);
+    await expect(page.locator("details.album:visible")).toHaveCount(3);
     expect(new URL(page.url()).search).toBe("");
   });
 
@@ -314,6 +317,18 @@ test.describe("The Gallery page", () => {
     await sheetTile(page, 1).click(); // a portrait photo
     await expect(count(page)).toHaveText("2 / 32");
     await expect.poll(() => page.locator(".figure-dialog__stage img").evaluate(i => i.complete && i.naturalHeight > i.naturalWidth)).toBe(true);
+    await page.keyboard.press("Escape");
+    await expect(dialog(page)).toBeHidden();
+  });
+
+  test("the one-photo catch-all skips the contact sheet and opens straight on its photo", async ({ page }) => {
+    await page.goto("/gallery/");
+    await card(page, "20240000-outtakes-and-oddities").click();
+    await expect(dialog(page)).toBeVisible();
+    expect(await dialog(page).evaluate(el => el.classList.contains("is-sheet"))).toBe(false);
+    await expect(page.locator(".figure-dialog__title")).toHaveText("Outtakes & Oddities"); // the ampersand survives
+    await expect(page.locator(".figure-dialog__nav")).toBeHidden(); // one photo: nothing to step through
+    await expect.poll(() => page.locator(".figure-dialog__stage img").evaluate(i => i.complete && i.naturalWidth > 0)).toBe(true);
     await page.keyboard.press("Escape");
     await expect(dialog(page)).toBeHidden();
   });
