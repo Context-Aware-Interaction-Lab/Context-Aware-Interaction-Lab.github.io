@@ -19,7 +19,7 @@ const current = page => page.evaluate(() => {
   const album = document.getElementById(a.dataset.group);
   return {
     src, group: a.dataset.group, title: a.dataset.title,
-    when: album.querySelector(".album__meta time").textContent,
+    when: album.querySelector(".album__meta time")?.textContent ?? "", // an undated album has no date
     size: document.querySelectorAll(`a[data-figure][data-group="${a.dataset.group}"]`).length,
   };
 });
@@ -80,16 +80,28 @@ test.describe("The slideshow on a desktop", () => {
     await open(page);
     const pool = await poolOf(page);
     const first = await src(page);
+    // The old layer is "leaving" only for the 1.2s fade, which a slow machine can run out before an assertion gets to look.
+    // So watch for it in the page itself, and record what it looked like when it was there.
+    await page.evaluate(() => {
+      window.__leaving = null;
+      new MutationObserver(() => {
+        const l = document.querySelector(".slideshow__layer.is-leaving");
+        if (l && !window.__leaving) window.__leaving = { opacity: getComputedStyle(l).opacity, active: document.querySelectorAll(".slideshow__layer.is-active").length };
+      }).observe(document.querySelector(".slideshow"), { subtree: true, attributes: true, attributeFilter: ["class"] });
+    });
     const second = await untilChange(page, first);
     expect(second).not.toBe(first);
     expect(pool).toContain(second);
     expect(await page.locator(".slideshow__layer.is-active").evaluate(l => getComputedStyle(l).transitionDuration)).toBe("1.2s");
-    await expect(page.locator(".slideshow__layer.is-leaving")).toHaveCount(1); // fading in on top of it
-    expect(await page.locator(".slideshow__layer.is-leaving").evaluate(l => getComputedStyle(l).opacity)).toBe("1");
+    await expect.poll(() => page.evaluate(() => window.__leaving)).not.toBeNull(); // the old layer did stay behind...
+    const seen = await page.evaluate(() => window.__leaving);
+    expect(seen.opacity).toBe("1"); // ...fully opaque beneath the new one, so the fade never dips to the backdrop
+    expect(seen.active).toBe(1); // while exactly one layer was fading in on top
     await idle(page); // the fade ends and the old layer is released
   });
 
   test("Next shows every photo once before any repeats, and the stage never changes size", async ({ page }) => {
+    test.setTimeout(120_000); // it visits every photo of every album: about 20s on a quiet machine, and the pool only grows
     await page.addStyleTag({ content: ".slideshow{--fade:1ms !important}" }); // 32 steps: do not wait on 32 fades
     await open(page);
     const pool = await poolOf(page);
@@ -200,7 +212,11 @@ test.describe("The slideshow on a desktop", () => {
     await expect(dialog(page)).toBeVisible();
     // the dialog writes an absolute URL, the page a relative one: compare the paths
     await expect.poll(() => dialog(page).locator(".figure-dialog__img").evaluate(i => new URL(i.src).pathname)).toBe(first);
-    await expect(dialog(page).locator(".figure-dialog__count")).toHaveText(new RegExp(` / ${shown.size}$`)); // the shown photo's own album
+    if (shown.size > 1) {
+      await expect(dialog(page).locator(".figure-dialog__count")).toHaveText(new RegExp(` / ${shown.size}$`)); // the shown photo's own album
+    } else {
+      await expect(dialog(page).locator(".figure-dialog__nav")).toBeHidden(); // a one-photo album (the catch-all) has nothing to step through
+    }
     await staysFor(page, 30_000);
     await dialog(page).locator(".figure-dialog__close").click();
     await expect(dialog(page)).toBeHidden();

@@ -12,9 +12,10 @@ esac
 ruby -Itests -e 'Dir["tests/*_test.rb"].sort.each { |f| require File.expand_path(f) }'
 
 # The phone Menu button (assets/js/nav.js), the Publications year folds (assets/js/year-folds.js) and the Gallery
-# category filter (assets/js/gallery-filter.js) and the Gallery slideshow's shuffle (assets/js/gallery-slideshow.js).
+# category filter (assets/js/gallery-filter.js), the Gallery slideshow's shuffle (assets/js/gallery-slideshow.js) and the
+# album strips' lens and arrow arithmetic (assets/js/gallery-carousel.js).
 # bun's built-in runner, no extra dependency.
-bun test tests/nav.test.js tests/year-folds.test.js tests/gallery-filter.test.js tests/gallery-slideshow.test.js
+bun test tests/nav.test.js tests/year-folds.test.js tests/gallery-filter.test.js tests/gallery-slideshow.test.js tests/gallery-carousel.test.js
 
 # Browser E2E (Playwright, specs in e2e/): the layouts unit tests cannot see, the phone Filters button, the swipe
 # strip, the no-JS fallbacks. Builds and serves the site itself on port 4010; about five seconds.

@@ -1,7 +1,9 @@
-// The Gallery's album cards and lightbox, driven in a real browser on the three specimen albums at /design-language/
-// (the same includes the real page uses, fed publication figures): 20261100-specimen-demos (14 photos, 2026-11, demos),
-// 20260600-specimen-conferences (3 photos, 2026-06, conferences) and 20250900-specimen-single (1 photo, 2025-09, lab life). The real
-// The real /gallery/ has two albums, checked at the end.
+// The Gallery's album cards and lightbox, driven in a real browser on the seven specimen albums at /design-language/
+// (the same includes the real page uses, fed publication figures). 2026 holds five: 20261100-specimen-demos (14 photos,
+// demos), 20261000-specimen-long (2, outreach, a very long title and place), 20260912-specimen-short (1, demos),
+// 20260800-specimen-no-place (2, lab life) and 20260600-specimen-conferences (3, conferences); 2025 holds
+// 20250900-specimen-single (1, lab life); specimen-undated (2, lab life) is tied to no year. The strips, the lens and the
+// equal card size are in carousel.spec.js; the real /gallery/ is checked at the end of this file.
 import { test, expect, hasNoHorizontalScroll } from "./fixtures.js";
 
 const PAGE = "/design-language/";
@@ -25,16 +27,17 @@ const rowsOf = (page, selector) => page.evaluate(sel => {
 test.describe("Album cards on a desktop", () => {
   test.beforeEach(async ({ page }) => { await page.goto(PAGE); });
 
-  test("albums are cards under their year, newest first, two to a row, each with a 4:3 cover", async ({ page }) => {
-    await expect(page.locator(".gallery-year__title")).toHaveText(["2026", "2025"]);
+  test("albums sit on one strip per year, newest first, the undated one last under Anytime, each cover 4:3", async ({ page }) => {
+    await expect(page.locator(".gallery-year__title")).toHaveText(["2026", "2025", "Anytime"]);
     const ids = await page.locator("details.album").evaluateAll(els => els.map(e => e.id));
-    expect(ids).toEqual(["album-20261100-specimen-demos", "album-20260600-specimen-conferences", "album-20250900-specimen-single"]);
-    const boxes = await page.locator(".album__card").evaluateAll(els => els.map(e => { const b = e.getBoundingClientRect(); return { top: Math.round(b.top), width: b.width }; }));
-    expect(boxes[0].top).toBe(boxes[1].top); // the two 2026 albums share a row
-    expect(boxes[2].top).toBeGreaterThan(boxes[1].top); // the 2025 album is under its own heading
-    boxes.forEach(b => { expect(b.width).toBeGreaterThanOrEqual(260); expect(b.width).toBeLessThan(420); });
+    expect(ids).toEqual([
+      "album-20261100-specimen-demos", "album-20261000-specimen-long", "album-20260912-specimen-short",
+      "album-20260800-specimen-no-place", "album-20260600-specimen-conferences", "album-20250900-specimen-single", "album-specimen-undated",
+    ]);
+    const tops = await page.locator("#gallery-2026 + .album-carousel .album__card").evaluateAll(els => els.map(e => Math.round(e.offsetTop)));
+    expect(new Set(tops).size).toBe(1); // a year is one strip, one row, however many albums it has
     const cover = await page.locator(".album__cover").first().boundingBox();
-    expect(Math.abs(cover.height / cover.width - 0.75)).toBeLessThan(0.02);
+    expect(Math.abs(cover.height / cover.width - 0.75)).toBeLessThan(0.05); // 4:3, give or take the lens
   });
 
   test("the cards show covers only: the photos stay inside closed albums, which do not open", async ({ page }) => {
@@ -155,18 +158,18 @@ test.describe("Category chips and deep links", () => {
   test("chips filter the cards, hide a year with none left, mirror to the address, and clear", async ({ page }) => {
     await page.goto(PAGE);
     const chips = page.locator('.chip[data-filter="category"]');
-    await expect(chips).toHaveCount(3);
+    await expect(chips).toHaveCount(4);
     await expect(page.locator(".gallery-filters")).toBeVisible();
     await page.locator('.chip[data-value="demos"]').click();
-    await expect(page.locator("details.album:visible")).toHaveCount(1);
-    await expect(page.locator(".gallery-year__title:visible")).toHaveText(["2026"]); // 2025 holds only a lab-life album
-    await expect(page.locator(".gallery-filters__status")).toHaveText("Showing 1 of 3 albums");
+    await expect(page.locator("details.album:visible")).toHaveCount(2); // the demos album and Short
+    await expect(page.locator(".gallery-year__title:visible")).toHaveText(["2026"]); // 2025 and Anytime hold only lab-life albums
+    await expect(page.locator(".gallery-filters__status")).toHaveText("Showing 2 of 7 albums");
     expect(new URL(page.url()).search).toBe("?category=demos");
     await page.locator('.chip[data-value="lab-life"]').click(); // chips add up
-    await expect(page.locator("details.album:visible")).toHaveCount(2);
-    await expect(page.locator(".gallery-year__title:visible")).toHaveText(["2026", "2025"]);
+    await expect(page.locator("details.album:visible")).toHaveCount(5);
+    await expect(page.locator(".gallery-year__title:visible")).toHaveText(["2026", "2025", "Anytime"]);
     await page.locator(".gallery-filters__clear").click();
-    await expect(page.locator("details.album:visible")).toHaveCount(3);
+    await expect(page.locator("details.album:visible")).toHaveCount(7);
     expect(new URL(page.url()).search).toBe("");
   });
 
@@ -187,7 +190,7 @@ test.describe("Category chips and deep links", () => {
     await expect(page.locator(".figure-dialog__title")).toHaveText("Specimen: a second album");
     await expect(page.locator("details.album[hidden]")).toHaveCount(0);
     await page.keyboard.press("Escape");
-    await expect(page.locator("details.album:visible")).toHaveCount(3);
+    await expect(page.locator("details.album:visible")).toHaveCount(7);
   });
 });
 
@@ -209,11 +212,15 @@ test.describe("Album cards on a phone", () => {
   test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   test.beforeEach(async ({ page }) => { await page.goto(PAGE); });
 
-  test("cards are two to a row and the page does not scroll sideways", async ({ page }) => {
-    const boxes = await page.locator(".album__card").evaluateAll(els => els.map(e => { const b = e.getBoundingClientRect(); return { top: Math.round(b.top), left: Math.round(b.left), width: b.width }; }));
-    expect(boxes[0].top).toBe(boxes[1].top);
-    expect(boxes[1].left).toBeGreaterThan(boxes[0].left);
-    boxes.forEach(b => expect(b.width).toBeLessThan(190));
+  test("a year is a swipeable strip with the next card peeking in, and the page does not scroll sideways", async ({ page }) => {
+    const strip = page.locator("#gallery-2026 + .album-carousel .album-cards");
+    expect(await strip.evaluate(el => el.scrollWidth > el.clientWidth)).toBe(true);
+    expect(await strip.evaluate(el => getComputedStyle(el).scrollSnapType)).toContain("mandatory");
+    const cards = await strip.locator(".album__card").evaluateAll(els => els.slice(0, 2).map(e => { const b = e.getBoundingClientRect(); return { left: Math.round(b.left), right: Math.round(b.right), width: Math.round(e.offsetWidth) }; }));
+    expect(cards[0].width).toBe(280); // min(72vw, 280px) at 390px
+    expect(cards[1].left).toBeLessThan(390); // the second card starts on screen...
+    expect(cards[1].right).toBeGreaterThan(390); // ...and runs off it, so it is clear that there is more
+    await expect(page.locator(".album-carousel__btn:visible")).toHaveCount(0); // a phone swipes, so no arrows over the photos
     expect(await hasNoHorizontalScroll(page)).toBe(true);
   });
 
@@ -276,18 +283,18 @@ test.describe("Album cards without JavaScript", () => {
   });
 });
 
-// The real page: three albums, newest first by name. 2026: 20260702-lab-day-out (32 photos), 20260413-chi26-barcelona
-// (9); then 2024: 20240000-outtakes-and-oddities (1, the catch-all, dated by the year of its first photo so it sits
-// last). Two categories, so the category chips show.
+// The real page: three albums. 2026, newest first by name: 20260702-lab-day-out (32 photos), 20260413-chi26-barcelona
+// (9); then, tied to no year and under "Anytime": outtakes-and-oddities (1, the catch-all). Two categories, so the
+// category chips show.
 test.describe("The Gallery page", () => {
   test("lists the albums as cards under their years, newest first, with their covers loaded", async ({ page }) => {
     await page.goto("/gallery/");
     await expect(page.locator("h1")).toHaveText("Gallery");
-    await expect(page.locator(".gallery-year__title")).toHaveText(["2026", "2024"]);
+    await expect(page.locator(".gallery-year__title")).toHaveText(["2026", "Anytime"]); // the catch-all is tied to no year
     await expect(page.locator(".album__title")).toHaveText(["Lab day out in Chinatown", "CHI 2026 in Barcelona", "Outtakes & Oddities"]);
     await expect(page.locator(".album__meta").nth(0)).toContainText("32 photos");
     await expect(page.locator(".album__meta").nth(1)).toContainText("Barcelona, Spain · 9 photos");
-    await expect(page.locator(".album__meta").nth(2)).toHaveText("2024 · 1 photo"); // a year-only date, no place
+    await expect(page.locator(".album__meta").nth(2)).toHaveText("1 photo"); // no date and no place: just the count
     await expect.poll(() => page.locator(".album__cover").evaluateAll(imgs => imgs.every(i => i.complete && i.naturalWidth > 0))).toBe(true);
   });
 
@@ -323,7 +330,7 @@ test.describe("The Gallery page", () => {
 
   test("the one-photo catch-all skips the contact sheet and opens straight on its photo", async ({ page }) => {
     await page.goto("/gallery/");
-    await card(page, "20240000-outtakes-and-oddities").click();
+    await card(page, "outtakes-and-oddities").click();
     await expect(dialog(page)).toBeVisible();
     expect(await dialog(page).evaluate(el => el.classList.contains("is-sheet"))).toBe(false);
     await expect(page.locator(".figure-dialog__title")).toHaveText("Outtakes & Oddities"); // the ampersand survives
