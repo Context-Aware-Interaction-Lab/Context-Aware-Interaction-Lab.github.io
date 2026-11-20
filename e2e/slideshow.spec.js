@@ -183,7 +183,7 @@ test.describe("The slideshow on a desktop", () => {
   test("scrolled out of view it holds, and scrolling back lets it go on", async ({ page }) => {
     await open(page);
     const first = await src(page);
-    await page.locator(".gallery-year").scrollIntoViewIfNeeded();
+    await page.locator(".gallery-year").first().scrollIntoViewIfNeeded();
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
     await expect.poll(() => root(page).evaluate(el => el.classList.contains("is-held"))).toBe(true);
     await staysFor(page, 30_000);
