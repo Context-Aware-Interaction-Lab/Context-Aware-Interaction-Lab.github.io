@@ -1,0 +1,36 @@
+{%- comment -%}
+  The album index, shared by /gallery/ and the specimen on /design-language/: category chips (only when two or more
+  categories are in use; gallery-filter.js reveals and runs them), then one section per year, newest first, each a
+  grid of album cards. albums = a list of albums, categories = gallery.yml's categories.
+{%- endcomment -%}
+{%- assign albums = include.albums -%}
+{%- assign years = albums | group_by_exp: "a", "a.date | slice: 0, 4" | sort: "name" | reverse -%}
+{%- assign used_categories = 0 -%}
+{%- for c in include.categories %}
+{%- assign used = albums | where: "category", c.id | size %}
+{%- if used > 0 %}{% assign used_categories = used_categories | plus: 1 %}{% endif %}
+{%- endfor %}
+{%- if used_categories > 1 %}
+<div class="gallery-filters" hidden>
+  <div class="gallery-filters__row" role="group" aria-label="Category">
+    {%- for c in include.categories %}
+    {%- assign used = albums | where: "category", c.id | size %}
+    {%- if used > 0 %}
+    <button type="button" class="chip" aria-pressed="false" data-filter="category" data-value="{{ c.id }}">{{ c.label | escape }} <span class="chip__count">{{ used }}</span></button>
+    {%- endif %}
+    {%- endfor %}
+    <button type="button" class="gallery-filters__clear" hidden>Clear</button>
+  </div>
+  <p class="gallery-filters__status" role="status"></p>
+</div>
+{%- endif %}
+{%- for year in years %}
+<section class="gallery-year" aria-labelledby="gallery-{{ year.name }}">
+  <h2 class="gallery-year__title" id="gallery-{{ year.name }}">{{ year.name }}</h2>
+  <div class="album-cards">
+    {%- for album in year.items %}
+    {% include gallery-album.html album=album %}
+    {%- endfor %}
+  </div>
+</section>
+{%- endfor %}
