@@ -266,7 +266,7 @@ test.describe("Research cards on a phone", () => {
 });
 
 test.describe("No horizontal scrolling at any narrow width", () => {
-  for (const path of ["/publications/", "/research/", "/"]) {
+  for (const path of ["/publications/", "/research/", "/", "/design-language/", "/gallery/"]) {
     for (const width of [320, 375, 390, 640, 641]) {
       test(`${path} at ${width}px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 844 });

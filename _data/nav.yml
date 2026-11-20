@@ -9,6 +9,8 @@
   url: /publications/
 - title: Join Us
   url: /join-us/
+- title: Gallery
+  url: /gallery/
 - title: Code
   url: https://github.com/Context-Aware-Interaction-Lab/
   external: true

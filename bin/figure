@@ -1,13 +1,17 @@
 #!/bin/sh
-# Make the images a publication's figure or video needs, into assets/img (flat: StrayFilesTest does not recurse).
+# Make the images a publication's figure or video needs, into assets/img/publications.
 #
 #   bin/figure page   PDF PAGE OUTDIR                    render one PDF page at 300 dpi to look at and pick a crop
-#   bin/figure make   SLUG PAGE.png X Y W H [TX TY TW TH | pad]   pub-SLUG.jpg (large), pub-SLUG-thumb.jpg (480x300, 16:10)
-#   bin/figure poster SLUG IMAGE X Y W H                 pub-SLUG-poster.jpg (1280x720, 16:9) for a video
+#   bin/figure make   SLUG PAGE.png X Y W H [TX TY TW TH | pad]   publications/SLUG.jpg (large), SLUG-thumb.jpg (480x300, 16:10)
+#   bin/figure poster SLUG IMAGE X Y W H                 publications/SLUG-poster.jpg (1280x720, 16:9) for a video
+#   bin/figure photo  ALBUM N SRC.jpg                    gallery/ALBUM/NN.jpg (at most 1280 on the long side)
+#                                                        and NN-thumb.jpg (within 640x480); prints the gallery.yml line
 #
 # Crops are in pixels of the 300 dpi page image, from its top-left corner. The thumbnail crop may differ from
 # the large one (a wide figure needs a tighter thumbnail); 'pad' instead shows the whole figure centred on white
 # in a 16:10 thumbnail; with neither, the large crop must itself be 16:10.
+# `photo` is for event photos from a camera or phone: it turns the EXIF orientation into real rotation, converts to
+# sRGB, resizes, then strips all metadata (location included) and checks. JPEG data only (judged by content, not name): export a real HEIC or PNG as JPEG first.
 # Needs pdftoppm (poppler), sips (macOS) and python3. Adds nothing to the project.
 #
 # sips writes an EXIF segment into every JPEG it saves, so each output is stripped of APP1 (EXIF/XMP),
@@ -15,6 +19,7 @@
 set -eu
 cd "$(dirname "$0")/.."
 IMG=assets/img
+PUB=$IMG/publications
 
 die() { echo "bin/figure: $*" >&2; exit 1; }
 
@@ -94,9 +99,9 @@ case "$cmd" in
     crop "$src" "$X" "$Y" "$W" "$H" "$tmp/large.png"
     # Shrink to at most 1600 wide, never enlarge: stretching a small crop only adds blur.
     if [ "$W" -gt 1600 ]; then
-      quiet sips -Z 1600 -s format jpeg -s formatOptions 82 "$tmp/large.png" --out "$IMG/pub-$slug.jpg"
+      quiet sips -Z 1600 -s format jpeg -s formatOptions 82 "$tmp/large.png" --out "$PUB/$slug.jpg"
     else
-      quiet sips -s format jpeg -s formatOptions 82 "$tmp/large.png" --out "$IMG/pub-$slug.jpg"
+      quiet sips -s format jpeg -s formatOptions 82 "$tmp/large.png" --out "$PUB/$slug.jpg"
     fi
     crop "$src" "$TX" "$TY" "$TW" "$TH" "$tmp/thumb.png"
     if [ "$pad" = 1 ]; then
@@ -106,9 +111,9 @@ case "$cmd" in
       quiet sips -p "$PH" "$PW" --padColor FFFFFF "$tmp/thumb.png" --out "$tmp/padded.png"
       mv "$tmp/padded.png" "$tmp/thumb.png"
     fi
-    quiet sips -z 300 480 -s format jpeg -s formatOptions 80 "$tmp/thumb.png" --out "$IMG/pub-$slug-thumb.jpg"
-    strip_and_check "$IMG/pub-$slug.jpg"; strip_and_check "$IMG/pub-$slug-thumb.jpg"
-    report "$IMG/pub-$slug.jpg"; report "$IMG/pub-$slug-thumb.jpg"
+    quiet sips -z 300 480 -s format jpeg -s formatOptions 80 "$tmp/thumb.png" --out "$PUB/$slug-thumb.jpg"
+    strip_and_check "$PUB/$slug.jpg"; strip_and_check "$PUB/$slug-thumb.jpg"
+    report "$PUB/$slug.jpg"; report "$PUB/$slug-thumb.jpg"
     ;;
   poster)
     [ $# -eq 6 ] || die "usage: bin/figure poster SLUG IMAGE X Y W H"
@@ -119,12 +124,79 @@ case "$cmd" in
     ratio_ok "$3" "$4" 16 9 || die "poster crop ${3}x${4} is not 16:9; the dialog would jump when the player loads"
     tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
     crop "$src" "$1" "$2" "$3" "$4" "$tmp/poster.png"
-    quiet sips -z 720 1280 -s format jpeg -s formatOptions 82 "$tmp/poster.png" --out "$IMG/pub-$slug-poster.jpg"
-    strip_and_check "$IMG/pub-$slug-poster.jpg"
-    report "$IMG/pub-$slug-poster.jpg"
+    quiet sips -z 720 1280 -s format jpeg -s formatOptions 82 "$tmp/poster.png" --out "$PUB/$slug-poster.jpg"
+    strip_and_check "$PUB/$slug-poster.jpg"
+    report "$PUB/$slug-poster.jpg"
+    ;;
+  photo)
+    [ $# -eq 3 ] || die "usage: bin/figure photo ALBUM N SRC.jpg"
+    need sips; need python3
+    slug=$1; n=$2; src=$3
+    slug_ok "$slug"; num_ok "$n"; [ -f "$src" ] || die "no such file: $src"
+    # Judge the file by its first two bytes, not its extension: an iPhone export named .HEIC can hold a plain JPEG.
+    [ "$(head -c 2 "$src" | od -An -tx1 | tr -d ' \n')" = "ffd8" ] || die "photo takes JPEG data, and $src is not (a real HEIC or a PNG: export it as JPEG first)"
+    nn=$(printf '%02d' "$n")   # two digits at least, so an album sorts in order in Finder
+    mkdir -p "$IMG/gallery/$slug"
+    large="$IMG/gallery/$slug/$nn.jpg"; thumb="$IMG/gallery/$slug/$nn-thumb.jpg"
+    [ ! -e "$large" ] && [ ! -e "$thumb" ] || die "gallery/$slug/$nn already exists; delete it first to redo it"
+    tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
+    cp "$src" "$tmp/in.jpg"
+    # 1. Orientation. Cameras and phones store the pixels as the sensor saw them and write how to turn them in the EXIF
+    # Orientation tag. Read it here, strip the metadata so sips cannot apply it a second time, and turn the pixels
+    # ourselves; stripping alone would leave the photo sideways.
+    orient=$(python3 -I - "$tmp/in.jpg" <<'PY'
+import struct, sys
+d = open(sys.argv[1], "rb").read()
+assert d[:2] == b"\xff\xd8", "not a JPEG"
+pos, value = 2, 1
+while d[pos] == 0xFF and d[pos + 1] not in (0xDA, 0xD9):
+    length = struct.unpack(">H", d[pos + 2:pos + 4])[0]
+    body = d[pos + 4:pos + 2 + length]
+    if d[pos + 1] == 0xE1 and body[:6] == b"Exif\x00\x00":
+        t = body[6:]
+        e = ">" if t[:2] == b"MM" else "<"
+        ifd = struct.unpack(e + "I", t[4:8])[0]
+        for i in range(struct.unpack(e + "H", t[ifd:ifd + 2])[0]):
+            tag, typ, cnt = struct.unpack(e + "HHI", t[ifd + 2 + 12 * i:ifd + 10 + 12 * i])
+            if tag == 0x0112:
+                value = struct.unpack(e + "H", t[ifd + 10 + 12 * i:ifd + 12 + 12 * i])[0]
+    pos += 2 + length
+print(value if 1 <= value <= 8 else 1)
+PY
+    )
+    strip_and_check "$tmp/in.jpg"
+    case "$orient" in
+      1) ;;
+      2) quiet sips -f horizontal "$tmp/in.jpg" ;;
+      3) quiet sips -r 180 "$tmp/in.jpg" ;;
+      4) quiet sips -f vertical "$tmp/in.jpg" ;;
+      5) quiet sips -r 90 "$tmp/in.jpg"; quiet sips -f horizontal "$tmp/in.jpg" ;;
+      6) quiet sips -r 90 "$tmp/in.jpg" ;;
+      7) quiet sips -r 90 "$tmp/in.jpg"; quiet sips -f vertical "$tmp/in.jpg" ;;
+      8) quiet sips -r 270 "$tmp/in.jpg" ;;
+      *) die "unreadable orientation '$orient'" ;;
+    esac
+    # 2. Colour: phones shoot in Display P3. A browser shows an untagged or sRGB file as intended, so convert; a file
+    # with no profile is already read as sRGB and is left alone.
+    if ! sips -g profile "$tmp/in.jpg" | grep -q '<nil>'; then
+      quiet sips -m "/System/Library/ColorSync/Profiles/sRGB Profile.icc" "$tmp/in.jpg"
+    fi
+    # 3. Size: the long edge at most 1280 (never enlarged; a lightbox photo is never shown bigger than ~720px tall); the thumbnail fits 640x480 and keeps the aspect ratio.
+    w=$(sips -g pixelWidth "$tmp/in.jpg" | awk '/pixelWidth/{print $2}'); h=$(sips -g pixelHeight "$tmp/in.jpg" | awk '/pixelHeight/{print $2}')
+    if [ "$w" -gt 1280 ] || [ "$h" -gt 1280 ]; then
+      quiet sips -Z 1280 -s format jpeg -s formatOptions 50 "$tmp/in.jpg" --out "$large"
+    else
+      quiet sips -s format jpeg -s formatOptions 50 "$tmp/in.jpg" --out "$large"
+    fi
+    dims=$(awk -v w="$w" -v h="$h" 'BEGIN{ s=640/w; if (480/h < s) s=480/h; if (s>1) s=1; printf "%d %d", int(h*s+0.5), int(w*s+0.5) }')
+    quiet sips -z $dims -s format jpeg -s formatOptions 55 "$tmp/in.jpg" --out "$thumb"
+    strip_and_check "$large"; strip_and_check "$thumb"
+    report "$large"; report "$thumb"
+    echo "  (EXIF orientation $orient applied; paste into gallery.yml:)"
+    echo "  - {file: \"$nn\", width: $(sips -g pixelWidth "$large" | awk '/pixelWidth/{print $2}'), height: $(sips -g pixelHeight "$large" | awk '/pixelHeight/{print $2}'), alt: \"...\"}"
     ;;
   *)
-    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//' >&2
+    sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//' >&2
     exit 2
     ;;
 esac

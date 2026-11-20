@@ -1,5 +1,6 @@
 require "minitest/autorun"
 require "cgi"
+require "date"
 require "fileutils"
 require "open3"
 require "tmpdir"
@@ -32,14 +33,22 @@ def photo_people = data("people").values_at(*PHOTO_LISTS).flatten.compact.select
 # Everyone who has left: alumni of both kinds plus former collaborators (the key may be absent).
 def left_people = data("people").values_at("alumni_graduate", "alumni_undergraduate", "collaborators_former").flatten.compact
 
-# A publication may declare a figure and/or a video. The files sit flat in assets/img (the stray-file
-# test does not recurse): pub-<slug>.jpg (large), pub-<slug>-thumb.jpg, and for a video pub-<slug>-poster.jpg.
+# Images are organised by purpose under assets/img: brand/ (logo, touch icon), people/ (photos), publications/ and
+# gallery/<album>/. A publication may declare a figure and/or a video: publications/<slug>.jpg (large),
+# <slug>-thumb.jpg, and for a video <slug>-poster.jpg.
 def figure_pubs = data("publications").select { |p| p["figure"] }
 def video_pubs = data("publications").select { |p| p["video"] }
 
 def publication_images
-  figure_pubs.flat_map { |p| ["pub-#{p["figure"]["slug"]}.jpg", "pub-#{p["figure"]["slug"]}-thumb.jpg"] } +
-    video_pubs.map { |p| "pub-#{p["video"]["slug"]}-poster.jpg" }
+  figure_pubs.flat_map { |p| ["publications/#{p["figure"]["slug"]}.jpg", "publications/#{p["figure"]["slug"]}-thumb.jpg"] } +
+    video_pubs.map { |p| "publications/#{p["video"]["slug"]}-poster.jpg" }
+end
+
+# Gallery albums (gallery.yml) and the specimen album on /design-language/. A photo is
+# assets/img/gallery/<album>/<file>.jpg with <file>-thumb.jpg beside it; StrayFilesTest and ImageMetadataTest recurse.
+def gallery_albums = data("gallery")["albums"] || []
+def gallery_images
+  gallery_albums.flat_map { |a| a["photos"].flat_map { |p| ["gallery/#{a["slug"]}/#{p["file"]}.jpg", "gallery/#{a["slug"]}/#{p["file"]}-thumb.jpg"] } }
 end
 
 # JPEG structure without a dependency: [[marker, payload], ...] for the segments before the image data.
@@ -194,6 +203,23 @@ class EveryPageTest < Minitest::Test
         end
       end
     end
+  end
+end
+
+# A moved or renamed image leaves a broken <img> that no link check sees.
+class EveryImageTest < Minitest::Test
+  def test_every_image_on_every_page_exists
+    (PAGES + ["/design-language/"]).uniq.each do |page|
+      html_of(page).scan(/<img\b[^>]*\bsrc="([^"]+)"/).flatten.each do |src|
+        next if src.start_with?("http", "data:")
+        assert File.size?(File.join(BUILD, src.split("?").first)), "#{page}: broken image #{src}"
+      end
+    end
+  end
+
+  def test_the_images_are_organised_by_purpose
+    top = Dir.children(File.join(ROOT, "assets", "img")).reject { |f| f.start_with?(".") }.sort
+    assert_equal %w[brand gallery people publications], top, "assets/img holds only the four purpose folders"
   end
 end
 
@@ -819,7 +845,7 @@ class PeoplePageTest < Minitest::Test
   # Anyone not in people.yml with a `photo:` must not appear as a photo: consent is per person.
   def test_only_declared_photos_are_used
     srcs = html_of("/people/").scan(/<img[^>]*src="([^"]+)"/).flatten
-    allowed = [LAB["director_photo"], "/assets/img/logo-96.png"] + photo_people.map { |p| p["photo"] }
+    allowed = [LAB["director_photo"], "/assets/img/brand/logo-96.png"] + photo_people.map { |p| p["photo"] }
     assert_empty srcs - allowed, "photo without a declaration in people.yml"
   end
 
@@ -1012,7 +1038,7 @@ class ResearchPapersTest < Minitest::Test
       assert_has html, %(href="/publications/#pub-#{id}"), "no card link for #{id}"
       assert_has html, paper["title"], "no card title for #{id}"
       assert paper["figure"], "card paper #{id} has no figure; a text-only card would unbalance the grid"
-      assert_has html, "/assets/img/pub-#{paper["figure"]["slug"]}-thumb.jpg", "no thumbnail for #{id}"
+      assert_has html, "/assets/img/publications/#{paper["figure"]["slug"]}-thumb.jpg", "no thumbnail for #{id}"
     end
   end
 
@@ -1240,16 +1266,17 @@ end
 # A photo dropped into assets/img was once committed by accident. Only the fixed images and the
 # photos declared in people.yml may be published.
 class StrayFilesTest < Minitest::Test
-  FIXED_IMAGES = %w[logo-480.png logo-96.png kenny-320.jpg apple-touch-icon.png].freeze
-  ALLOWED_IMAGES = (FIXED_IMAGES + photo_people.map { |p| File.basename(p["photo"]) } + publication_images).freeze
+  FIXED_IMAGES = %w[brand/logo-480.png brand/logo-96.png brand/apple-touch-icon.png people/kenny-320.jpg].freeze
+  ALLOWED_IMAGES = (FIXED_IMAGES + photo_people.map { |p| p["photo"].delete_prefix("/assets/img/") } + publication_images + gallery_images).freeze
 
   def test_assets_img_holds_only_the_expected_files_in_source
-    found = Dir.children(File.join(ROOT, "assets", "img")).sort
+    img = File.join(ROOT, "assets", "img")
+    found = Dir.glob("**/*", base: img).select { |f| File.file?(File.join(img, f)) }.sort
     assert_equal ALLOWED_IMAGES.sort, found, "unexpected file(s) in assets/img"
   end
 
   def test_no_other_image_is_published
-    images = Dir.glob(File.join(BUILD, "**", "*.{png,jpg,jpeg,gif,webp,svg}")).map { |f| File.basename(f) }
+    images = Dir.glob(File.join(BUILD, "**", "*.{png,jpg,jpeg,gif,webp,svg}")).map { |f| f.sub("#{BUILD}/assets/img/", "") }
     assert_empty images - ALLOWED_IMAGES, "unexpected image(s) in the published site"
   end
 end
@@ -1262,9 +1289,9 @@ class ImageMetadataTest < Minitest::Test
   COMMENT = 0xFE
 
   def test_no_jpeg_carries_metadata
-    Dir.glob(File.join(ROOT, "assets", "img", "*.jpg")).each do |path|
+    Dir.glob(File.join(ROOT, "assets", "img", "**", "*.jpg")).each do |path|
       found = jpeg_segments(path).map(&:first) & [APP1_EXIF_XMP, APP13_IPTC, COMMENT]
-      assert_empty found, "metadata segment(s) #{found.map { |m| format("0x%X", m) }.join(", ")} in #{File.basename(path)}"
+      assert_empty found, "metadata segment(s) #{found.map { |m| format("0x%X", m) }.join(", ")} in #{path.sub("#{ROOT}/", "")}"
     end
   end
 end
@@ -1272,7 +1299,7 @@ end
 # The thumbnail is a plain link to the large image, so it still works without JavaScript.
 class PublicationFigureTest < Minitest::Test
   PUBS = data("publications")
-  IMG = File.join(ROOT, "assets", "img")
+  IMG = File.join(ROOT, "assets", "img", "publications")
 
   def rows = html_of("/publications/").scan(%r{<li class="publication-row"[^>]*>.*?</li>}m)
 
@@ -1286,8 +1313,8 @@ class PublicationFigureTest < Minitest::Test
       assert_match(/\A[a-z0-9-]+\z/, fig["slug"].to_s, "bad figure slug: #{pub["title"]}")
       assert fig["alt"].to_s.strip.size > 20, "figure needs alt text describing what it shows: #{pub["title"]}"
       refute_equal pub["title"], fig["alt"], "alt text must describe the figure, not repeat the title"
-      large = File.join(IMG, "pub-#{fig["slug"]}.jpg")
-      thumb = File.join(IMG, "pub-#{fig["slug"]}-thumb.jpg")
+      large = File.join(IMG, "#{fig["slug"]}.jpg")
+      thumb = File.join(IMG, "#{fig["slug"]}-thumb.jpg")
       assert File.size?(large), "missing #{File.basename(large)}"
       assert File.size?(thumb), "missing #{File.basename(thumb)}"
       assert_operator jpeg_size(thumb)[0], :<=, 600, "thumbnail too wide: #{File.basename(thumb)}"
@@ -1307,8 +1334,8 @@ class PublicationFigureTest < Minitest::Test
       alt = CGI.escapeHTML(pub["figure"]["alt"])
       row = rows.find { |r| r.include?(pub["title"]) }
       assert row, "no row for #{pub["title"]}"
-      assert_match %r{<a class="publication-row__figure" href="[^"]*/assets/img/pub-#{slug}\.jpg"}, row
-      assert_match %r{<img src="[^"]*/assets/img/pub-#{slug}-thumb\.jpg" alt="#{Regexp.escape(alt)}"}, row
+      assert_match %r{<a class="publication-row__figure" href="[^"]*/assets/img/publications/#{slug}\.jpg"}, row
+      assert_match %r{<img src="[^"]*/assets/img/publications/#{slug}-thumb\.jpg" alt="#{Regexp.escape(alt)}"}, row
       assert_match(/<img [^>]*width="\d+" height="\d+" loading="lazy"/, row, "thumbnail needs width, height and lazy loading")
     end
   end
@@ -1322,7 +1349,7 @@ end
 # Nothing from YouTube loads until a visitor presses play, so no page carries an iframe in its HTML
 # and the script only ever builds a privacy-enhanced (youtube-nocookie.com) embed.
 class PublicationVideoTest < Minitest::Test
-  IMG = File.join(ROOT, "assets", "img")
+  IMG = File.join(ROOT, "assets", "img", "publications")
 
   def test_each_video_has_an_id_title_and_a_16_by_9_poster
     video_pubs.each do |pub|
@@ -1330,7 +1357,7 @@ class PublicationVideoTest < Minitest::Test
       assert_match(/\A[\w-]{11}\z/, video["youtube"].to_s, "not a YouTube id: #{pub["title"]}")
       assert_match(/\A[a-z0-9-]+\z/, video["slug"].to_s, "bad video slug: #{pub["title"]}")
       assert video["title"].to_s.strip.size > 5, "video needs a title: #{pub["title"]}"
-      poster = File.join(IMG, "pub-#{video["slug"]}-poster.jpg")
+      poster = File.join(IMG, "#{video["slug"]}-poster.jpg")
       assert File.size?(poster), "missing #{File.basename(poster)}"
       width, height = jpeg_size(poster)
       assert_in_delta 16.0 / 9, width.to_f / height, 0.05, "poster must be 16:9 or the dialog jumps when the player loads"
@@ -1393,14 +1420,14 @@ class PeopleDataTest < Minitest::Test
 
   def test_every_declared_photo_file_exists_and_is_a_jpeg_under_assets_img
     photo_people.each do |person|
-      assert_match %r{\A/assets/img/[\w-]+\.jpg\z}, person["photo"], "bad photo path for #{person["name"]}"
+      assert_match %r{\A/assets/img/people/[\w-]+\.jpg\z}, person["photo"], "bad photo path for #{person["name"]}"
       assert File.size?(File.join(ROOT, person["photo"])), "missing photo file for #{person["name"]}"
     end
   end
 
   def test_the_directors_photo_file_exists
     path = data("lab")["director_photo"]
-    assert_match %r{\A/assets/img/[\w-]+\.jpg\z}, path
+    assert_match %r{\A/assets/img/people/[\w-]+\.jpg\z}, path
     assert File.size?(File.join(ROOT, path)), "missing director photo: #{path}"
   end
 
@@ -1408,5 +1435,402 @@ class PeopleDataTest < Minitest::Test
     PEOPLE["members"].each { |p| assert p["role"].to_s.strip != "", "#{p["name"]} has no role" }
     (PEOPLE["collaborators"] + (PEOPLE["collaborators_former"] || [])).each { |p| assert p["role"].to_s.strip != "", "#{p["name"]} has no role" }
     (PEOPLE["alumni_graduate"] + PEOPLE["alumni_undergraduate"]).each { |p| assert p["note"].to_s.strip != "", "#{p["name"]} has no note" }
+  end
+end
+
+# The Gallery: albums of photos by event. Until the first album exists the page is unpublished (`published: false`
+# in gallery.html) and has no nav entry; nothing else is hidden by a switch. Everything is tested twice: the rules
+# on gallery.yml as a pure function (so they are proved on bad data too, with no photo needed), and the rendering on
+# the specimen album that /design-language/ draws from publication figures.
+module GalleryRules
+  SLUG = /\A[a-z0-9-]+\z/
+  DATE = /\A\d{4}(-\d{2}(-\d{2})?)?\z/
+  ISO_DAY = /\A\d{4}-\d{2}-\d{2}\z/
+
+  def self.valid_date?(str)
+    return false unless str.is_a?(String) && str.match?(DATE)
+    year, month, day = str.split("-").map(&:to_i)
+    Date.valid_date?(year, month || 1, day || 1)
+  end
+
+  # Newest first; a missing month or day sorts after the dated entries of its period, as on Publications.
+  def self.sort_key(str)
+    year, month, day = str.split("-").map(&:to_i)
+    [year, month || 13, day || 32]
+  end
+
+  # Problems with the data alone (no files): an empty list means the albums are fit to publish.
+  def self.problems(albums, categories, today: Date.today)
+    found = []
+    slugs = albums.map { |a| a["slug"] }
+    found << "duplicate album slug(s): #{slugs.select { |s| slugs.count(s) > 1 }.uniq.join(", ")}" if slugs.uniq.size != slugs.size
+    dated = albums.select { |a| valid_date?(a["date"]) }
+    keys = dated.map { |a| sort_key(a["date"]) }
+    found << "albums are not newest first" unless keys == keys.sort.reverse
+    albums.each do |a|
+      name = a["slug"].inspect
+      found << "#{name}: slug must be lowercase letters, digits and hyphens" unless a["slug"].to_s.match?(SLUG)
+      found << "#{name}: needs a title" if a["title"].to_s.strip.empty?
+      found << "#{name}: date must be a quoted YYYY, YYYY-MM or YYYY-MM-DD" unless valid_date?(a["date"])
+      found << "#{name}: category #{a["category"].inspect} is not in categories" unless categories.include?(a["category"])
+      consent = a["consent"]
+      if !consent.is_a?(String) || !consent.match?(ISO_DAY) || !valid_date?(consent)
+        found << "#{name}: consent must be the quoted YYYY-MM-DD the people shown agreed to web use"
+      elsif Date.parse(consent) > today
+        found << "#{name}: consent is dated in the future"
+      end
+      found << "#{name}: link must be a path on this site" if a["link"] && !a["link"].to_s.start_with?("/")
+      photos = a["photos"] || []
+      found << "#{name}: has no photos" if photos.empty?
+      found << "#{name}: the same photo file is listed twice" if photos.map { |p| p["file"] }.uniq.size != photos.size
+      photos.each do |p|
+        # Quoted: an unquoted 01 is the number 1 in YAML. The images are assets/img/gallery/<album>/<file>.jpg.
+        found << "#{name}: file #{p["file"].inspect} must be a quoted number such as \"01\"" unless p["file"].is_a?(String) && p["file"].match?(/\A\d{2,}\z/)
+        found << "#{name}: #{p["file"]}: alt text must say what the photo shows (more than 20 characters)" unless p["alt"].to_s.strip.size > 20
+        found << "#{name}: #{p["file"]}: alt text repeats the album title" if p["alt"].to_s.strip == a["title"].to_s.strip
+        found << "#{name}: #{p["file"]}: width and height must be whole pixels" unless [p["width"], p["height"]].all? { |n| n.is_a?(Integer) && n > 0 }
+      end
+    end
+    found
+  end
+
+  # Problems with the image files of the given albums: img_dir is assets/img, where each album has gallery/<slug>/.
+  def self.file_problems(albums, img_dir)
+    albums.flat_map { |a| a["photos"].flat_map { |p| photo_file_problems(p, File.join(img_dir, "gallery", a["slug"])) } }
+  end
+
+  def self.photo_file_problems(photo, dir)
+    large = File.join(dir, "#{photo["file"]}.jpg")
+    thumb = File.join(dir, "#{photo["file"]}-thumb.jpg")
+    return ["missing #{File.basename(large)}"] unless File.size?(large)
+    return ["missing #{File.basename(thumb)}"] unless File.size?(thumb)
+    found = []
+    (w, h), (tw, th) = jpeg_size(large), jpeg_size(thumb)
+    found << "#{File.basename(large)} is #{w}x#{h}, declared #{photo["width"]}x#{photo["height"]}" unless [w, h] == [photo["width"], photo["height"]]
+    # The size rule: no full-resolution photos. A lightbox photo is never shown more than ~720px tall, so the long
+    # edge is capped at 1280 and the file at 350 KB; the thumbnail fits 640x480 and 120 KB. bin/figure photo makes this.
+    found << "#{File.basename(large)}: long edge is over 1280px (run it through bin/figure photo)" if [w, h].max > 1280
+    found << "#{File.basename(large)}: #{File.size(large) / 1000} KB is over the 350 KB cap" if File.size(large) > 350_000
+    found << "#{File.basename(thumb)}: thumbnail is over 640x480" if tw > 640 || th > 480
+    found << "#{File.basename(thumb)}: thumbnail #{File.size(thumb) / 1000} KB is over the 120 KB cap" if File.size(thumb) > 120_000
+    found << "#{File.basename(thumb)}: thumbnail is not smaller than its photo" unless tw < w || th < h
+    found << "#{File.basename(thumb)}: thumbnail is not the photo's shape" unless (tw.to_f / th - w.to_f / h).abs < 0.03 * (w.to_f / h)
+    found
+  end
+end
+
+class GalleryVisibilityTest < Minitest::Test
+  def test_the_page_and_its_nav_entry_exist_exactly_when_there_is_an_album
+    has_albums = !gallery_albums.empty?
+    assert_equal has_albums, File.exist?(File.join(BUILD, "gallery", "index.html")),
+      "/gallery/ must be built exactly when gallery.yml has an album (gallery.html carries `published: false` until then)"
+    assert_equal has_albums, NAV.any? { |n| n["url"] == "/gallery/" },
+      "nav.yml lists Gallery exactly when gallery.yml has an album"
+  end
+
+  def test_gallery_sits_immediately_before_code_in_the_nav
+    skip "no album yet, so Gallery is not in the nav" if gallery_albums.empty?
+    urls = NAV.map { |n| n["url"] }
+    assert_equal "/gallery/", urls[-2], "Gallery goes just before Code"
+    assert NAV.last["external"], "the last nav entry is the external Code link"
+  end
+
+  def test_every_page_links_to_gallery_only_when_it_is_published
+    PAGES.each do |page|
+      assert_equal !gallery_albums.empty?, html_of(page).include?('href="/gallery/"'), "gallery link on #{page}"
+    end
+  end
+end
+
+class GalleryDataTest < Minitest::Test
+  CATEGORIES = data("gallery")["categories"].map { |c| c["id"] }
+
+  def test_categories_have_unique_ids_and_labels
+    cats = data("gallery")["categories"]
+    assert_equal cats.size, cats.map { |c| c["id"] }.uniq.size
+    cats.each do |c|
+      assert_match GalleryRules::SLUG, c["id"].to_s
+      refute_empty c["label"].to_s.strip
+    end
+  end
+
+  def test_the_albums_obey_the_rules
+    skip "gallery.yml has no albums yet; the rules are proved on bad data below" if gallery_albums.empty?
+    assert_empty GalleryRules.problems(gallery_albums, CATEGORIES)
+  end
+
+  def test_every_photo_file_exists_with_the_declared_size
+    skip "gallery.yml has no albums yet" if gallery_albums.empty?
+    assert_empty GalleryRules.file_problems(gallery_albums, File.join(ROOT, "assets", "img"))
+  end
+
+  GOOD = {
+    "slug" => "chi26", "title" => "CHI 2026", "date" => "2026-04", "category" => "conferences", "consent" => "2026-05-01",
+    "photos" => [{"file" => "01", "alt" => "The lab's poster stand at the conference hall", "width" => 800, "height" => 600}]
+  }.freeze
+
+  def problems(**changes) = GalleryRules.problems([GOOD.merge(changes.transform_keys(&:to_s))], CATEGORIES, today: Date.new(2026, 11, 20))
+
+  def test_the_rules_accept_a_good_album
+    assert_empty problems
+  end
+
+  def test_an_album_without_consent_is_refused_and_so_is_a_vague_or_future_one
+    assert_match(/consent/, problems(consent: nil).join)
+    assert_match(/consent/, problems(consent: "yes").join)
+    assert_match(/consent/, problems(consent: "2026-13-40").join)
+    assert_match(/future/, problems(consent: "2027-01-01").join)
+  end
+
+  def test_the_rules_catch_the_other_mistakes
+    assert_match(/category/, problems(category: "parties").join)
+    assert_match(/slug/, problems(slug: "Bad Slug").join)
+    assert_match(/date/, problems(date: "April 2026").join)
+    assert_match(/no photos/, problems(photos: []).join)
+    assert_match(/quoted number/, problems(photos: [GOOD["photos"][0].merge("file" => "photo-1")]).join)
+    assert_match(/quoted number/, problems(photos: [GOOD["photos"][0].merge("file" => 1)]).join, "an unquoted 01 is an Integer")
+    assert_match(/listed twice/, problems(photos: [GOOD["photos"][0], GOOD["photos"][0]]).join)
+    assert_match(/alt text/, problems(photos: [GOOD["photos"][0].merge("alt" => "photo")]).join)
+    long = "Photographs from the CHI 2026 conference in Barcelona"
+    assert_match(/repeats the album title/, problems(title: long, photos: [GOOD["photos"][0].merge("alt" => long)]).join)
+    assert_match(/link/, problems(link: "https://example.org").join)
+  end
+
+  def test_the_rules_catch_duplicates_and_wrong_order
+    a = GOOD
+    b = GOOD.merge("slug" => "dis26", "date" => "2026-06")
+    assert_match(/not newest first/, GalleryRules.problems([a, b], CATEGORIES).join)
+    assert_empty GalleryRules.problems([b, a], CATEGORIES, today: Date.new(2026, 11, 20))
+    assert_match(/duplicate album slug/, GalleryRules.problems([a, a], CATEGORIES).join)
+  end
+
+  def test_a_month_only_date_sorts_after_dated_entries_of_that_month
+    a = GOOD.merge("date" => "2026-04")
+    b = GOOD.merge("slug" => "dis26", "date" => "2026-04-20")
+    assert_empty GalleryRules.problems([a, b], CATEGORIES, today: Date.new(2026, 11, 20))
+  end
+
+  def test_file_rules_catch_missing_oversize_and_misdeclared_images
+    Dir.mktmpdir do |dir|
+      img = File.join(ROOT, "assets", "img")
+      FileUtils.cp(File.join(img, "publications", "pg25-vr-modeling.jpg"), File.join(dir, "01.jpg")) # 1600x298
+      photo = {"file" => "01", "width" => 1600, "height" => 298}
+      assert_match(/missing 01-thumb\.jpg/, GalleryRules.photo_file_problems(photo, dir).join)
+      FileUtils.cp(File.join(img, "publications", "eacl26-blend-vis-thumb.jpg"), File.join(dir, "01-thumb.jpg")) # 480x300: the wrong shape for a 1600x298 photo
+      assert_match(/not the photo's shape/, GalleryRules.photo_file_problems(photo, dir).join)
+      assert_match(/long edge is over 1280px/, GalleryRules.photo_file_problems(photo, dir).join, "no full-resolution photos")
+      assert_match(/declared 1000x298/, GalleryRules.photo_file_problems(photo.merge("width" => 1000), dir).join)
+      assert_match(/missing 99\.jpg/, GalleryRules.photo_file_problems({"file" => "99"}, dir).join)
+    end
+  end
+end
+
+# The specimen albums on /design-language/: the same includes the real page uses (gallery-index, gallery-album), fed
+# publication figures already on the site, so the cards, the chips, the year headings and the lightbox are tested
+# on real markup before the lab has many albums of its own.
+class GallerySpecimenTest < Minitest::Test
+  ALBUMS = data("gallery_specimen")["albums"]
+  CATEGORIES = data("gallery")["categories"]
+  IMG = File.join(ROOT, "assets", "img", "publications")
+
+  def page = html_of("/design-language/")
+  def card(slug) = page[%r{<details class="album" id="album-#{slug}".*?</details>}m]
+  def tiles(html) = html.scan(%r{<li class="album__photo".*?</li>}m)
+  def album(slug) = ALBUMS.find { |a| a["slug"] == slug }
+
+  def test_the_specimen_has_three_albums_in_two_years_and_three_categories
+    assert_equal 3, ALBUMS.size
+    assert_equal %w[2025 2026], ALBUMS.map { |a| a["date"][0, 4] }.uniq.sort
+    assert_equal 3, ALBUMS.map { |a| a["category"] }.uniq.size
+    assert_equal [14, 3, 1], ALBUMS.map { |a| a["photos"].size }, "a big album, a small one and a single photo"
+  end
+
+  def test_the_specimen_photos_have_alt_text_sizes_and_files
+    ALBUMS.flat_map { |a| a["photos"] }.each do |p|
+      assert p["alt"].to_s.strip.size > 20, "alt text for #{p["file"]}"
+      assert File.size?(File.join(IMG, "#{p["file"]}.jpg")), "missing #{p["file"]}.jpg"
+      assert File.size?(File.join(IMG, "#{p["file"]}-thumb.jpg")), "missing #{p["file"]}-thumb.jpg"
+      assert_equal [p["width"], p["height"]], jpeg_size(File.join(IMG, "#{p["file"]}.jpg")), "declared size of #{p["file"]}"
+    end
+  end
+
+  def test_each_album_is_a_card_in_its_year_newest_first
+    years = page.scan(/<h2 class="gallery-year__title"[^>]*>(\d{4})<\/h2>/).flatten
+    assert_equal %w[2026 2025], years
+    sections = page.scan(%r{<section class="gallery-year".*?</section>}m)
+    assert_equal %w[specimen-demos specimen-conferences], sections[0].scan(/<details class="album" id="album-([^"]+)"/).flatten
+    assert_equal %w[specimen-single], sections[1].scan(/<details class="album" id="album-([^"]+)"/).flatten
+    sections.each { |s| assert_match(/<div class="album-cards">/, s) }
+  end
+
+  def test_a_card_is_a_summary_with_the_first_photo_as_cover_a_title_and_the_facts
+    c = card("specimen-demos")
+    refute_nil c
+    first = album("specimen-demos")["photos"][0]
+    assert_match(%r{<summary class="album__card" aria-haspopup="dialog">}, c, "the card announces that it opens a dialog")
+    assert_match(%r{<img class="album__cover" src="/assets/img/publications/#{first["file"]}-thumb\.jpg" width="#{first["width"]}" height="#{first["height"]}" alt="" loading="lazy">}, c)
+    assert_match(%r{<h3 class="album__title">Specimen album</h3>}, c)
+    assert_match(%r{<time datetime="2026-11">November 2026</time> · Singapore · 14 photos}, c)
+    assert_match(/data-category="demos"/, c)
+    assert_match(%r{· 1 photo</span>}, card("specimen-single"), "singular for one photo")
+    assert_match(%r{<time datetime="2026-06">June 2026</time> · 3 photos}, card("specimen-conferences"), "no place when there is none")
+  end
+
+  def test_the_card_body_lists_every_photo_as_a_plain_link_without_an_inner_fold
+    refute_includes page, "album__rest", "the card is the disclosure; there is no second fold"
+    ALBUMS.each do |a|
+      body = card(a["slug"])[%r{<div class="album__body">.*}m]
+      assert_equal a["photos"].size, tiles(body).size, a["slug"]
+      tiles(body).zip(a["photos"]).each do |tile, p|
+        ratio = (p["width"].to_f / p["height"]).round(3)
+        assert_match(/style="--ar:#{ratio}"/, tile, "aspect ratio of #{p["file"]}")
+        assert_match %r{<a href="/assets/img/publications/#{p["file"]}\.jpg" data-figure data-group="album-#{a["slug"]}" data-title="#{Regexp.escape(CGI.escapeHTML(a["title"]))}" data-alt="}, tile
+        assert_match %r{<img src="/assets/img/publications/#{p["file"]}-thumb\.jpg" width="#{p["width"]}" height="#{p["height"]}" alt="[^"]{20,}" loading="lazy">}, tile
+      end
+    end
+  end
+
+  def test_the_summary_and_a_caption_and_a_credit_travel_with_the_markup
+    assert_match(/class="album__summary"/, card("specimen-demos"))
+    refute_match(/album__summary/, card("specimen-single"), "no summary, no empty block")
+    photos = album("specimen-demos")["photos"]
+    cap = photos.index { |p| p["caption"] }
+    refute_nil cap
+    tile = tiles(card("specimen-demos"))
+    assert_includes tile[cap], %(data-caption="#{CGI.escapeHTML(photos[cap]["caption"])}")
+    cred = photos.index { |p| p["credit"] }
+    refute_nil cred
+    assert_includes tile[cred], 'data-credit="CAILab"'
+    plain = tile.reject.with_index { |_, i| [cap, cred].include?(i) }.first
+    refute_includes plain, "data-caption"
+    refute_includes plain, "data-credit"
+  end
+
+  def test_chips_cover_the_three_categories_with_counts_and_start_hidden
+    assert_match(/<div class="gallery-filters" hidden>/, page, "revealed by gallery-filter.js")
+    chips = page.scan(%r{data-filter="category" data-value="([^"]+)">([^<]+) <span class="chip__count">(\d+)</span>})
+    assert_equal [%w[conferences Conferences 1], %w[lab-life Lab\ life 1], %w[demos Demos 1]], chips.map { |v, l, n| [v, l, n] }
+  end
+
+  def test_the_lightbox_has_steps_a_counter_all_photos_and_its_scripts_here_and_on_publications
+    ["/design-language/", "/publications/"].each do |path|
+      html = html_of(path)
+      assert_match(/<dialog class="figure-dialog" id="figure-dialog"/, html, path)
+      assert_match(/<div class="figure-dialog__nav" hidden>/, html, "the nav starts hidden on #{path}; figure.js shows it for a group")
+      assert_match(/<button class="figure-dialog__all" type="button" hidden>All photos<\/button>/, html, path)
+      assert_match(/figure-dialog__prev" type="button" aria-label="Previous photo"/, html, path)
+      assert_match(/figure-dialog__next" type="button" aria-label="Next photo"/, html, path)
+      assert_match(/figure-dialog__count" aria-live="polite"/, html, path)
+      assert_has html, 'src="/assets/js/figure.js"', "figure.js on #{path}"
+    end
+  end
+
+  def test_the_filter_script_loads_before_the_lightbox_script
+    html = page
+    assert_operator html.index('src="/assets/js/gallery-filter.js"'), :<, html.index('src="/assets/js/figure.js"'),
+      "a link to an album the filter hides must clear the filter before figure.js opens the album"
+  end
+
+  def test_publication_thumbnails_stay_ungrouped
+    refute_includes html_of("/publications/"), "data-group", "a publication figure opens alone"
+  end
+
+  def test_the_components_are_listed_on_the_design_language_page
+    %w[.album .album__card .album__grid .figure-dialog].each { |c| assert_has page, "<code>#{c}</code>", "#{c} is not listed" }
+    assert_match(/Gallery photos\./, page)
+  end
+
+  def test_the_specimen_is_never_listed_on_other_pages
+    (PAGES - ["/design-language/"]).each { |path| refute_includes html_of(path), "album-specimen", path }
+  end
+end
+
+# Once the first album exists these hold for the real page. They skip while there is no album (the page is not built).
+class GalleryPageTest < Minitest::Test
+  def page = html_of("/gallery/")
+
+  def setup
+    skip "no album yet, so /gallery/ is not built" if gallery_albums.empty?
+  end
+
+  def test_one_card_per_album_with_every_photo_and_its_category
+    gallery_albums.each do |a|
+      card = page[%r{<details class="album" id="album-#{a["slug"]}".*?</details>}m]
+      refute_nil card, "no card for #{a["slug"]}"
+      assert_includes card, %(data-category="#{a["category"]}")
+      assert_equal a["photos"].size, card.scan(/<li class="album__photo"/).size
+    end
+  end
+
+  def test_albums_sit_under_their_year_newest_first
+    years = page.scan(/<h2 class="gallery-year__title"[^>]*>(\d{4})<\/h2>/).flatten
+    assert_equal gallery_albums.map { |a| a["date"][0, 4] }.uniq, years
+  end
+
+  def test_chips_appear_only_for_categories_in_use_and_only_with_a_choice
+    used = gallery_albums.map { |a| a["category"] }.uniq
+    chips = page.scan(/data-filter="category" data-value="([^"]+)"/).flatten
+    if used.size > 1
+      assert_equal data("gallery")["categories"].map { |c| c["id"] } & used, chips
+      assert_match(/<div class="gallery-filters" hidden>/, page, "the bar starts hidden; gallery-filter.js shows it")
+    else
+      assert_empty chips
+    end
+  end
+
+  def test_the_page_loads_the_filter_then_the_lightbox
+    assert_has page, 'id="figure-dialog"', "dialog"
+    assert_has page, 'src="/assets/js/figure.js"', "figure.js"
+    assert_has page, 'src="/assets/js/gallery-filter.js"', "gallery-filter.js"
+    assert_operator page.index('src="/assets/js/gallery-filter.js"'), :<, page.index('src="/assets/js/figure.js"')
+    assert File.exist?(File.join(BUILD, "assets/js/gallery-filter.js"))
+  end
+end
+
+# The page must stay organised as albums are added. The real data has one album, so this builds a throwaway copy of the
+# site with twelve (three years, three categories) and checks the index: year order, newest first inside a year, one
+# card each, chip counts, and the first photo as the cover.
+class GalleryScaleTest < Minitest::Test
+  CATEGORIES = %w[conferences lab-life demos].freeze
+
+  def albums
+    (0...12).map do |i|
+      slug = "scale-#{i}"
+      {
+        "slug" => slug, "title" => "Scale album #{i}", "date" => format("%d-%02d", 2026 - i / 5, 12 - 2 * (i % 5)),
+        "category" => CATEGORIES[i % 3], "consent" => "2026-01-01",
+        "photos" => [
+          {"file" => "01", "width" => 1200, "height" => 800, "alt" => "First photo of scale album #{i}, the cover"},
+          {"file" => "02", "width" => 800, "height" => 1200, "alt" => "Second photo of scale album #{i}, a portrait"}
+        ]
+      }
+    end
+  end
+
+  def test_twelve_albums_stay_organised_by_year_and_category
+    Dir.mktmpdir("cailab-scale-") do |tmp|
+      dir = File.realpath(tmp)
+      src = File.join(dir, "src")
+      FileUtils.mkdir_p(src)
+      (Dir.children(ROOT) - %w[vendor .git _site .bundle .playwright-mcp node_modules .e2e-site test-results]).each { |n| FileUtils.cp_r(File.join(ROOT, n), src) }
+      gallery = data("gallery").merge("albums" => albums)
+      assert_empty GalleryRules.problems(albums, CATEGORIES, today: Date.new(2026, 11, 20)), "the synthetic albums are valid data"
+      File.write(File.join(src, "_data", "gallery.yml"), gallery.to_yaml)
+      out, status = Open3.capture2e({ "BUNDLE_GEMFILE" => File.join(ROOT, "Gemfile") },
+        "bundle", "exec", "jekyll", "build", "--source", src, "--destination", File.join(dir, "out"), chdir: ROOT)
+      assert status.success?, "build failed:\n#{out}"
+      html = File.read(File.join(dir, "out", "gallery", "index.html"))
+
+      assert_equal %w[2026 2025 2024], html.scan(/<h2 class="gallery-year__title"[^>]*>(\d{4})<\/h2>/).flatten
+      ids = html.scan(/<details class="album" id="album-([^"]+)"/).flatten
+      assert_equal albums.map { |a| a["slug"] }, ids, "one card per album, newest first, years in order"
+      by_year = html.scan(%r{<section class="gallery-year".*?</section>}m).map { |s| s.scan(/id="album-scale-(\d+)"/).flatten.map(&:to_i) }
+      assert_equal [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11]], by_year
+      assert_equal 12, html.scan('<summary class="album__card"').size
+      assert_equal 12, html.scan(/<img class="album__cover" src="\/assets\/img\/gallery\/scale-\d+\/01-thumb\.jpg"/).size, "the first photo is the cover"
+      chips = html.scan(%r{data-filter="category" data-value="([^"]+)">[^<]+ <span class="chip__count">(\d+)</span>})
+      assert_equal [["conferences", "4"], ["lab-life", "4"], ["demos", "4"]], chips
+      assert_match(/<div class="gallery-filters" hidden>/, html)
+    end
   end
 end

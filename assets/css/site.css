@@ -481,3 +481,81 @@ svg line,svg path{stroke:var(--c);fill:none}
 /* a paper row reached from a card: clear the sticky nav, and mark it */
 .publication-row{scroll-margin-top:96px}
 .publication-row:target{outline:2px solid var(--text);outline-offset:6px;border-radius:var(--radius-s)}
+
+/* gallery: albums by event, a justified grid, one lightbox shared with Publications (see /design-language/) */
+.gallery-filters{padding-block:0 var(--space-5)}
+.gallery-filters__row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2)}
+.chip__count{font:500 var(--fs-label)/1 var(--font-mono);opacity:.7}
+.gallery-filters__clear{min-height:var(--tap);padding:0 var(--space-3);border:0;background:none;color:var(--text);font:500 var(--fs-small)/1 var(--font-body);text-decoration:underline;cursor:pointer}
+.gallery-filters__clear:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.gallery-filters__status{margin-top:var(--space-3);font-size:var(--fs-small);color:var(--text-muted)}
+.gallery-filters__status:empty{margin:0}
+.gallery-empty{color:var(--text-muted)}
+.gallery-year+.gallery-year{margin-top:var(--space-7)}
+.gallery-year__title{font:700 var(--fs-h2)/var(--lh-tight) var(--font-display);margin-bottom:var(--space-5)}
+/* Albums are cards in a grid under their year. An album is a native <details>: without JS its card opens in place and
+   takes the whole row (below); with JS figure.js opens the lightbox instead. */
+.album-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:var(--space-5)}
+.album{--row-h:220px}
+.album[open]{grid-column:1/-1}
+.album__card{display:block;overflow:hidden;border:1px solid var(--line);border-radius:var(--radius-l);background:var(--surface);list-style:none;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.album__card::-webkit-details-marker{display:none}
+.album__card:hover{border-color:var(--text);box-shadow:0 8px 24px rgba(17,20,27,.1)}
+.album__card:focus-visible{outline-offset:2px}
+.album[open]>.album__card{max-width:360px}
+.album__cover{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;background:var(--surface-2);transition:transform .3s ease}
+.album__card:hover .album__cover{transform:scale(1.03)}
+.album__card{isolation:isolate}
+.album__title{font:700 var(--fs-h3)/1.2 var(--font-display)}
+.album__card .album__title{padding:var(--space-4) var(--space-4) 0}
+.album__meta{display:block;margin-top:var(--space-1);font:500 var(--fs-label)/1.5 var(--font-mono);color:var(--text-muted)}
+.album__card .album__meta{padding:0 var(--space-4) var(--space-4)}
+.album__body{padding-top:var(--space-4)}
+.album__summary{max-width:72ch;color:var(--text-muted)}
+.album__summary p+p{margin-top:var(--space-2)}
+.album__link{display:inline-block;margin-top:var(--space-2);font-weight:600}
+.album__body .album__grid{margin-top:var(--space-4)}
+/* Justified rows without script: every tile is one row tall (--row-h) and grows in proportion to its aspect ratio
+   (--ar = width/height), so a row fills the width and the photos keep their shape. clamp() keeps a very wide or
+   very tall photo from taking over a row; it is cropped to fit here and shown whole in the lightbox. The empty
+   ::after soaks up the spare width so the last row stays at its natural size. Source order is reading order. */
+.album__grid{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.album__grid::after{content:"";flex:999 1 0}
+.album__photo{--g:clamp(.6,var(--ar),2.4);height:var(--row-h);flex:var(--g) 1 calc(var(--g) * var(--row-h))}
+.album__photo a,.album__photo button{display:block;width:100%;height:100%;padding:0;border:0;overflow:hidden;border-radius:var(--radius-s);background:var(--surface-2);cursor:pointer}
+.album__photo img{width:100%;height:100%;object-fit:cover;transition:transform .25s ease}
+.album__photo a:hover img,.album__photo button:hover img{transform:scale(1.03)}
+@media (prefers-reduced-motion:reduce){
+  .album__photo img,.album__cover{transition:none}
+  .album__photo a:hover img,.album__photo button:hover img,.album__card:hover .album__cover{transform:none}
+}
+@media (max-width:640px){
+  .album-cards{grid-template-columns:repeat(2,1fr);gap:var(--space-3)}
+  .album{--row-h:140px}
+  .album__card .album__title{padding:var(--space-3) var(--space-3) 0;font-size:1rem}
+  .album__card .album__meta{padding:0 var(--space-3) var(--space-3)}
+  .gallery-year+.gallery-year{margin-top:var(--space-6)}
+}
+/* lightbox, album mode. Photo: a fixed-height dark stage so the dialog does not jump between photos, then the caption
+   and All photos / Previous / counter / Next. Sheet: a scrolling grid of every photo under the album's summary.
+   A lone figure (Publications) keeps its own sizing. */
+.figure-dialog__credit{white-space:nowrap}
+.figure-dialog__nav{display:flex;align-items:center;justify-content:center;gap:var(--space-4);margin-top:var(--space-3)}
+.figure-dialog__step{width:var(--tap);height:var(--tap);border:1.5px solid var(--line-strong);border-radius:var(--radius-pill);background:var(--bg);color:var(--text);font:400 1.5rem/1 var(--font-body);cursor:pointer}
+.figure-dialog__all{min-height:var(--tap);padding:0 var(--space-4);border:1.5px solid var(--line-strong);border-radius:var(--radius-pill);background:var(--bg);color:var(--text);font:500 var(--fs-small)/1 var(--font-body);cursor:pointer}
+.figure-dialog__step:hover,.figure-dialog__all:hover{border-color:var(--text);background:var(--surface-2)}
+.figure-dialog__all{margin-right:var(--space-3)}
+.figure-dialog__count{min-width:6ch;text-align:center;font:500 var(--fs-label)/1 var(--font-mono);color:var(--text-muted)}
+.figure-dialog.is-grouped .figure-dialog__stage{display:grid;place-items:center;height:min(68vh,720px);background:var(--text)}
+.figure-dialog.is-grouped .figure-dialog__img{width:auto;max-width:100%;height:auto;max-height:100%}
+.figure-dialog.is-sheet .figure-dialog__stage{max-height:min(72vh,760px);overflow:auto;padding:var(--space-4);background:var(--surface)}
+.album__intro{max-width:72ch;margin-bottom:var(--space-4)}
+.album__intro .album__meta{margin-top:0}
+.album__intro .album__summary{margin-top:var(--space-2)}
+.album__sheet{--row-h:150px}
+@media (max-width:640px){
+  .figure-dialog.is-grouped,.figure-dialog.is-sheet{width:100vw;max-width:100vw;max-height:100vh;height:100vh;border:0;border-radius:0;padding:var(--space-3) var(--space-3) var(--space-4)}
+  .figure-dialog.is-grouped .figure-dialog__stage{height:62vh}
+  .figure-dialog.is-sheet .figure-dialog__stage{max-height:calc(100vh - 90px);padding:var(--space-2)}
+  .album__sheet{--row-h:110px}
+}

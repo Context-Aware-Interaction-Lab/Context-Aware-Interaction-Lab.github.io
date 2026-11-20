@@ -13,7 +13,7 @@ join_lead: At CAILab, we aim to develop and train the next generation of Human-C
 
 # The director is the entry in people.yml `members` with this exact name.
 director: Kenny Tsu Wei Choo
-director_photo: /assets/img/kenny-320.jpg
+director_photo: /assets/img/people/kenny-320.jpg
 
 # The contact button. Kenny chose this address (2026-11-18). It appears only inside
 # the mailto: link, never as visible text (tested).
