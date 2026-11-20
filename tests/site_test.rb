@@ -414,6 +414,270 @@ class PublicationsPageTest < Minitest::Test
   end
 end
 
+# Filter and search on /publications/ (assets/js/year-folds.js, behaviour in tests/year-folds.test.js).
+# Every row carries what the script filters on. `type` is copied from the keywords of the CV's
+# publications.bib, so the site and the CV sort the same paper the same way. (A "Selected" chip was tried and
+# dropped, 2026-11-20: nothing told a visitor who selected what, and four papers is too few to need a filter.)
+class PublicationFiltersTest < Minitest::Test
+  PUBS = data("publications")
+  TYPES = data("publication_types")
+  BIB = File.expand_path("../../personal/cv/publications.bib", ROOT)
+
+  def attrs_of_rows = html_of("/publications/").scan(%r{<li class="publication-row"([^>]*)>}).flatten
+
+  def attr(attrs, name) = attrs[/ #{name}="([^"]*)"/, 1]
+
+  def expected_areas(pub)
+    slugs = data("research")["areas"]
+      .select { |a| ((a["papers"] || []) + (a["more"] || [])).include?(pub["id"]) }.map { |a| a["slug"] }
+    slugs.empty? ? "other" : slugs.join(" ")
+  end
+
+  def test_the_types_are_the_cv_keywords_and_every_publication_has_one
+    assert_equal %w[journal conference chapter extended preprint], TYPES.map { |t| t["id"] }
+    TYPES.each do |t|
+      assert t["label"].to_s.size.positive? && t["short"].to_s.size.positive?, "type #{t["id"]} needs a label and a short"
+      assert_includes (0..6).to_a, t["tone"], "type #{t["id"]} needs a tone: 0 (neutral grey) or 1-6 (the spectrum, .c1-.c6)"
+    end
+    assert_equal TYPES.size, TYPES.map { |t| t["tone"] }.uniq.size, "two types share a colour"
+    PUBS.each do |pub|
+      assert_includes TYPES.map { |t| t["id"] }, pub["type"], "unknown or missing type: #{pub["title"]}"
+      refute pub.key?("selected"), "the dropped `selected` flag is back: #{pub["title"]}"
+    end
+  end
+
+  # Matched by title, so a wrong keyword on the site fails here when the CV repo sits beside this one.
+  def test_types_match_the_cv_bib
+    skip "personal/cv/publications.bib not present: types not cross-checked" unless File.exist?(BIB)
+    squash = ->(s) { s.to_s.delete("{}\\").downcase.gsub(/[^a-z0-9]/, "") }
+    bib = File.read(BIB).scan(/@\w+\{[^,]+,(.*?)\n\}/m).map do |(body)|
+      [squash.(body[/\btitle\s*=\s*\{(.*?)\},?\s*\n/m, 1]), (body[/keywords\s*=\s*\{([^}]*)\}/, 1] || "").split(",").map(&:strip)]
+    end.to_h
+    PUBS.each do |pub|
+      keywords = bib[squash.(pub["title"])] or flunk("no entry in publications.bib for: #{pub["title"]}")
+      refute_includes keywords, "inreview", "work under review is on the site: #{pub["title"]}"
+      assert_includes keywords, pub["type"], "type disagrees with the bib keywords #{keywords}: #{pub["title"]}"
+    end
+  end
+
+  def test_every_row_carries_its_type_areas_and_search_text
+    rows = attrs_of_rows
+    assert_equal PUBS.size, rows.size
+    PUBS.zip(rows) do |pub, attrs|
+      assert_equal pub["type"], attr(attrs, "data-type"), "data-type: #{pub["title"]}"
+      assert_equal expected_areas(pub), attr(attrs, "data-areas"), "data-areas: #{pub["title"]}"
+      assert_nil attr(attrs, "data-selected"), "data-selected is back: #{pub["title"]}"
+      expected = plain([pub["title"], pub["authors"], pub["venue"]].join(" ")).downcase
+      assert_equal expected, plain(attr(attrs, "data-text").to_s), "data-text: #{pub["title"]}"
+    end
+  end
+
+  # Research areas wear pastels (research.yml `pastel`, 1-7), a palette of their own: the saturated spectrum
+  # belongs to paper types and graphics. The design language defines seven, so seven areas at most.
+  def test_each_area_has_a_short_name_and_its_own_pastel
+    areas = data("research")["areas"]
+    assert_operator areas.size, :<=, 7, "the design language has pastels for up to 7 research areas"
+    areas.each do |a|
+      assert a["short"].to_s.size.positive?, "area #{a["slug"]} needs a short name for its pill"
+      assert_includes (1..7).to_a, a["pastel"], "area #{a["slug"]} needs a pastel 1-7 (.a1-.a7)"
+      refute a.key?("tone"), "area #{a["slug"]} still has the retired spectrum `tone`"
+    end
+    assert_equal areas.size, areas.map { |a| a["pastel"] }.uniq.size, "two areas share a pastel"
+  end
+
+  # --area-N-bg / -edge / -dot in site.css, one .aN class per slot, and a swatch for each on the design language
+  # page that shows the same hex values, so the page cannot drift from the stylesheet.
+  def test_the_stylesheet_and_design_language_define_seven_area_pastels
+    css = File.read(File.join(BUILD, "assets/css/site.css"))
+    design = html_of("/design-language/")
+    assert_has design, "up to 7 research areas", "the design language should say how many areas the pastels cover"
+    (1..7).each do |n|
+      hexes = %w[bg edge dot].map do |part|
+        css[/--area-#{n}-#{part}:(#\h{6})/, 1] or flunk("--area-#{n}-#{part} is not defined in site.css")
+      end
+      assert_match(/\.a#{n}\{/, css, ".a#{n} is not defined in site.css")
+      assert_has design, "<code>--area-#{n}</code>", "--area-#{n} has no swatch on /design-language/"
+      hexes.each { |hex| assert_has design.upcase, hex.upcase, "/design-language/ does not show #{hex} of --area-#{n}" }
+    end
+  end
+
+  # The label strip under a paper's authors (publication row) and at the foot of its Research card: its type
+  # pill (the type's dot and short name, publication_types.yml), then one pastel pill per research area it sits
+  # in, in research.yml order and none when it sits in no area (research.yml: slug, pastel, short).
+  def expected_labels(pub)
+    type = TYPES.find { |t| t["id"] == pub["type"] }
+    areas = data("research")["areas"].select { |a| ((a["papers"] || []) + (a["more"] || [])).include?(pub["id"]) }
+    { type: [type["tone"], type["short"]], areas: areas.map { |a| [a["slug"], a["pastel"], a["short"]] } }
+  end
+
+  def labels_in(fragment)
+    strip = fragment[%r{<div class="pub-labels">(.*?)</div>}m, 1] or return nil
+    type = strip.match(%r{<span class="pill pill--type"><span class="dot c(\d)" aria-hidden="true"></span>([^<]*)</span>})
+    areas = strip.scan(%r{<span class="pill pill--area a(\d)" data-area="([^"]+)">([^<]*)</span>})
+    { type: type && [type[1].to_i, CGI.unescapeHTML(type[2])],
+      areas: areas.map { |pastel, slug, text| [slug, pastel.to_i, CGI.unescapeHTML(text)] } }
+  end
+
+  def test_each_row_ends_with_its_type_and_area_labels
+    html = html_of("/publications/")
+    rows = html.scan(%r{<li class="publication-row".*?</li>}m)
+    assert_equal PUBS.size, rows.size
+    PUBS.zip(rows) { |pub, row| assert_equal expected_labels(pub), labels_in(row), "labels: #{pub["title"]}" }
+    refute_match(/publication-row__type/, html, "the old side-column type badge is still there")
+    refute_match(%r{publication-row__venue"><span class="dot}, html, "the type dot should live in the pill, not the venue line")
+  end
+
+  def test_each_research_card_carries_the_same_labels_as_its_row
+    cards = html_of("/research/").scan(%r{<li class="paper-card">.*?</li>}m)
+    refute_empty cards
+    cards.each do |card|
+      id = card[%r{href="/publications/#pub-([^"]+)"}, 1]
+      pub = PUBS.find { |p| p["id"] == id } or flunk("card for unknown paper #{id}")
+      assert_equal expected_labels(pub), labels_in(card), "card labels: #{id}"
+    end
+  end
+
+  # A medal follows the venue of every Honourable Mention paper, wherever a venue is printed (publication row,
+  # research paper card and link), and no other. The `venue` string itself is untouched: JoinApplyTest matches it.
+  VENUE = %r{<(p|span) class="(?:publication-row__venue|paper-card__venue|paper-link__venue)">((?:[^<]|<span[^>]*></span>|<span class="medal"[^>]*>[^<]*</span>)*)</\1>}
+
+  def test_honourable_mention_papers_get_a_medal_and_no_others_do
+    %w[/publications/ /research/].each do |page|
+      venues = html_of(page).scan(VENUE).map(&:last)
+      honoured = venues.select { |v| v.include?("Honourable Mention") }
+      assert_operator honoured.size, :>=, 2, "#{page}: expected the two CHI'26 Honourable Mention venues"
+      venues.each do |v|
+        if v.include?("Honourable Mention")
+          assert_includes v, '<span class="medal" aria-hidden="true">🏅</span>', "#{page}: no medal on #{v[0, 40]}"
+        else
+          refute_includes v, "medal", "#{page}: medal on a paper without an award: #{v[0, 40]}"
+        end
+      end
+    end
+  end
+
+  # Expand all shares the row with the search box. Clear (while filtering) and Expand all (when not) take the
+  # same slot, which year-folds.js swaps, so the row never grows a second line of controls.
+  def test_expand_all_sits_in_the_filter_row
+    html = html_of("/publications/")
+    row = html[%r{<div class="pub-filters__row">.*?<p class="pub-filters__status"}m] or flunk("no filter row")
+    assert_has row, '<button type="button" class="year-controls__all" hidden>Expand all</button>', "Expand all is not in the filter row"
+    assert_has row, 'id="pub-search"', "the search box is not in the same row"
+    refute_match(/class="container year-controls"/, html, "the standalone Expand all container is still there")
+  end
+
+  def test_the_filter_bar_is_hidden_until_the_script_reveals_it
+    html = html_of("/publications/")
+    bar = html[%r{<div class="[^"]*\bpub-filters\b[^"]*"[^>]*>}] or flunk("no .pub-filters bar")
+    assert_match(/\bhidden\b/, bar, "the filter bar must be hidden in the HTML (no dead controls without JavaScript)")
+    assert_match(%r{<input type="search" id="pub-search"}, html)
+    assert_match(%r{<label [^>]*for="pub-search">Search publications</label>}, html)
+    assert_match(%r{class="pub-filters__status"[^>]*aria-live="polite"}, html)
+    assert_match(%r{class="pub-filters__clear"[^>]*hidden}, html, "Clear starts hidden")
+  end
+
+  def test_there_is_a_chip_for_each_type_in_use_each_area_and_other_and_no_selected_chip
+    html = html_of("/publications/")
+    # A chip is [dot colour class or nil, label]: a type chip carries its type's dot ("c6", the spectrum), an
+    # area chip its area's pastel dot ("a3") and the neutral "Other" chip none.
+    chip = lambda do |group, value|
+      # An area chip also carries its pastel class on the button, which the stylesheet tints it with.
+      m = html.match(%r{<button type="button" class="chip(?: a\d)?" aria-pressed="false" data-filter="#{group}" data-value="#{value}">(?:<span class="dot ([ac]\d)" aria-hidden="true"></span>)?([^<]*)</button>})
+      m && [m[1], CGI.unescapeHTML(m[2])]
+    end
+    used = PUBS.map { |p| p["type"] }.uniq
+    TYPES.each do |t|
+      if used.include?(t["id"])
+        assert_equal ["c#{t["tone"]}", t["label"]], chip.("type", t["id"]), "type chip (dot colour, label): #{t["id"]}"
+      else
+        assert_nil chip.("type", t["id"]), "chip for a type with no publications: #{t["id"]}"
+      end
+    end
+    data("research")["areas"].each do |a|
+      assert_equal ["a#{a["pastel"]}", a["title"]], chip.("area", a["slug"]), "area chip (dot colour, full title): #{a["slug"]}"
+    end
+    assert_equal [nil, "Other"], chip.("area", "other")
+    refute_match(/data-filter="selected"/, html, "the Selected chip was dropped")
+  end
+
+  # Each year's mix of types, one entry per type present: the type's dot, then "<n> <short>".
+  def test_each_year_summary_breaks_the_year_down_by_type_in_the_type_colours
+    summaries = html_of("/publications/").scan(%r{<summary><h2>(\d{4})</h2>(.*?)</summary>}m)
+    assert_equal PUBS.map { |p| p["year"] }.uniq.size, summaries.size
+    summaries.each do |year, inner|
+      papers = PUBS.select { |p| p["year"] == year.to_i }
+      expected = TYPES.map { |t| [t, papers.count { |p| p["type"] == t["id"] }] }.reject { |_, n| n.zero? }
+        .map { |t, n| [t["tone"], "#{n} #{t["short"]}"] }
+      types_html = inner[%r{<span class="year__types">(.*)</span>\z}m, 1] or flunk("#{year} has no .year__types")
+      actual = types_html.scan(%r{<span class="year__type"><span class="dot c(\d)" aria-hidden="true"></span>([^<]*)</span>})
+        .map { |tone, text| [tone.to_i, CGI.unescapeHTML(text)] }
+      assert_equal expected, actual, "#{year} breakdown (dot colour, count)"
+    end
+  end
+
+  # One row: search, a Type menu, a Research area menu, Clear. The menus are native <details> so the chips
+  # take no space until opened; no chip sits outside them.
+  def test_type_and_area_chips_sit_in_their_own_menus
+    html = html_of("/publications/")
+    menus = html.scan(%r{<details class="pub-menu" data-menu="(\w+)">(.*?)</details>}m).to_h
+    assert_equal %w[type area], menus.keys, "expected a Type menu then a Research area menu"
+    menus.each do |name, body|
+      assert_match %r{<summary>[^<]*<span class="pub-menu__count" hidden></span></summary>}, body, "#{name} menu summary needs a hidden count"
+      chips = body.scan(/data-filter="(\w+)"/).flatten.uniq
+      assert_equal [name], chips, "#{name} menu holds the wrong chips"
+    end
+    outside = html.gsub(%r{<details class="pub-menu".*?</details>}m, "")
+    refute_match(/class="chip"/, outside, "a chip sits outside the menus")
+  end
+
+  # Without this rule `.year-controls__all{display:inline-flex}` beats the hidden attribute, so the "hidden
+  # until the script runs" Expand all button showed, dead, to visitors without JavaScript (seen in a browser,
+  # 2026-11-20). The filter bar, rows and years the script hides rely on it too.
+  def test_the_hidden_attribute_beats_component_display_rules
+    css = File.read(File.join(BUILD, "assets/css/site.css"))
+    assert_match(/\[hidden\]\{display:none!important\}/, css)
+  end
+
+  def test_chip_and_filter_bar_are_listed_on_the_design_language_page
+    html = html_of("/design-language/")
+    %w[.chip .pub-filters .pub-menu .medal .pub-labels .pill].each { |c| assert_has html, "<code>#{c}</code>", "#{c} not listed in Components" }
+  end
+end
+
+# A paper may sit in several research areas. No paper does in the real data (Kenny decides placements), so this
+# builds a throwaway copy of the site with one paper also listed in a second area and checks that its row, its
+# pills and /research/ all follow.
+class MultiAreaTest < Minitest::Test
+  PAPER = "cscw26-peer-supporter" # in `care`; the copy also lists it under `responsible-ai`
+
+  def test_a_paper_in_two_areas_shows_both_pills_and_appears_in_both_sections
+    Dir.mktmpdir("cailab-multi-") do |tmp|
+      # Real path: on macOS the temp dir is a symlink, and safe mode (github-pages) rejects includes whose
+      # real path differs from the site's source path.
+      dir = File.realpath(tmp)
+      src = File.join(dir, "src")
+      FileUtils.mkdir_p(src)
+      (Dir.children(ROOT) - %w[vendor .git _site .bundle .playwright-mcp node_modules]).each { |n| FileUtils.cp_r(File.join(ROOT, n), src) }
+      path = File.join(src, "_data", "research.yml")
+      research = YAML.safe_load(File.read(path))
+      research["areas"].find { |a| a["slug"] == "responsible-ai" }["more"] << PAPER
+      File.write(path, research.to_yaml)
+
+      out, status = Open3.capture2e({ "BUNDLE_GEMFILE" => File.join(ROOT, "Gemfile") },
+        "bundle", "exec", "jekyll", "build", "--source", src, "--destination", File.join(dir, "out"), chdir: ROOT)
+      assert status.success?, "multi-area build failed:\n#{out}"
+
+      publications = File.read(File.join(dir, "out", "publications", "index.html"))
+      row = publications[%r{<li class="publication-row" id="pub-#{PAPER}".*?</li>}m] or flunk("no row for #{PAPER}")
+      assert_match(/data-areas="care responsible-ai"/, row, "data-areas should list both areas in research.yml order")
+      assert_equal %w[care responsible-ai], row.scan(/class="pill pill--area a\d" data-area="([^"]+)"/).flatten, "one pill per area"
+
+      research_page = File.read(File.join(dir, "out", "research", "index.html"))
+      assert_equal 2, research_page.scan(%(href="/publications/#pub-#{PAPER}")).size, "the paper should appear in both sections"
+    end
+  end
+end
+
 # The site is public. Work under review has no public artifact, so requiring one
 # keeps it off the site without naming (and so leaking) any title here.
 class PublicContentTest < Minitest::Test
@@ -621,9 +885,13 @@ class ResearchPapersTest < Minitest::Test
     (CARDS + MORE).each { |id| assert_equal 1, pub(id).size, "paper id #{id} matches #{pub(id).size} publications" }
   end
 
-  def test_a_paper_appears_once_across_all_areas
-    all = CARDS + MORE
-    assert_equal all.uniq, all, "a paper is listed twice: #{all.select { |i| all.count(i) > 1 }.uniq}"
+  # A paper may sit in several areas (it then shows a pill for each, and appears in each section); it may not
+  # be listed twice inside one area. MultiAreaTest builds a site where that happens.
+  def test_a_paper_is_listed_once_within_an_area
+    AREAS.each do |a|
+      all = (a["papers"] || []) + (a["more"] || [])
+      assert_equal all.uniq, all, "area #{a["slug"]} lists a paper twice: #{all.select { |i| all.count(i) > 1 }.uniq}"
+    end
   end
 
   def test_area_slugs_are_unique_and_url_safe
@@ -640,7 +908,7 @@ class ResearchPapersTest < Minitest::Test
   def test_each_publication_id_anchors_its_row
     html = html_of("/publications/")
     PUBS.map { |p| p["id"] }.compact.each do |id|
-      assert_has html, %(<li class="publication-row" id="pub-#{id}">), "no row anchor for #{id}"
+      assert_has html, %(<li class="publication-row" id="pub-#{id}"), "no row anchor for #{id}"
     end
   end
 

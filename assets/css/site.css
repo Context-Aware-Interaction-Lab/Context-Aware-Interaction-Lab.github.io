@@ -10,6 +10,16 @@
  --halo:#FFFFFF;
  --on-accent:#FFFFFF;
  --spec-1:#F0A500; --spec-2:#E8590C; --spec-3:#D6204A; --spec-4:#B5179E; --spec-5:#0E9FC4; --spec-6:#2457C5;
+ /* Research-area pastels: up to 7 areas, one slot each (research.yml `pastel`, class .a1-.a7). -bg fills a pill or
+    chip, -edge is its border, -dot the small dot. Ink stays --text on the fill. Slots 1-3 are the most distinct
+    from each other, so the first three areas never sit close; the rest follow. */
+ --area-1-bg:#FBDDE3; --area-1-edge:#EDA6B6; --area-1-dot:#D9607A; /* rose */
+ --area-2-bg:#D1E7F8; --area-2-edge:#92C3EA; --area-2-dot:#3B8FD2; /* sky */
+ --area-3-bg:#FAF0BC; --area-3-edge:#E6CF66; --area-3-dot:#C79B10; /* butter */
+ --area-4-bg:#D3F0DF; --area-4-edge:#93D3B0; --area-4-dot:#3EA877; /* mint */
+ --area-5-bg:#E2DCF8; --area-5-edge:#B5A8EA; --area-5-dot:#7B64D2; /* lavender */
+ --area-6-bg:#FDE0CC; --area-6-edge:#F0AF88; --area-6-dot:#E2793F; /* peach */
+ --area-7-bg:#CCEFEE; --area-7-edge:#84CECB; --area-7-dot:#27A39F; /* aqua */
  --accent:var(--text); --focus:var(--spec-6);
  /* type */
  --font-display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
@@ -42,7 +52,8 @@ code{font-family:var(--font-mono);font-size:var(--fs-label)}
 .container{width:100%;max-width:calc(var(--container) + 2*var(--gutter));margin-inline:auto;padding-inline:var(--gutter)}
 
 /* spectrum classes shared by svg graphs and dots */
-.c1{--c:var(--spec-1)} .c2{--c:var(--spec-2)} .c3{--c:var(--spec-3)} .c4{--c:var(--spec-4)} .c5{--c:var(--spec-5)} .c6{--c:var(--spec-6)}
+.a1{--a-bg:var(--area-1-bg);--a-edge:var(--area-1-edge);--c:var(--area-1-dot)} .a2{--a-bg:var(--area-2-bg);--a-edge:var(--area-2-edge);--c:var(--area-2-dot)} .a3{--a-bg:var(--area-3-bg);--a-edge:var(--area-3-edge);--c:var(--area-3-dot)} .a4{--a-bg:var(--area-4-bg);--a-edge:var(--area-4-edge);--c:var(--area-4-dot)} .a5{--a-bg:var(--area-5-bg);--a-edge:var(--area-5-edge);--c:var(--area-5-dot)} .a6{--a-bg:var(--area-6-bg);--a-edge:var(--area-6-edge);--c:var(--area-6-dot)} .a7{--a-bg:var(--area-7-bg);--a-edge:var(--area-7-edge);--c:var(--area-7-dot)}
+.c0{--c:var(--line-strong)} .c1{--c:var(--spec-1)} .c2{--c:var(--spec-2)} .c3{--c:var(--spec-3)} .c4{--c:var(--spec-4)} .c5{--c:var(--spec-5)} .c6{--c:var(--spec-6)}
 svg circle{fill:var(--c)}
 svg line,svg path{stroke:var(--c);fill:none}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}
@@ -185,24 +196,67 @@ svg line,svg path{stroke:var(--c);fill:none}
 @media (max-width:1000px){.members{grid-template-columns:repeat(2,1fr)}.collabs{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:640px){.person-card--director{grid-template-columns:1fr}.collabs{grid-template-columns:1fr}.members{gap:var(--space-3)}.person-card{padding:var(--space-3)}.person-card--compact{padding:var(--space-4)}}
 
+/* The hidden attribute must win over component display rules: the controls, rows and years that
+   assets/js/year-folds.js shows or hides all set `display`. */
+[hidden]{display:none!important}
+
 /* publication years: one native fold per year, newest open (assets/js/year-folds.js reveals deep links) */
-.year-controls{padding-top:var(--space-6)}
-.year-controls__all{display:inline-flex;align-items:center;min-height:var(--tap);padding:0 var(--space-4);border:1.5px solid var(--line-strong);border-radius:var(--radius-pill);background:none;color:var(--text);font:500 var(--fs-small)/1 var(--font-body);cursor:pointer}
-.year-controls__all:hover{border-color:var(--text);background:var(--surface-2)}
+.year-controls__all,.pub-filters__clear{display:inline-flex;align-items:center;min-height:var(--tap);padding:0 var(--space-4);border:1.5px solid var(--line-strong);border-radius:var(--radius-pill);background:none;color:var(--text);font:500 var(--fs-small)/1 var(--font-body);cursor:pointer}
+.year-controls__all:hover,.pub-filters__clear:hover{border-color:var(--text);background:var(--surface-2)}
 .section--year{padding-block:var(--space-3)}
 .section--year:last-of-type{padding-bottom:var(--space-8)}
 .year summary h2{font:700 var(--fs-h2)/var(--lh-tight) var(--font-display);letter-spacing:-.015em}
 .year__count{color:var(--text-muted);font-size:var(--fs-small)}
+.year__types{display:inline-flex;flex-wrap:wrap;align-items:center;column-gap:var(--space-3);row-gap:var(--space-1);min-width:0;color:var(--text-muted);font:500 var(--fs-label)/1.4 var(--font-mono)}
+.year__type{display:inline-flex;align-items:center;gap:6px}
+.year__type .dot{width:8px;height:8px}
+.year__count{white-space:nowrap}
+@media (max-width:640px){.year summary{flex-wrap:wrap;row-gap:var(--space-1)}.year__types{flex:1 0 100%;padding-left:26px}}
+/* publication filter (year-folds.js): one row of search, Type and Research area menus, then Clear (while
+   filtering) or Expand all (otherwise) in the same slot, and a live result line. The menus are native
+   <details>; their chips take no room until opened. */
+.pub-filters{padding-block:var(--space-5) var(--space-3)}
+.pub-filters__row{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2)}
+.pub-filters__search{flex:1 1 240px;max-width:360px}
+.pub-filters__search input{width:100%;min-height:var(--tap);padding:0 var(--space-4);border:1.5px solid var(--line-strong);border-radius:var(--radius-pill);background:var(--bg);color:var(--text);font:400 var(--fs-body)/1 var(--font-body)}
+.pub-filters__search input:focus-visible,.chip:focus-visible,.pub-filters__clear:focus-visible,.pub-menu summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.chip{display:inline-flex;align-items:center;gap:var(--space-2)}
+.chip[aria-pressed="true"] .dot{box-shadow:0 0 0 2px var(--on-accent)}
+.chip,.pub-menu summary{min-height:var(--tap);padding:var(--space-2) var(--space-4);border:1.5px solid var(--line-strong);border-radius:var(--radius-pill);background:none;color:var(--text);font:500 var(--fs-small)/1.2 var(--font-body);text-align:left;cursor:pointer}
+.chip:hover,.pub-menu summary:hover{border-color:var(--text);background:var(--surface-2)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.pub-menu{position:relative}
+.pub-menu summary{list-style:none;display:inline-flex;align-items:center;gap:var(--space-2)}
+.pub-menu summary::-webkit-details-marker{display:none}
+.pub-menu summary::after{content:"";flex:none;width:7px;height:7px;margin-left:var(--space-1);border-right:2px solid var(--text);border-bottom:2px solid var(--text);transform:translateY(-2px) rotate(45deg);transition:transform .15s ease}
+.pub-menu[open] summary{border-color:var(--text)}
+.pub-menu[open] summary::after{transform:translateY(2px) rotate(-135deg)}
+.pub-menu__count{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:var(--radius-pill);background:var(--accent);color:var(--on-accent);font:600 var(--fs-label)/1 var(--font-body)}
+.pub-menu__panel{position:absolute;top:calc(100% + var(--space-2));left:0;z-index:20;display:flex;flex-wrap:wrap;gap:var(--space-2);width:max-content;max-width:min(560px,calc(100vw - 2 * var(--gutter)));padding:var(--space-4);background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-m);box-shadow:0 8px 24px rgba(17,20,27,.12)}
+.pub-filters__status{margin-top:var(--space-3);font-size:var(--fs-small);color:var(--text-muted)}
+.pub-filters__status:empty{margin:0}
+@media (max-width:640px){.pub-filters__search{flex-basis:100%;max-width:none}.pub-menu[open]{flex:1 0 100%}.pub-menu__panel{position:static;width:auto;max-width:none;margin-top:var(--space-2);box-shadow:none;background:var(--surface)}}
 .year>.publications{margin-top:var(--space-4)}
 /* publication-row */
 .publications{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-l);padding:var(--space-2) var(--space-5)}
 .publication-row{display:grid;grid-template-columns:200px 1fr auto;gap:var(--space-4) var(--space-5);align-items:start;padding-block:var(--space-4)}
 .publication-row+.publication-row{border-top:1px solid var(--line)}
-.publication-row__venue{display:flex;gap:var(--space-2);align-items:flex-start;font:500 var(--fs-small)/1.4 var(--font-mono);color:var(--text);padding-top:3px}
-.publication-row__venue .dot{margin-top:4px}
+.publication-row__venue{padding-top:3px;font:500 var(--fs-small)/1.4 var(--font-mono);color:var(--text)}
+.medal{margin-left:.35em;font-style:normal}
 .publication-row__title{font:600 1.125rem/1.3 var(--font-display)}
 .publication-row__authors{font-size:var(--fs-small);color:var(--text-muted);margin-top:var(--space-1)}
 .publication-row__authors strong{color:var(--text);font-weight:600}
+/* The main column stretches to the row's height so its label strip sits at the bottom, level with the thumbnail */
+.publication-row__main{align-self:stretch;display:flex;flex-direction:column}
+/* label strip (_includes/pub-labels.html), on publication rows and Research cards: the type pill (outlined,
+   with the type's dot) then one tinted pill per research area. margin-top:auto pins it to the card's bottom. */
+.pub-labels{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2);margin-top:auto;padding-top:var(--space-3)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:2px var(--space-3);border:1px solid var(--line-strong);border-radius:var(--radius-pill);font:500 var(--fs-label)/1.5 var(--font-mono);color:var(--text)}
+.pill .dot{width:8px;height:8px}
+.pill--type{color:var(--text-muted)}
+.pill--area{background:var(--a-bg);border-color:var(--a-edge);font:600 var(--fs-label)/1.5 var(--font-body)}
+.paper-card__link .pub-labels{padding-top:var(--space-2)}
+.chip[data-filter="area"]:not([aria-pressed="true"]){background:var(--a-bg);border-color:var(--a-edge)}
 .publication-row__links{display:flex;gap:var(--space-2)}
 .publication-row__links a{display:inline-flex;align-items:center;min-height:var(--tap);padding:0 var(--space-4);border:1.5px solid var(--line-strong);border-radius:var(--radius-pill);font-weight:500;text-decoration:none}
 .publication-row__links a:hover{border-color:var(--text);background:var(--surface-2)}
@@ -237,6 +291,7 @@ svg line,svg path{stroke:var(--c);fill:none}
 .dl-grid code{color:var(--text)}
 .dl li{display:flex;align-items:center;gap:var(--space-3);padding-block:6px;color:var(--text-muted);font-size:var(--fs-small);flex-wrap:wrap}
 .swatch__chip{width:28px;height:28px;border-radius:var(--radius-s);border:1px solid var(--line-strong);flex:none}
+.dl-note{margin:var(--space-2) 0 var(--space-3);max-width:60ch;font-size:var(--fs-small);color:var(--text-muted)}
 .type-row{justify-content:space-between}
 .type-row>span:first-child{color:var(--text);flex-basis:100%}
 .space-row__bar{height:10px;background:var(--accent);border-radius:2px}

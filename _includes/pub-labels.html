@@ -1,0 +1,22 @@
+{%- comment -%}
+  item  a publication. Prints its label strip: the type pill (the type's dot and short name), then one tinted
+  pastel pill per research area whose `papers` or `more` list the paper's id, in research.yml order (the
+  area's `pastel`, 1-7, is its .aN class). A paper in no area gets no area pill.
+  Also assigns `label_areas` (space-separated slugs, or "other") for the caller: the publication row's
+  data-areas, which assets/js/year-folds.js filters on. One lookup, so the pills and the filter agree.
+{%- endcomment -%}
+{%- assign label_areas = "" -%}
+{%- assign type_info = site.data.publication_types | where: "id", include.item.type | first -%}
+<div class="pub-labels">
+  <span class="pill pill--type"><span class="dot c{{ type_info.tone }}" aria-hidden="true"></span>{{ type_info.short }}</span>
+  {%- if include.item.id -%}
+    {%- for area in site.data.research.areas -%}
+      {%- if area.papers contains include.item.id or area.more contains include.item.id -%}
+        {%- assign label_areas = label_areas | append: " " | append: area.slug -%}
+        <span class="pill pill--area a{{ area.pastel }}" data-area="{{ area.slug }}">{{ area.short }}</span>
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+</div>
+{%- assign label_areas = label_areas | strip -%}
+{%- if label_areas == "" -%}{%- assign label_areas = "other" -%}{%- endif -%}

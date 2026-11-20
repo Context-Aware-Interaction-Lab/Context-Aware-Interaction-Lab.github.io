@@ -1,6 +1,8 @@
-{%- assign tone = include.index | modulo: 6 | plus: 1 -%}
 {%- assign fig = include.item.figure -%}
 {%- assign vid = include.item.video -%}
+{%- comment -%} The label strip (type and areas) and `label_areas`, which pub-labels.html assigns for data-areas below. {%- endcomment -%}
+{%- capture labels_html -%}{% include pub-labels.html item=include.item %}{%- endcapture -%}
+{%- capture search_text -%}{{ include.item.title }} {{ include.item.authors }} {{ include.item.venue }}{%- endcapture -%}
 {%- if fig -%}
   {%- capture fig_large %}/assets/img/pub-{{ fig.slug }}.jpg{% endcapture -%}
   {%- capture fig_thumb %}/assets/img/pub-{{ fig.slug }}-thumb.jpg{% endcapture -%}
@@ -8,14 +10,15 @@
 {%- if vid -%}
   {%- capture vid_poster %}/assets/img/pub-{{ vid.slug }}-poster.jpg{% endcapture -%}
 {%- endif -%}
-<li class="publication-row"{% if include.item.id %} id="pub-{{ include.item.id }}"{% endif %}>
+<li class="publication-row"{% if include.item.id %} id="pub-{{ include.item.id }}"{% endif %} data-type="{{ include.item.type }}" data-areas="{{ label_areas }}" data-text="{{ search_text | downcase | escape }}">
   <div class="publication-row__side">
-    <p class="publication-row__venue"><span class="dot c{{ tone }}" aria-hidden="true"></span>{{ include.item.venue }}</p>
+    <p class="publication-row__venue">{{ include.item.venue }}{% include medal.html venue=include.item.venue %}</p>
     {% if fig %}<a class="publication-row__figure" href="{{ fig_large | relative_url }}" data-figure data-title="{{ include.item.title | escape }}" data-alt="{{ fig.alt | escape }}" aria-label="Enlarge figure: {{ include.item.title | escape }}"><img src="{{ fig_thumb | relative_url }}" alt="{{ fig.alt | escape }}" width="480" height="300" loading="lazy"></a>{% endif %}
   </div>
   <div class="publication-row__main">
     <h3 class="publication-row__title">{{ include.item.title }}</h3>
     <p class="publication-row__authors">{{ include.item.authors | escape | replace: "Kenny Tsu Wei CHOO", "<strong>Kenny Tsu Wei CHOO</strong>" }}</p>
+    {{ labels_html }}
   </div>
   <p class="publication-row__links">{% for link in include.item.links %}<a href="{{ link.url }}" aria-label="{{ link.label }}: {{ include.item.title | escape }}">{{ link.label | capitalize }}</a>{% endfor %}{% if vid %}<a href="https://www.youtube.com/watch?v={{ vid.youtube }}" data-video="{{ vid.youtube }}" data-poster="{{ vid_poster | relative_url }}" data-title="{{ include.item.title | escape }}" data-alt="{{ vid.title | escape }}" aria-label="Video: {{ include.item.title | escape }}">Video</a>{% endif %}</p>
 </li>
