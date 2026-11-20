@@ -1,3 +1,12 @@
+# When someone leaves, move their entry; do not delete it.
+#   Member who graduates -> alumni_graduate or alumni_undergraduate. Keep `photo:` if they had one (rendered 28px,
+#     the original scaled down). `role` becomes `note`, ending "Graduated YYYY" (graduates are listed newest first).
+#   Collaborator who is no longer one -> a new `collaborators_former:` list (add the key at the first entry; the
+#     page shows a folded "Former collaborators" list only when it has entries), same fields: name, role,
+#     affiliation, photo. `role` and `affiliation` are where the person is now, if known, otherwise their last role with the lab.
+# Photos: one that is already on this site stays with the person after they leave, and comes off on request.
+# Anyone who never had a photo here is not photographed without their consent first. Alumni without a photo
+# get a small name-seeded ring.
 members:
   - name: "Kenny Tsu Wei Choo"
     role: "Lab Director; Assistant Professor; Design and Artificial Intelligence Programme / Information Systems Technology and Design Pillar; Singapore University of Technology and Design"
@@ -65,18 +74,35 @@ collaborators:
     role: "Assistant Professor"
     affiliation: "University of Toronto, USA"
     photo: /assets/img/camellia-zakaria.jpg
-  - name: "Simon Perrault"
-    role: "Assistant Professor"
-    affiliation: "Singapore University of Technology and Design"
-    photo: /assets/img/simon-perrault.jpg
   - name: "Rajesh Balan"
     role: "Professor"
     affiliation: "Singapore Management University"
     photo: /assets/img/rajesh-balan.jpg
+  - name: "Geraldine Quek"
+    role: "Lecturer"
+    affiliation: "Singapore University of Technology and Design"
+    photo: /assets/img/geraldine-quek.jpg
+  - name: "Dorien Herremans"
+    role: "Associate Professor"
+    affiliation: "Singapore University of Technology and Design"
+  - name: "Peng Song"
+    role: "Assistant Professor"
+    affiliation: "Singapore University of Technology and Design"
+    photo: /assets/img/peng-song.jpg
+
+collaborators_former:
+  - name: "Simon Perrault"
+    role: "Professor"
+    affiliation: "Télécom Paris, Institut Polytechnique de Paris, France"
+    photo: /assets/img/simon-perrault.jpg
   - name: "Archan Misra"
     role: "Professor / Vice Provost (Research)"
     affiliation: "Singapore Management University"
     photo: /assets/img/archan-misra.jpg
+  - name: "JeongGil Ko"
+    role: "Professor"
+    affiliation: "Yonsei University"
+    photo: /assets/img/jeonggil-ko.jpg
 
 alumni_graduate:
   - name: "Aaron Zhe Yu Tua"

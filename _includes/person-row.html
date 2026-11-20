@@ -1,0 +1,15 @@
+{%- comment -%}
+  A row in a folded list (alumni, former collaborators): a 28px avatar, the name, an optional muted note.
+  name   the person's name (also the photo's alt text and the ring's seed)
+  note   optional one-line detail
+  photo  optional path of the original photo in assets/img, scaled down here (no separate small file);
+         without one the name-seeded ring stands in. Consent: see AGENTS.md.
+{%- endcomment -%}
+<li class="person-row">
+  {%- if include.photo %}
+  <img class="person-row__photo" src="{{ include.photo | relative_url }}" width="28" height="28" alt="{{ include.name }}" loading="lazy">
+  {%- else %}
+  <svg class="ring person-row__ring" data-ring="{{ include.name }}" viewBox="0 0 100 100" aria-hidden="true" focusable="false"></svg>
+  {%- endif %}
+  <span class="person-row__text">{{ include.name }}{% if include.note %}<span class="person-row__note">{{ include.note }}</span>{% endif %}</span>
+</li>

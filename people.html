@@ -55,24 +55,36 @@ permalink: /people/
         </li>
         {% endfor %}
       </ul>
+      {%- assign former = site.data.people.collaborators_former %}
+      {%- if former and former.size > 0 %}
+      <details class="fold">
+        <summary>Former collaborators</summary>
+        <ul class="fold__list">
+          {%- for person in former %}
+          {%- capture detail %}{{ person.role }}{% if person.affiliation %}, {{ person.affiliation }}{% endif %}{% endcapture %}
+          {% include person-row.html name=person.name note=detail photo=person.photo %}
+          {%- endfor %}
+        </ul>
+      </details>
+      {%- endif %}
     </div>
 
     <div class="people-group">
       <h2>Alumni</h2>
-      <details class="alumni">
+      <details class="fold">
         <summary>Graduate Students</summary>
-        <ul class="alumni__list">
-          {% for person in site.data.people.alumni_graduate %}
-          <li>{{ person.name }}{% if person.note %} <span class="alumni__note">{{ person.note }}</span>{% endif %}</li>
-          {% endfor %}
+        <ul class="fold__list">
+          {%- for person in site.data.people.alumni_graduate %}
+          {% include person-row.html name=person.name note=person.note photo=person.photo %}
+          {%- endfor %}
         </ul>
       </details>
-      <details class="alumni">
+      <details class="fold">
         <summary>Undergraduate Students</summary>
-        <ul class="alumni__list">
-          {% for person in site.data.people.alumni_undergraduate %}
-          <li>{{ person.name }}{% if person.note %} <span class="alumni__note">{{ person.note }}</span>{% endif %}</li>
-          {% endfor %}
+        <ul class="fold__list">
+          {%- for person in site.data.people.alumni_undergraduate %}
+          {% include person-row.html name=person.name note=person.note photo=person.photo %}
+          {%- endfor %}
         </ul>
       </details>
     </div>
