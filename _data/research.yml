@@ -8,7 +8,10 @@
 # A paper may sit in several areas: it then shows a pill for each and appears in each area's section. It may
 # not be listed twice in one area. A paper listed in none shows no area pill and is "Other" in the filter.
 #
-# Placement rule: Care is about designing AI for care; Responsible AI is about auditing where models fail.
+# Placement rule: Care is about designing AI for care; Collaboration is about people working with AI, and with
+# each other through AI; Responsible AI is about auditing where models fail. The second area was "Multimodal
+# Human–AI Interaction" (slug `multimodal`) until 2026-11-22; the swimming-analytics and VR-modelling papers
+# left the areas with that rename and show as "Other".
 # Unpublished work, such as the Small Language Model / mental-health line, joins an area only once it is public.
 intro: >-
   Our research is Human-Centred AI: we design and study AI systems that people can understand, question, and
@@ -40,25 +43,28 @@ areas:
       - arxiv24-gaze-asd
       - dis24-emotions-mh
       - cscw21-ws-older-adults
-  - slug: multimodal
-    title: "Multimodal Human–AI Interaction"
-    short: Multimodal
+  - slug: collaboration
+    title: "Human–AI Collaboration"
+    short: Collaboration
     pastel: 4
     summary: >-
-      People communicate with more than text. We design AI that works across sketch, speech, video, and 3D:
-      generative tools that let designers sketch and talk at the same time, interfaces for modelling physical
-      objects in virtual reality, and drone-based computer vision that gives swimming coaches real-time
-      analytics. The aim is systems that follow what people mean and give feedback they can act on.
-    papers: [pg25-vr-modeling, wacv26-dronaquatics, springer26-talksketch]
+      People increasingly think and make together with AI, and with each other through AI. We study what that
+      collaboration looks like and build tools for it: AI that mediates how qualitative analysts work together,
+      generative tools that let designers sketch and talk at the same time, and AI-assisted debugging for
+      novice programmers. The aim is systems that follow what people mean and give feedback they can act on.
+    papers: [tochi23-coaicoder, springer26-talksketch, ase25-simulated-debugging]
     more:
+      - arxiv26-duosketch
+      - arxiv26-clayflect
+      - arxiv26-commsketch
       - dis26-sketch-speech
       - chi26-parent-child-align
       - chi26-sketch-taxonomy
-      - eacl26-blend-vis
       - chi26-ws-more-than-1v1
-      - emnlp25-humor-pixels
+      - koli25-novice-debuggers
       - chi25-lbw-joint-attention
-      - dronet24-swimming
+      - chi24-lbw-llm-taxonomy
+      - arxiv23-trust-reliance
   - slug: responsible-ai
     title: "Responsible AI: Risks and Robustness of Language Models"
     short: Responsible AI
@@ -70,6 +76,7 @@ areas:
       of online speech, and how well models understand cultures beyond the English-speaking world.
     papers: [cscw26-sword-shield, eacl26-blend-vis]
     more:
+      - arxiv26-veiled-sh
       - emnlp25-humor-pixels
       - emnlp24-toxicloakcn
       - cscw25-comm-games

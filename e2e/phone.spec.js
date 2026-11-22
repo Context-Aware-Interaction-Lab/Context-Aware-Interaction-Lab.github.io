@@ -49,14 +49,14 @@ test.describe("Publications on a phone", () => {
     const toggle = page.locator(".pub-filters__toggle");
     await toggle.click();
     await expect(toggle).toHaveAttribute("aria-expanded", "true");
-    for (const value of ["journal", "conference", "care", "multimodal", "other"]) {
+    for (const value of ["journal", "conference", "care", "collaboration", "other"]) {
       await expect(page.locator(`button.chip[data-value="${value}"]`)).toBeVisible();
     }
     await expect(page.locator(".year-controls__all")).toBeVisible();
 
     await page.locator('button.chip[data-value="journal"]').click();
     await expect(toggle.locator(".pub-menu__count")).toHaveText("1");
-    await expect(page.locator(".pub-filters__status")).toHaveText(/^\d+ of 39 publications$/);
+    await expect(page.locator(".pub-filters__status")).toHaveText(/^\d+ of 43 publications$/);
     expect(new URL(page.url()).searchParams.get("type")).toBe("journal");
 
     await page.keyboard.press("Escape");
@@ -90,7 +90,7 @@ test.describe("Publications on a phone", () => {
         total: info.reduce((sum, i) => sum + i.height, 0),
       };
     });
-    expect(stats.rows).toBe(39);
+    expect(stats.rows).toBe(43);
     expect(stats.withFigure).toBeLessThanOrEqual(285);
     expect(stats.withoutFigure).toBeLessThanOrEqual(250);
     expect(stats.total).toBeLessThanOrEqual(10_000);
