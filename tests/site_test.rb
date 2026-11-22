@@ -971,16 +971,15 @@ class ResearchPageTest < Minitest::Test
     end
   end
 
-  # Funding is hidden on purpose: _data/funding.yml is kept, but nothing renders it.
+  # Grants are not on this site at all. Nothing renders them, and since 2026-11-22 the data file is gone too:
+  # it held an entry with the wrong grant scheme, and a file that nothing reads only invites that to be
+  # published by accident. Grants live in the CV, not here.
   def test_funding_is_not_shown_anywhere
+    refute File.exist?(File.join(ROOT, "_data", "funding.yml")), "grant data is back in _data/funding.yml"
     PAGES.each do |page|
       html = html_of(page)
       refute_has html, 'id="funding"', "funding section on #{page}"
       refute_has html, "funding-row", "funding rows on #{page}"
-      data("funding").each do |g|
-        refute_has text_of(page), g["title"], "grant '#{g["title"]}' shown on #{page}"
-        refute_has text_of(page), g["amount"], "grant amount #{g["amount"]} shown on #{page}"
-      end
     end
   end
 end
