@@ -10,7 +10,7 @@ test.describe("Publications without JavaScript", () => {
   });
 
   test("every paper is in the page and no script-only control is shown", async ({ page }) => {
-    expect(await page.locator("li.publication-row").count()).toBe(39);
+    expect(await page.locator("li.publication-row").count()).toBe(43);
     await expect(page.locator(".pub-filters")).toBeHidden();
     await expect(page.locator(".pub-filters__toggle")).toBeHidden();
     await expect(page.locator(".pub-filters__clear")).toBeHidden();

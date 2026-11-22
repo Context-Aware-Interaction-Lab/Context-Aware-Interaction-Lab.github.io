@@ -77,7 +77,7 @@ test.describe("Publications on a desktop", () => {
       if (expected) shown += 1;
     }
     expect(shown).toBeGreaterThan(0);
-    await expect(page.locator(".pub-filters__status")).toHaveText(`${shown} of 39 publications`);
+    await expect(page.locator(".pub-filters__status")).toHaveText(`${shown} of 43 publications`);
     await expect(page.locator(".year-controls__all")).toBeHidden(); // Expand all makes no sense mid-filter
     await expect(page.locator(".pub-filters__clear")).toBeVisible();
   });
@@ -143,7 +143,7 @@ test.describe("Publications on a desktop", () => {
       award: row.querySelector(".publication-row__venue").textContent.includes("Honourable Mention"),
       medals: row.querySelectorAll(".medal").length,
     })));
-    expect(rows).toHaveLength(39);
+    expect(rows).toHaveLength(43);
     for (const row of rows) {
       expect(row.typePills, row.id).toBe(1);
       expect(row.areaPills, row.id).toEqual(row.areas);
